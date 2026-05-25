@@ -1,4 +1,4 @@
-# Papra Uploader (Android)
+# PapraCam (Android)
 
 Schlanke native Android-App zum Aufnehmen und Hochladen von Dokumenten an eine
 selbst gehostete [Papra](https://github.com/papra-hq/papra)-Instanz.

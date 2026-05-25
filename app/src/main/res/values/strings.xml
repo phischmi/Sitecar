@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Papra Uploader</string>
+    <string name="app_name">PapraCam</string>
 
     <string name="settings_title">Verbindung</string>
     <string name="settings_server_url">Server-URL</string>

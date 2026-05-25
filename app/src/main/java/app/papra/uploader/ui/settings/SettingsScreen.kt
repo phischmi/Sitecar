@@ -157,7 +157,7 @@ fun SettingsScreen(
                     store.apiKey = apiKey
                     onSaved()
                 },
-                enabled = serverUrl.isNotBlank() && apiKey.isNotBlank() && orgCount != null,
+                enabled = serverUrl.isNotBlank() && apiKey.isNotBlank(),
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(stringResource(R.string.settings_save))

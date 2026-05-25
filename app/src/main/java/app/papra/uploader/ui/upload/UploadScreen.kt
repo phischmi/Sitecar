@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -68,6 +69,7 @@ fun UploadScreen(
     pdfBuilder: PdfBuilder,
     onDone: () -> Unit,
     onBack: () -> Unit,
+    onOpenSettings: () -> Unit,
 ) {
     if (pages.isEmpty()) {
         // Falls UploadScreen ohne State erreicht wird (Prozess-Restart) – einfach zurück.
@@ -133,6 +135,14 @@ fun UploadScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onOpenSettings) {
+                        Icon(
+                            Icons.Default.Settings,
+                            contentDescription = stringResource(R.string.nav_settings),
+                        )
                     }
                 },
             )

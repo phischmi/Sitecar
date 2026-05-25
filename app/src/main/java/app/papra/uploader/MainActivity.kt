@@ -66,6 +66,7 @@ class MainActivity : ComponentActivity() {
                                     nav.popBackStack(Route.Scan, inclusive = false)
                                 },
                                 onBack = { nav.popBackStack() },
+                                onOpenSettings = { nav.navigate(Route.Settings) },
                             )
                         }
                     }
