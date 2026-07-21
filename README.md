@@ -15,6 +15,8 @@ selbst gehostete [Papra](https://github.com/papra-hq/papra)-Instanz.
   (Google ML Kit Document Scanner, on-device).
 - Vorschau, Auswahl der Ziel-Organisation, Anpassen des Dateinamens.
 - Upload via `POST /api/organizations/:organizationId/documents` (Multipart, JPEG).
+- Vorhandene Dokumente einer Organisation ansehen (`GET /api/organizations/:organizationId/documents`),
+  Tippen lädt die Datei herunter und öffnet sie im System-Viewer.
 
 ## Geplant (Phase 2, In-App-Kauf)
 

@@ -27,4 +27,12 @@
     <string name="upload_pdf_progress">PDF wird erstellt – Seite %1$d von %2$d (OCR)</string>
 
     <string name="nav_settings">Einstellungen</string>
+    <string name="nav_scan">Scannen</string>
+    <string name="nav_documents">Dokumente</string>
+
+    <string name="documents_title">Dokumente</string>
+    <string name="documents_org">Organisation</string>
+    <string name="documents_empty">Keine Dokumente gefunden.</string>
+    <string name="documents_load_failed">Laden fehlgeschlagen: %1$s</string>
+    <string name="documents_no_viewer">Keine App zum Anzeigen dieses Dateityps gefunden.</string>
 </resources>

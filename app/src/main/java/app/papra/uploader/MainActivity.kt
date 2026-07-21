@@ -4,11 +4,23 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.DocumentScanner
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.res.stringResource
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import app.papra.uploader.ui.documents.DocumentsScreen
 import app.papra.uploader.ui.nav.Route
 import app.papra.uploader.ui.scan.ScanScreen
 import app.papra.uploader.ui.settings.SettingsScreen
@@ -54,6 +66,15 @@ class MainActivity : ComponentActivity() {
                                     nav.navigate(Route.Upload)
                                 },
                                 onOpenSettings = { nav.navigate(Route.Settings) },
+                                bottomBar = { AppBottomBar(nav) },
+                            )
+                        }
+                        composable<Route.Documents> {
+                            DocumentsScreen(
+                                client = app.papraClient,
+                                store = app.settingsStore,
+                                onOpenSettings = { nav.navigate(Route.Settings) },
+                                bottomBar = { AppBottomBar(nav) },
                             )
                         }
                         composable<Route.Upload> {
@@ -72,6 +93,31 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun AppBottomBar(nav: NavHostController) {
+    val currentRoute = nav.currentBackStackEntryAsState().value?.destination?.route
+    val tabs = listOf(
+        Triple(Route.Scan, Icons.Default.DocumentScanner, R.string.nav_scan),
+        Triple(Route.Documents, Icons.Default.Description, R.string.nav_documents),
+    )
+
+    NavigationBar {
+        tabs.forEach { (route, icon, label) ->
+            val routeName = route::class.qualifiedName
+            NavigationBarItem(
+                selected = currentRoute == routeName,
+                onClick = {
+                    if (currentRoute != routeName) {
+                        nav.navigate(route)
+                    }
+                },
+                icon = { Icon(icon, contentDescription = null) },
+                label = { Text(stringResource(label)) },
+            )
         }
     }
 }

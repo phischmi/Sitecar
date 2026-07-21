@@ -8,9 +8,11 @@ import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
+import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
+import io.ktor.client.statement.readBytes
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
@@ -88,6 +90,46 @@ class PapraClient(private val store: SettingsStore) {
             throw ApiException(res.status, res.bodyAsText())
         }
         json.decodeFromString(CreateDocumentResponse.serializer(), res.bodyAsText()).document
+    }
+
+    suspend fun listDocuments(
+        organizationId: String,
+        searchQuery: String? = null,
+        pageIndex: Int = 0,
+        pageSize: Int = 50,
+    ): Result<DocumentsListResponse> = runCatching {
+        val url = "${store.serverUrl.trimEnd('/')}/api/organizations/$organizationId/documents"
+        val res = http.get(url) {
+            headers {
+                append(HttpHeaders.Authorization, "Bearer ${store.apiKey}")
+                append(HttpHeaders.Accept, "application/json")
+            }
+            parameter("pageIndex", pageIndex)
+            parameter("pageSize", pageSize)
+            if (!searchQuery.isNullOrBlank()) {
+                parameter("searchQuery", searchQuery)
+            }
+        }
+        if (!res.status.isSuccess()) {
+            throw ApiException(res.status, res.bodyAsText())
+        }
+        json.decodeFromString(DocumentsListResponse.serializer(), res.bodyAsText())
+    }
+
+    suspend fun downloadDocumentFile(
+        organizationId: String,
+        documentId: String,
+    ): Result<ByteArray> = runCatching {
+        val url = "${store.serverUrl.trimEnd('/')}/api/organizations/$organizationId/documents/$documentId/file"
+        val res = http.get(url) {
+            headers {
+                append(HttpHeaders.Authorization, "Bearer ${store.apiKey}")
+            }
+        }
+        if (!res.status.isSuccess()) {
+            throw ApiException(res.status, res.bodyAsText())
+        }
+        res.readBytes()
     }
 }
 

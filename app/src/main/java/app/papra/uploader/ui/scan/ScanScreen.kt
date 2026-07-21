@@ -51,6 +51,7 @@ import java.util.Locale
 fun ScanScreen(
     onScanned: (pages: List<File>) -> Unit,
     onOpenSettings: () -> Unit,
+    bottomBar: @Composable () -> Unit = {},
 ) {
     val context = LocalContext.current
     val activity = context.findActivity()
@@ -117,6 +118,7 @@ fun ScanScreen(
                 },
             )
         },
+        bottomBar = bottomBar,
     ) { inner ->
         Column(
             modifier = Modifier
