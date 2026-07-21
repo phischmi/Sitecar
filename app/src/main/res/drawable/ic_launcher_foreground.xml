@@ -1,9 +1,73 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+
+  <group
+      android:pivotX="54"
+      android:pivotY="54"
+      android:scaleX="0.8"
+      android:scaleY="0.8">
+
+    <!-- Viewfinder-Eckklammern: Schatten -->
+    <group android:translateX="2" android:translateY="3">
+        <path
+            android:fillColor="#000000"
+            android:fillAlpha="0.2"
+            android:pathData="M27,27 L43,27 L43,30 L30,30 L30,43 L27,43 Z
+                               M81,27 L65,27 L65,30 L78,30 L78,43 L81,43 Z
+                               M27,81 L43,81 L43,78 L30,78 L30,65 L27,65 Z
+                               M81,81 L65,81 L65,78 L78,78 L78,65 L81,65 Z" />
+    </group>
+
+    <!-- Viewfinder-Eckklammern -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M36,30 L72,30 L72,42 L60,42 L60,78 L48,78 L48,42 L36,42 Z" />
+        android:pathData="M27,27 L43,27 L43,30 L30,30 L30,43 L27,43 Z
+                           M81,27 L65,27 L65,30 L78,30 L78,43 L81,43 Z
+                           M27,81 L43,81 L43,78 L30,78 L30,65 L27,65 Z
+                           M81,81 L65,81 L65,78 L78,78 L78,65 L81,65 Z" />
+
+    <!-- Dokument-Schatten -->
+    <path
+        android:pathData="M45,39 L61,39 L71,49 L71,71 A4,4 0 0 1 67,75 L45,75 A4,4 0 0 1 41,71 L41,43 A4,4 0 0 1 45,39 Z"
+        android:fillColor="#000000"
+        android:fillAlpha="0.2" />
+
+    <!-- Dokument-Fläche mit umgeknickter Ecke, angelehnt an das Papra-Logo -->
+    <path android:pathData="M43,36 L59,36 L69,46 L69,68 A4,4 0 0 1 65,72 L43,72 A4,4 0 0 1 39,68 L39,40 A4,4 0 0 1 43,36 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="39"
+                android:startY="36"
+                android:endX="69"
+                android:endY="72"
+                android:startColor="#FFFFFF"
+                android:endColor="#DCE1FB" />
+        </aapt:attr>
+    </path>
+    <path android:pathData="M59,36 L69,36 L69,46 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="59"
+                android:startY="36"
+                android:endX="69"
+                android:endY="46"
+                android:startColor="#F1F3FE"
+                android:endColor="#9BA8EE" />
+        </aapt:attr>
+    </path>
+
+    <!-- Textzeilen -->
+    <path
+        android:fillColor="#AEB9F2"
+        android:pathData="M45,53 h18 a2,2 0 0 1 0,4 h-18 a2,2 0 0 1 0,-4 Z" />
+    <path
+        android:fillColor="#AEB9F2"
+        android:pathData="M45,62 h18 a2,2 0 0 1 0,4 h-18 a2,2 0 0 1 0,-4 Z" />
+  </group>
 </vector>
