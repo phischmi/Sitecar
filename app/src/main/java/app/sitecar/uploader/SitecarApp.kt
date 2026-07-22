@@ -31,7 +31,9 @@ class SitecarApp : Application() {
         apiClient = SitecarApiClient(settingsStore)
         pdfBuilder = PdfBuilder(applicationContext)
         billingManager = BillingManager(applicationContext, settingsStore)
-        billingManager.startConnection()
+        if (Features.SUPPORTER_ENABLED) {
+            billingManager.startConnection()
+        }
         AppShortcuts.register(applicationContext)
         LauncherIcon.apply(applicationContext, settingsStore.accentColor)
     }

@@ -1,7 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!--
+      Bezahlfunktion vorerst deaktiviert (siehe Features.SUPPORTER_ENABLED): die
+      Play-Billing-Library mischt sonst automatisch die BILLING-Permission ein.
+      Zum Reaktivieren diesen Block entfernen und Features.SUPPORTER_ENABLED = true.
+    -->
+    <uses-permission
+        android:name="com.android.vending.BILLING"
+        tools:node="remove" />
 
     <uses-feature
         android:name="android.hardware.camera"

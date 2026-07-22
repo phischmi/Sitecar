@@ -52,6 +52,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import app.sitecar.uploader.Features
 import app.sitecar.uploader.R
 import app.sitecar.uploader.data.AccentColor
 import app.sitecar.uploader.data.BillingManager
@@ -190,79 +191,84 @@ fun SettingsScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            Spacer(Modifier.height(16.dp))
+            // Akzentfarben-Auswahl und Unterstützer-Bereich gehören zur vorerst
+            // deaktivierten Bezahlfunktion (siehe Features.SUPPORTER_ENABLED) und
+            // werden komplett ausgeblendet, solange die App rein kostenfrei ist.
+            if (Features.SUPPORTER_ENABLED) {
+                Spacer(Modifier.height(16.dp))
 
-            Text(
-                text = stringResource(R.string.settings_accent_title),
-                style = MaterialTheme.typography.labelLarge,
-            )
-            val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                AccentColor.entries.forEach { accent ->
-                    val unlocked = accent == AccentColor.INDIGO || isSupporter
-                    val swatchColor = accentPrimaryColor(accent, isDarkTheme)
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(swatchColor)
-                            .then(
-                                if (accentColor == accent) {
-                                    Modifier.border(3.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
-                                } else {
-                                    Modifier
+                Text(
+                    text = stringResource(R.string.settings_accent_title),
+                    style = MaterialTheme.typography.labelLarge,
+                )
+                val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    AccentColor.entries.forEach { accent ->
+                        val unlocked = accent == AccentColor.INDIGO || isSupporter
+                        val swatchColor = accentPrimaryColor(accent, isDarkTheme)
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(swatchColor)
+                                .then(
+                                    if (accentColor == accent) {
+                                        Modifier.border(3.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
+                                    } else {
+                                        Modifier
+                                    },
+                                )
+                                .clickable {
+                                    if (unlocked) {
+                                        accentColor = accent
+                                        store.accentColor = accent
+                                        LauncherIcon.apply(context, accent)
+                                    } else {
+                                        showSupportDialog = true
+                                    }
                                 },
-                            )
-                            .clickable {
-                                if (unlocked) {
-                                    accentColor = accent
-                                    store.accentColor = accent
-                                    LauncherIcon.apply(context, accent)
-                                } else {
-                                    showSupportDialog = true
-                                }
-                            },
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        if (!unlocked) {
-                            Icon(
-                                Icons.Default.Lock,
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.size(16.dp),
-                            )
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            if (!unlocked) {
+                                Icon(
+                                    Icons.Default.Lock,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(16.dp),
+                                )
+                            }
                         }
                     }
                 }
-            }
-            if (!isSupporter) {
-                Text(
-                    text = stringResource(R.string.settings_accent_locked_hint),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
+                if (!isSupporter) {
+                    Text(
+                        text = stringResource(R.string.settings_accent_locked_hint),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
 
-            Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(16.dp))
 
-            Text(
-                text = stringResource(R.string.settings_support_title),
-                style = MaterialTheme.typography.labelLarge,
-            )
-            if (isSupporter) {
                 Text(
-                    text = stringResource(R.string.settings_support_badge),
-                    color = MaterialTheme.colorScheme.primary,
+                    text = stringResource(R.string.settings_support_title),
+                    style = MaterialTheme.typography.labelLarge,
                 )
-            } else {
-                OutlinedButton(
-                    onClick = { showSupportDialog = true },
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(stringResource(R.string.settings_support_cta))
+                if (isSupporter) {
+                    Text(
+                        text = stringResource(R.string.settings_support_badge),
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                } else {
+                    OutlinedButton(
+                        onClick = { showSupportDialog = true },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(stringResource(R.string.settings_support_cta))
+                    }
                 }
             }
 
@@ -357,7 +363,7 @@ fun SettingsScreen(
         }
     }
 
-    if (showSupportDialog) {
+    if (Features.SUPPORTER_ENABLED && showSupportDialog) {
         SupportDialog(
             billing = billing,
             onDismiss = { showSupportDialog = false },

@@ -27,12 +27,37 @@ eigenständiger Begleiter ("Sidecar") für Papra, vormals PapraCam.
 - Schnellzugriff-Shortcut "Scannen" per Long-Press auf das App-Icon.
 - Anpassbares Dateinamen-Format für Scans (Platzhalter `{date}` `{time}`
   `{org}` `{counter}`).
-- Freiwilliger "Sitecar unterstützen"-Hinweis (einmalig 0,99 €, Play Billing),
+- _(Derzeit deaktiviert — die App wird zunächst vollständig kostenfrei
+  ausgeliefert, siehe [Bezahlfunktion](#bezahlfunktion-vorerst-deaktiviert).)_
+  Freiwilliger "Sitecar unterstützen"-Hinweis (einmalig 0,99 €, Play Billing),
   erscheint nach dem 5. erfolgreichen Upload, danach alle 10 weiteren — oder
   jederzeit manuell in den Einstellungen. Rein kosmetischer Dank: schaltet
   drei weitere Akzentfarben frei (Smaragd/Bernstein/Rosé statt nur Indigo),
   inklusive passend eingefärbtem App-Icon-Hintergrund. Kein bestehendes
   Feature wird Nicht-Unterstützern weggenommen oder vorenthalten.
+
+## Bezahlfunktion (vorerst deaktiviert)
+
+Die freiwillige Unterstützer-Bezahlfunktion ist über den zentralen Schalter
+`Features.SUPPORTER_ENABLED` (in `app/src/main/java/app/sitecar/uploader/Features.kt`)
+**abgeschaltet** (`false`). Solange sie aus ist:
+
+- kein In-App-Kauf, kein Spenden-Dialog, keine Kauf-Aufforderung nach Uploads;
+- der Akzentfarben- und Unterstützer-Bereich in den Einstellungen ist
+  ausgeblendet (nur das Standard-Indigo ist aktiv);
+- die App baut keine Play-Billing-Verbindung auf und deklariert im finalen
+  Manifest **keine** `com.android.vending.BILLING`-Permission (per
+  `tools:node="remove"` entfernt).
+
+So bleibt die App rein kostenfrei und benötigt vorerst keine Gewerbeanmeldung.
+Der komplette Bezahl-Code bleibt erhalten und lässt sich per Update
+reaktivieren:
+
+1. `Features.SUPPORTER_ENABLED = true` setzen,
+2. in `AndroidManifest.xml` den `tools:node="remove"`-Eintrag für die
+   BILLING-Permission entfernen,
+3. das verwaltete In-App-Produkt `sitecar_supporter_tip` in der Play Console
+   anlegen (siehe [Play-Store-Release](#play-store-release)).
 
 ## Lokalisierung
 
@@ -126,13 +151,17 @@ nur unsigniert.
   werden.
 - **Data-Safety-Formular**: Die App erhebt/übermittelt keine Daten an den
   Entwickler oder Dritte (siehe `PRIVACY.md`) — im Formular entsprechend
-  "Keine Daten erhoben" angeben. Der In-App-Kauf läuft vollständig über
-  Google Play Billing; Zahlungsdaten sieht der Entwickler nie.
-- **Play Billing Library aktuell halten**: Google erzwingt regelmäßig
-  Mindestversionen für die Billing Library (aktuell `7.1.1` in
-  `libs.versions.toml`), sonst wird der Play-Store-Upload irgendwann
-  abgelehnt — vor dem Release-Build kurz gegen die aktuelle Version prüfen.
-- **In-App-Produkt anlegen**: In der Play Console unter
+  "Keine Daten erhoben" angeben. Aktuell bietet die App keine In-App-Käufe an
+  (Bezahlfunktion deaktiviert). Wird sie später aktiviert, läuft der Kauf
+  vollständig über Google Play Billing; Zahlungsdaten sieht der Entwickler nie.
+- **Play Billing Library aktuell halten** _(erst relevant, wenn die
+  [Bezahlfunktion](#bezahlfunktion-vorerst-deaktiviert) wieder aktiviert
+  wird)_: Google erzwingt regelmäßig Mindestversionen für die Billing Library
+  (aktuell `7.1.1` in `libs.versions.toml`), sonst wird der Play-Store-Upload
+  irgendwann abgelehnt — vor dem Release-Build kurz gegen die aktuelle Version
+  prüfen.
+- **In-App-Produkt anlegen** _(nur beim Reaktivieren der Bezahlfunktion nötig;
+  aktuell ist `Features.SUPPORTER_ENABLED = false`)_: In der Play Console unter
   Monetarisierung → Produkte → In-App-Produkte ein **verwaltetes Produkt**
   (kein Abo) mit der ID `sitecar_supporter_tip` und Preis 0,99 € anlegen —
   diese ID ist im Client fest hinterlegt (`BillingManager.SUPPORTER_PRODUCT_ID`).
