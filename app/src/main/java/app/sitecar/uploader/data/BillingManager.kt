@@ -78,9 +78,9 @@ class BillingManager(
         val params = QueryProductDetailsParams.newBuilder()
             .setProductList(listOf(product))
             .build()
-        billingClient.queryProductDetailsAsync(params) { result, productDetailsResult ->
+        billingClient.queryProductDetailsAsync(params) { result, productDetailsList ->
             if (result.responseCode == BillingClient.BillingResponseCode.OK) {
-                _productDetails.value = productDetailsResult.productDetailsList.firstOrNull()
+                _productDetails.value = productDetailsList.firstOrNull()
             }
         }
     }
