@@ -8,23 +8,27 @@ eigenständiger Begleiter ("Sidecar") für Papra, vormals PapraCam.
 - Anbindung via API-Key (kein OAuth/Login)
 - Kotlin + Jetpack Compose, ML Kit Document Scanner, Ktor
 
-## Features (MVP)
+## Features
 
 - Server-URL und API-Key in den Einstellungen hinterlegen (verschlüsselt gespeichert).
 - Verbindungstest gegen `GET /api/organizations`.
-- Dokument scannen mit automatischer Kantenerkennung und Perspektivkorrektur
-  (Google ML Kit Document Scanner, on-device).
+- Mehrseitiges Dokument scannen mit automatischer Kantenerkennung und
+  Perspektivkorrektur (Google ML Kit Document Scanner, on-device).
 - Vorschau, Auswahl der Ziel-Organisation, Anpassen des Dateinamens.
-- Upload via `POST /api/organizations/:organizationId/documents` (Multipart, JPEG).
+- Zusammenführung zu einem PDF, optional mit unsichtbarem OCR-Textlayer
+  (ML Kit Text Recognition, on-device) für Volltextsuche ohne serverseitige
+  OCR — abschaltbar in den Einstellungen, falls die Papra-Instanz bereits
+  selbst OCR durchführt (z. B. Mistral OCR).
+- Upload via `POST /api/organizations/:organizationId/documents` (Multipart, PDF).
 - Vorhandene Dokumente einer Organisation ansehen (`GET /api/organizations/:organizationId/documents`),
   Tippen lädt die Datei herunter und öffnet sie im System-Viewer. Miniatur-Vorschau
   (erste PDF-Seite bzw. Bild) statt generischem Icon, lokal gerendert und gecacht.
+- Darstellung wählbar: Hell / Dunkel / System.
 
-## Geplant (Phase 2, In-App-Kauf)
+## Geplant
 
-- Mehrseitige Scans
-- Durchsuchbares PDF (OCR-Layer per ML Kit Text Recognition)
-- Upload als PDF an Papra
+- Netzwerksicherheitskonfiguration statt globalem Cleartext-Traffic
+- Automatisierte Tests (aktuell keine vorhanden)
 
 ## Build
 
@@ -62,6 +66,40 @@ erzeugen. Der Key beginnt mit `ppapi_`.
   separate Activity in Play Services und fordert seine Permissions selbst an.
 - Texterkennung (OCR) auf dem Gerät lässt sich in den Einstellungen abschalten,
   falls die Papra-Instanz bereits serverseitig OCR durchführt (z. B. Mistral OCR).
+
+## Play-Store-Release
+
+### Signing
+Release-Builds werden signiert, wenn `keystore.properties` im Projektroot
+existiert (siehe `keystore.properties.example` für das Format). Die Datei
+selbst sowie `*.keystore`/`*.jks` sind über `.gitignore` ausgeschlossen und
+dürfen nie eingecheckt werden.
+
+```sh
+cp keystore.properties.example keystore.properties
+# Werte anpassen, dann:
+./gradlew bundleRelease   # erzeugt das signierte .aab für die Play Console
+```
+
+Ohne `keystore.properties` bauen `assembleRelease`/`bundleRelease` weiterhin,
+nur unsigniert.
+
+### Vor der Veröffentlichung offen
+- **Datenschutzerklärung**: Entwurf liegt in [`PRIVACY.md`](./PRIVACY.md),
+  muss noch unter einer öffentlichen URL gehostet werden (z. B. GitHub Pages
+  oder die gerenderte GitHub-Blob-Ansicht) und in der Play Console verlinkt
+  werden.
+- **Data-Safety-Formular**: Die App erhebt/übermittelt keine Daten an den
+  Entwickler oder Dritte (siehe `PRIVACY.md`) — im Formular entsprechend
+  "Keine Daten erhoben" angeben.
+- **Store-Assets**: Screenshots, Feature-Grafik, kurze/lange Beschreibung
+  fehlen noch.
+- **`applicationId`**: aktuell weiterhin `app.papra.uploader` (historisch, vor
+  der Umbenennung zu Sitecar). Lässt sich nach der ersten Veröffentlichung
+  praktisch nicht mehr ändern, ohne den Store-Eintrag/die Bewertungen zu
+  verlieren — letzte Gelegenheit für eine Umbenennung ist jetzt.
+- **Versionierung**: `versionCode`/`versionName` vor dem ersten Upload final
+  festlegen (aktuell `1` / `0.1.0`).
 
 ## Lizenz
 

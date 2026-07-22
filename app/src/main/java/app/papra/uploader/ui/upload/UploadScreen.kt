@@ -179,7 +179,7 @@ fun UploadScreen(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .padding(12.dp)
-                            .background(Color(0x99000000), RoundedCornerShape(8.dp))
+                            .background(Color.Black.copy(alpha = 0.6f), RoundedCornerShape(8.dp))
                             .padding(horizontal = 10.dp, vertical = 4.dp),
                     ) {
                         Text(

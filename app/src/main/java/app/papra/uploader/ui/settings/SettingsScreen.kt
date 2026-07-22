@@ -65,6 +65,8 @@ fun SettingsScreen(
     var ocrEnabled by remember { mutableStateOf(store.onDeviceOcrEnabled) }
 
     val scope = rememberCoroutineScope()
+    val missingFieldsMessage = stringResource(R.string.settings_error_missing_fields)
+    val unknownErrorMessage = stringResource(R.string.error_unknown)
 
     Scaffold(
         topBar = {
@@ -164,7 +166,7 @@ fun SettingsScreen(
                 onClick = {
                     if (serverUrl.isBlank() || apiKey.isBlank()) {
                         isError = true
-                        status = "Bitte URL und API-Key angeben."
+                        status = missingFieldsMessage
                         return@OutlinedButton
                     }
                     loading = true
@@ -181,7 +183,7 @@ fun SettingsScreen(
                         }.onFailure { e ->
                             isError = true
                             orgCount = null
-                            status = e.message ?: "Unbekannter Fehler"
+                            status = e.message ?: unknownErrorMessage
                         }
                     }
                 },

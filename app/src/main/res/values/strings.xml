@@ -15,6 +15,7 @@
     <string name="settings_save">Speichern</string>
     <string name="settings_test_ok">Verbindung OK – %1$d Organisation(en) gefunden</string>
     <string name="settings_test_failed">Test fehlgeschlagen: %1$s</string>
+    <string name="settings_error_missing_fields">Bitte URL und API-Key angeben.</string>
 
     <string name="settings_ocr_title">Texterkennung auf dem Gerät (OCR)</string>
     <string name="settings_ocr_subtitle">Bettet vor dem Upload einen durchsuchbaren Textlayer ins PDF ein. Deaktivieren, wenn dein Papra-Server bereits OCR durchführt (z. B. Mistral OCR).</string>
@@ -22,13 +23,16 @@
     <string name="capture_title">Dokument scannen</string>
     <string name="scan_hint">Halte die Kamera über das Dokument. Kanten und Perspektive werden automatisch erkannt.</string>
     <string name="scan_start">Scanner starten</string>
+    <string name="scan_error_load_failed">Konnte Scans nicht laden</string>
+    <string name="scan_error_no_pages">Scan lieferte keine Seiten.</string>
+    <string name="scan_error_no_activity">Activity-Kontext nicht verfügbar</string>
+    <string name="scan_error_start_failed">Scanner konnte nicht gestartet werden</string>
 
     <string name="upload_title">Hochladen</string>
     <string name="upload_org">Organisation</string>
     <string name="upload_filename">Dateiname</string>
     <string name="upload_button">An Papra senden</string>
     <string name="upload_retake">Neu scannen</string>
-    <string name="upload_success">Upload erfolgreich</string>
     <string name="upload_failed">Upload fehlgeschlagen: %1$s</string>
     <string name="upload_pages_count">%1$d Seiten</string>
     <string name="upload_pdf_progress">PDF wird erstellt – Seite %1$d von %2$d (OCR)</string>
@@ -43,4 +47,6 @@
     <string name="documents_empty">Keine Dokumente gefunden.</string>
     <string name="documents_load_failed">Laden fehlgeschlagen: %1$s</string>
     <string name="documents_no_viewer">Keine App zum Anzeigen dieses Dateityps gefunden.</string>
+
+    <string name="error_unknown">Unbekannter Fehler</string>
 </resources>

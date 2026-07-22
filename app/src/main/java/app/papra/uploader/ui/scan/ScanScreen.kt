@@ -59,6 +59,11 @@ fun ScanScreen(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var launching by remember { mutableStateOf(false) }
 
+    val loadFailedMessage = stringResource(R.string.scan_error_load_failed)
+    val noPagesMessage = stringResource(R.string.scan_error_no_pages)
+    val noActivityMessage = stringResource(R.string.scan_error_no_activity)
+    val startFailedMessage = stringResource(R.string.scan_error_start_failed)
+
     val scannerOptions = remember {
         GmsDocumentScannerOptions.Builder()
             .setGalleryImportAllowed(false)
@@ -79,9 +84,9 @@ fun ScanScreen(
             if (pageUris.isNotEmpty()) {
                 runCatching { pageUris.map { copyUriToCache(context, it) } }
                     .onSuccess(onScanned)
-                    .onFailure { errorMessage = it.message ?: "Konnte Scans nicht laden" }
+                    .onFailure { errorMessage = it.message ?: loadFailedMessage }
             } else {
-                errorMessage = "Scan lieferte keine Seiten."
+                errorMessage = noPagesMessage
             }
         }
         // RESULT_CANCELED: still on screen, user can re-trigger.
@@ -90,7 +95,7 @@ fun ScanScreen(
     val startScan: () -> Unit = startScan@{
         if (launching) return@startScan
         if (activity == null) {
-            errorMessage = "Activity-Kontext nicht verfügbar"
+            errorMessage = noActivityMessage
             return@startScan
         }
         launching = true
@@ -101,7 +106,7 @@ fun ScanScreen(
             }
             .addOnFailureListener { e ->
                 launching = false
-                errorMessage = e.message ?: "Scanner konnte nicht gestartet werden"
+                errorMessage = e.message ?: startFailedMessage
             }
     }
 

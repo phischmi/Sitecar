@@ -20,5 +20,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "papra-uploader"
+rootProject.name = "sitecar"
 include(":app")

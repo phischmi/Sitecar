@@ -60,7 +60,7 @@ class PapraClient(private val store: SettingsStore) {
         organizationId: String,
         file: File,
         fileName: String,
-        mimeType: String = "image/jpeg",
+        mimeType: String,
     ): Result<DocumentDto> = runCatching {
         val url = "${store.serverUrl.trimEnd('/')}/api/organizations/$organizationId/documents"
         val res = http.post(url) {
