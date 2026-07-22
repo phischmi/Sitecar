@@ -21,7 +21,7 @@ class SettingsStore(context: Context) {
 
     private val prefs: SharedPreferences = EncryptedSharedPreferences.create(
         context,
-        "papra_settings",
+        "sitecar_settings",
         MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
         EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
         EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,

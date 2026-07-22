@@ -2,7 +2,7 @@ package app.sitecar.uploader
 
 import android.app.Application
 import app.sitecar.uploader.data.BillingManager
-import app.sitecar.uploader.data.PapraClient
+import app.sitecar.uploader.data.SitecarApiClient
 import app.sitecar.uploader.data.PdfBuilder
 import app.sitecar.uploader.data.SettingsStore
 import app.sitecar.uploader.icon.LauncherIcon
@@ -10,10 +10,10 @@ import app.sitecar.uploader.shortcuts.AppShortcuts
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import java.io.File
 
-class PapraApp : Application() {
+class SitecarApp : Application() {
     lateinit var settingsStore: SettingsStore
         private set
-    lateinit var papraClient: PapraClient
+    lateinit var apiClient: SitecarApiClient
         private set
     lateinit var pdfBuilder: PdfBuilder
         private set
@@ -28,7 +28,7 @@ class PapraApp : Application() {
         super.onCreate()
         PDFBoxResourceLoader.init(applicationContext)
         settingsStore = SettingsStore(applicationContext)
-        papraClient = PapraClient(settingsStore)
+        apiClient = SitecarApiClient(settingsStore)
         pdfBuilder = PdfBuilder(applicationContext)
         billingManager = BillingManager(applicationContext, settingsStore)
         billingManager.startConnection()

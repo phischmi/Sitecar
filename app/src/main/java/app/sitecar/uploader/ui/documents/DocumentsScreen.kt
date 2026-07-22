@@ -55,7 +55,7 @@ import app.sitecar.uploader.R
 import app.sitecar.uploader.data.DocumentDto
 import app.sitecar.uploader.data.DocumentThumbnailLoader
 import app.sitecar.uploader.data.Organization
-import app.sitecar.uploader.data.PapraClient
+import app.sitecar.uploader.data.SitecarApiClient
 import app.sitecar.uploader.data.SettingsStore
 import app.sitecar.uploader.ui.util.ApiErrorMessages
 import app.sitecar.uploader.ui.util.friendlyErrorMessage
@@ -70,7 +70,7 @@ import java.time.format.FormatStyle
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DocumentsScreen(
-    client: PapraClient,
+    client: SitecarApiClient,
     store: SettingsStore,
     onOpenSettings: () -> Unit,
     bottomBar: @Composable () -> Unit = {},

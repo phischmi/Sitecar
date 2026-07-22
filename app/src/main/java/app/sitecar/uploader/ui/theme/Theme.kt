@@ -134,7 +134,7 @@ fun accentPrimaryColor(accentColor: AccentColor, darkTheme: Boolean): Color =
     (if (darkTheme) darkPrimaryTokens else lightPrimaryTokens).getValue(accentColor).primary
 
 @Composable
-fun PapraTheme(
+fun SitecarTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     accentColor: AccentColor = AccentColor.INDIGO,
     content: @Composable () -> Unit,

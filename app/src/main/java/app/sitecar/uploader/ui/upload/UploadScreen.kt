@@ -53,7 +53,7 @@ import app.sitecar.uploader.R
 import app.sitecar.uploader.data.BillingManager
 import app.sitecar.uploader.data.FilenameTemplate
 import app.sitecar.uploader.data.Organization
-import app.sitecar.uploader.data.PapraClient
+import app.sitecar.uploader.data.SitecarApiClient
 import app.sitecar.uploader.data.PdfBuilder
 import app.sitecar.uploader.data.SettingsStore
 import app.sitecar.uploader.ui.support.SupportDialog
@@ -68,7 +68,7 @@ import java.io.File
 @Composable
 fun UploadScreen(
     pages: List<File>,
-    client: PapraClient,
+    client: SitecarApiClient,
     pdfBuilder: PdfBuilder,
     store: SettingsStore,
     billing: BillingManager,
@@ -134,7 +134,7 @@ fun UploadScreen(
     LaunchedEffect(pages) {
         val outFile = File(
             File(pages.first().parentFile?.parentFile, "pdfs").apply { mkdirs() },
-            "papra-${System.currentTimeMillis()}.pdf",
+            "sitecar-${System.currentTimeMillis()}.pdf",
         )
         val res = withContext(Dispatchers.IO) {
             pdfBuilder.build(

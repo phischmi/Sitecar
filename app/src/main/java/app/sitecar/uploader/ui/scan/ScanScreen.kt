@@ -169,7 +169,7 @@ fun ScanScreen(
 private fun copyUriToCache(context: Context, uri: Uri): File {
     val dir = File(context.cacheDir, "scans").apply { mkdirs() }
     val ts = SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(Date())
-    val out = File(dir, "papra-$ts.jpg")
+    val out = File(dir, "sitecar-$ts.jpg")
     context.contentResolver.openInputStream(uri).use { input ->
         requireNotNull(input) { "Konnte URI nicht öffnen: $uri" }
         out.outputStream().use { output -> input.copyTo(output) }
