@@ -21,6 +21,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -36,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import app.papra.uploader.R
 import app.papra.uploader.data.PapraClient
 import app.papra.uploader.data.SettingsStore
+import app.papra.uploader.data.ThemeMode
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.launch
 
@@ -53,6 +57,7 @@ fun SettingsScreen(
     var isError by remember { mutableStateOf(false) }
     var loading by remember { mutableStateOf(false) }
     var orgCount by remember { mutableStateOf<Int?>(null) }
+    var themeMode by remember { mutableStateOf(store.themeMode) }
 
     val scope = rememberCoroutineScope()
 
@@ -76,6 +81,32 @@ fun SettingsScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            Text(
+                text = stringResource(R.string.settings_theme_title),
+                style = MaterialTheme.typography.labelLarge,
+            )
+            val themeOptions = listOf(
+                ThemeMode.LIGHT to R.string.settings_theme_light,
+                ThemeMode.DARK to R.string.settings_theme_dark,
+                ThemeMode.SYSTEM to R.string.settings_theme_system,
+            )
+            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                themeOptions.forEachIndexed { index, (mode, labelRes) ->
+                    SegmentedButton(
+                        shape = SegmentedButtonDefaults.itemShape(index = index, count = themeOptions.size),
+                        selected = themeMode == mode,
+                        onClick = {
+                            themeMode = mode
+                            store.themeMode = mode
+                        },
+                    ) {
+                        Text(stringResource(labelRes))
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(8.dp))
+
             OutlinedTextField(
                 value = serverUrl,
                 onValueChange = { serverUrl = it },
