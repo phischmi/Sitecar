@@ -49,6 +49,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import app.sitecar.uploader.Features
 import app.sitecar.uploader.R
 import app.sitecar.uploader.data.BillingManager
 import app.sitecar.uploader.data.FilenameTemplate
@@ -309,7 +310,8 @@ fun UploadScreen(
 
                             store.uploadCount += 1
                             val count = store.uploadCount
-                            val shouldPromptSupport = !store.isSupporter &&
+                            val shouldPromptSupport = Features.SUPPORTER_ENABLED &&
+                                !store.isSupporter &&
                                 (count == 5 || (count > 5 && (count - 5) % 10 == 0))
 
                             if (shouldPromptSupport) {
@@ -345,7 +347,7 @@ fun UploadScreen(
         }
     }
 
-    if (showSupportDialog) {
+    if (Features.SUPPORTER_ENABLED && showSupportDialog) {
         SupportDialog(
             billing = billing,
             onDismiss = {

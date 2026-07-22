@@ -2,6 +2,7 @@ package app.sitecar.uploader.data
 
 import android.app.Activity
 import android.content.Context
+import app.sitecar.uploader.Features
 import com.android.billingclient.api.AcknowledgePurchaseParams
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingClientStateListener
@@ -45,6 +46,8 @@ class BillingManager(
         .build()
 
     fun startConnection() {
+        // Bezahlfunktion vorerst deaktiviert – keine Play-Billing-Verbindung aufbauen.
+        if (!Features.SUPPORTER_ENABLED) return
         billingClient.startConnection(object : BillingClientStateListener {
             override fun onBillingSetupFinished(result: BillingResult) {
                 if (result.responseCode == BillingClient.BillingResponseCode.OK) {
@@ -60,6 +63,7 @@ class BillingManager(
     }
 
     fun launchPurchaseFlow(activity: Activity) {
+        if (!Features.SUPPORTER_ENABLED) return
         val details = _productDetails.value ?: return
         val productParams = BillingFlowParams.ProductDetailsParams.newBuilder()
             .setProductDetails(details)
