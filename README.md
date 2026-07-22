@@ -34,6 +34,27 @@ eigenständiger Begleiter ("Sidecar") für Papra, vormals PapraCam.
   inklusive passend eingefärbtem App-Icon-Hintergrund. Kein bestehendes
   Feature wird Nicht-Unterstützern weggenommen oder vorenthalten.
 
+## Lokalisierung
+
+Standardsprache ist Englisch (`res/values/strings.xml`), Deutsch liegt als
+Override in `res/values-de/strings.xml`. Android wählt automatisch anhand der
+Systemsprache; auf Android 13+ kann der Nutzer die App-Sprache zusätzlich
+unabhängig vom System setzen (Einstellungen → Apps → Sitecar → Sprache) —
+das kommt allein durch `android:localeConfig` in der Manifest, ganz ohne
+eigene In-App-UI.
+
+Neue Sprache hinzufügen (z. B. Französisch):
+1. `res/values-fr/strings.xml` anlegen und alle Keys aus `values/strings.xml`
+   übersetzen (`app_name` unverändert lassen).
+2. In `res/xml/locales_config.xml` einen `<locale android:name="fr" />`-Eintrag
+   ergänzen.
+3. In `app/build.gradle.kts` bei `defaultConfig.resourceConfigurations` `"fr"`
+   ergänzen — sonst wird die neue Sprache beim Release-Build aus der APK
+   herausgefiltert.
+
+Kein Code muss angefasst werden; alle UI-Texte laufen bereits über
+`stringResource(R.string....)`.
+
 ## Geplant
 
 - Netzwerksicherheitskonfiguration statt globalem Cleartext-Traffic

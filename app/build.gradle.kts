@@ -27,6 +27,13 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "0.1.0"
+
+        // Beschränkt gepackte String-Ressourcen auf unterstützte Sprachen (sonst
+        // landen z. B. Play-Billing-/ML-Kit-Übersetzungen für Dutzende weitere
+        // Sprachen ungenutzt in der APK). Beim Hinzufügen einer neuen Sprache
+        // (values-<code>/strings.xml) hier den Code ergänzen, siehe
+        // res/xml/locales_config.xml.
+        resourceConfigurations += listOf("en", "de")
     }
 
     signingConfigs {
