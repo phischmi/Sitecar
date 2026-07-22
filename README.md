@@ -147,7 +147,7 @@ nur unsigniert.
 
 ## Lizenz
 
-Sitecar-Code: MIT (TBD).
+Sitecar-Code: **MIT** – siehe [`LICENSE`](./LICENSE).
 
 ### Verhältnis zu Papras AGPL-3.0
 
