@@ -16,6 +16,9 @@
     <string name="settings_test_ok">Verbindung OK – %1$d Organisation(en) gefunden</string>
     <string name="settings_test_failed">Test fehlgeschlagen: %1$s</string>
 
+    <string name="settings_ocr_title">Texterkennung auf dem Gerät (OCR)</string>
+    <string name="settings_ocr_subtitle">Bettet vor dem Upload einen durchsuchbaren Textlayer ins PDF ein. Deaktivieren, wenn dein Papra-Server bereits OCR durchführt (z. B. Mistral OCR).</string>
+
     <string name="capture_title">Dokument scannen</string>
     <string name="scan_hint">Halte die Kamera über das Dokument. Kanten und Perspektive werden automatisch erkannt.</string>
     <string name="scan_start">Scanner starten</string>
@@ -29,6 +32,7 @@
     <string name="upload_failed">Upload fehlgeschlagen: %1$s</string>
     <string name="upload_pages_count">%1$d Seiten</string>
     <string name="upload_pdf_progress">PDF wird erstellt – Seite %1$d von %2$d (OCR)</string>
+    <string name="upload_pdf_progress_no_ocr">PDF wird erstellt – Seite %1$d von %2$d</string>
 
     <string name="nav_settings">Einstellungen</string>
     <string name="nav_scan">Scannen</string>

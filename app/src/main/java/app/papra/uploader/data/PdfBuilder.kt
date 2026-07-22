@@ -20,8 +20,9 @@ import kotlinx.coroutines.withContext
 import java.io.File
 
 /**
- * Baut aus einer Liste von JPEG-Scans ein durchsuchbares PDF mit
- * unsichtbarem OCR-Textlayer (ML Kit Latin Text Recognition).
+ * Baut aus einer Liste von JPEG-Scans ein PDF, optional mit unsichtbarem
+ * OCR-Textlayer (ML Kit Latin Text Recognition) für Volltextsuche ohne
+ * serverseitige OCR.
  */
 class PdfBuilder(private val context: Context) {
 
@@ -30,6 +31,7 @@ class PdfBuilder(private val context: Context) {
     suspend fun build(
         imageFiles: List<File>,
         outputFile: File,
+        ocrEnabled: Boolean = true,
         onProgress: (currentPage: Int, totalPages: Int) -> Unit = { _, _ -> },
     ): Result<File> = withContext(Dispatchers.IO) {
         runCatching {
@@ -38,7 +40,7 @@ class PdfBuilder(private val context: Context) {
             try {
                 imageFiles.forEachIndexed { index, imageFile ->
                     onProgress(index + 1, imageFiles.size)
-                    addPageWithOcr(doc, imageFile)
+                    addPageWithOcr(doc, imageFile, ocrEnabled)
                 }
                 doc.save(outputFile)
             } finally {
@@ -48,7 +50,7 @@ class PdfBuilder(private val context: Context) {
         }
     }
 
-    private suspend fun addPageWithOcr(doc: PDDocument, imageFile: File) {
+    private suspend fun addPageWithOcr(doc: PDDocument, imageFile: File, ocrEnabled: Boolean) {
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         BitmapFactory.decodeFile(imageFile.absolutePath, bounds)
         val imageWidth = bounds.outWidth.toFloat()
@@ -60,9 +62,13 @@ class PdfBuilder(private val context: Context) {
 
         val pdImage = imageFile.inputStream().use { JPEGFactory.createFromStream(doc, it) }
 
-        val ocrText = runCatching {
-            recognizer.process(InputImage.fromFilePath(context, Uri.fromFile(imageFile))).await()
-        }.getOrNull()
+        val ocrText = if (ocrEnabled) {
+            runCatching {
+                recognizer.process(InputImage.fromFilePath(context, Uri.fromFile(imageFile))).await()
+            }.getOrNull()
+        } else {
+            null
+        }
 
         PDPageContentStream(doc, page).use { stream ->
             stream.drawImage(pdImage, 0f, 0f, imageWidth, imageHeight)

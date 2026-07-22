@@ -53,6 +53,7 @@ import app.papra.uploader.R
 import app.papra.uploader.data.Organization
 import app.papra.uploader.data.PapraClient
 import app.papra.uploader.data.PdfBuilder
+import app.papra.uploader.data.SettingsStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -67,6 +68,7 @@ fun UploadScreen(
     pages: List<File>,
     client: PapraClient,
     pdfBuilder: PdfBuilder,
+    store: SettingsStore,
     onDone: () -> Unit,
     onBack: () -> Unit,
     onOpenSettings: () -> Unit,
@@ -119,6 +121,7 @@ fun UploadScreen(
             pdfBuilder.build(
                 imageFiles = pages,
                 outputFile = outFile,
+                ocrEnabled = store.onDeviceOcrEnabled,
                 onProgress = { current, _ -> pdfProgressCurrent = current },
             )
         }
@@ -191,7 +194,11 @@ fun UploadScreen(
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(
                         text = stringResource(
-                            R.string.upload_pdf_progress,
+                            if (store.onDeviceOcrEnabled) {
+                                R.string.upload_pdf_progress
+                            } else {
+                                R.string.upload_pdf_progress_no_ocr
+                            },
                             pdfProgressCurrent.coerceAtLeast(1),
                             totalPages,
                         ),

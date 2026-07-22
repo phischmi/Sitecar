@@ -59,6 +59,8 @@ erzeugen. Der Key beginnt mit `ppapi_`.
   über Google Play Services nach (einmalig ~ein paar MB). Setzt Play Services voraus.
 - Die App selbst hat keine `CAMERA`-Permission — der Scanner läuft als
   separate Activity in Play Services und fordert seine Permissions selbst an.
+- Texterkennung (OCR) auf dem Gerät lässt sich in den Einstellungen abschalten,
+  falls die Papra-Instanz bereits serverseitig OCR durchführt (z. B. Mistral OCR).
 
 ## Lizenz
 

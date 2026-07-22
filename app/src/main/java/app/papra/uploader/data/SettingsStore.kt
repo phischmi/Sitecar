@@ -39,6 +39,10 @@ class SettingsStore(context: Context) {
             ?: ThemeMode.SYSTEM
         set(value) = prefs.edit().putString(KEY_THEME_MODE, value.name).apply()
 
+    var onDeviceOcrEnabled: Boolean
+        get() = prefs.getBoolean(KEY_ON_DEVICE_OCR, true)
+        set(value) = prefs.edit().putBoolean(KEY_ON_DEVICE_OCR, value).apply()
+
     val isConfigured: Flow<Boolean> = callbackFlow {
         val send = { trySend(serverUrl.isNotBlank() && apiKey.isNotBlank()) }
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ -> send() }
@@ -62,5 +66,6 @@ class SettingsStore(context: Context) {
         private const val KEY_API_KEY = "api_key"
         private const val KEY_DEFAULT_ORG = "default_org"
         private const val KEY_THEME_MODE = "theme_mode"
+        private const val KEY_ON_DEVICE_OCR = "on_device_ocr_enabled"
     }
 }

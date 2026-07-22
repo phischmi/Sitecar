@@ -93,6 +93,7 @@ class MainActivity : ComponentActivity() {
                                 pages = app.currentScanPages,
                                 client = app.papraClient,
                                 pdfBuilder = app.pdfBuilder,
+                                store = app.settingsStore,
                                 onDone = {
                                     app.currentScanPages = emptyList()
                                     nav.popBackStack(Route.Scan, inclusive = false)
