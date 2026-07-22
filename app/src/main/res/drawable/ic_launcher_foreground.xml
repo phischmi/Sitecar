@@ -9,7 +9,8 @@
       android:pivotX="54"
       android:pivotY="54"
       android:scaleX="0.8"
-      android:scaleY="0.8">
+      android:scaleY="0.8"
+      android:rotation="8">
 
     <!-- Viewfinder-Eckklammern: Schatten -->
     <group android:translateX="3" android:translateY="4">
