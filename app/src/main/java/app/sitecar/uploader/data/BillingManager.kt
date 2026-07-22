@@ -2,7 +2,6 @@ package app.sitecar.uploader.data
 
 import android.app.Activity
 import android.content.Context
-import app.sitecar.uploader.shortcuts.AppShortcuts
 import com.android.billingclient.api.AcknowledgePurchaseParams
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingClientStateListener
@@ -102,7 +101,6 @@ class BillingManager(
         if (purchase.purchaseState != Purchase.PurchaseState.PURCHASED) return
 
         settingsStore.isSupporter = true
-        AppShortcuts.sync(appContext, enabled = true)
 
         if (!purchase.isAcknowledged) {
             val params = AcknowledgePurchaseParams.newBuilder()

@@ -5,6 +5,7 @@ import app.sitecar.uploader.data.BillingManager
 import app.sitecar.uploader.data.PapraClient
 import app.sitecar.uploader.data.PdfBuilder
 import app.sitecar.uploader.data.SettingsStore
+import app.sitecar.uploader.icon.LauncherIcon
 import app.sitecar.uploader.shortcuts.AppShortcuts
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import java.io.File
@@ -31,6 +32,7 @@ class PapraApp : Application() {
         pdfBuilder = PdfBuilder(applicationContext)
         billingManager = BillingManager(applicationContext, settingsStore)
         billingManager.startConnection()
-        AppShortcuts.sync(applicationContext, enabled = settingsStore.isSupporter)
+        AppShortcuts.register(applicationContext)
+        LauncherIcon.apply(applicationContext, settingsStore.accentColor)
     }
 }

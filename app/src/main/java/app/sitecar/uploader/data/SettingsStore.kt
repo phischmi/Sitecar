@@ -12,6 +12,11 @@ enum class ThemeMode {
     LIGHT, DARK, SYSTEM
 }
 
+/** INDIGO ist der kostenlose Standard, die übrigen sind Unterstützer-Akzente. */
+enum class AccentColor {
+    INDIGO, EMERALD, AMBER, ROSE
+}
+
 class SettingsStore(context: Context) {
 
     private val prefs: SharedPreferences = EncryptedSharedPreferences.create(
@@ -60,6 +65,11 @@ class SettingsStore(context: Context) {
             .putString(KEY_FILENAME_TEMPLATE, value.ifBlank { FilenameTemplate.DEFAULT })
             .apply()
 
+    var accentColor: AccentColor
+        get() = AccentColor.entries.firstOrNull { it.name == prefs.getString(KEY_ACCENT_COLOR, null) }
+            ?: AccentColor.INDIGO
+        set(value) = prefs.edit().putString(KEY_ACCENT_COLOR, value.name).apply()
+
     val isConfigured: Flow<Boolean> = callbackFlow {
         val send = { trySend(serverUrl.isNotBlank() && apiKey.isNotBlank()) }
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ -> send() }
@@ -88,6 +98,16 @@ class SettingsStore(context: Context) {
         awaitClose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
     }
 
+    val accentColorFlow: Flow<AccentColor> = callbackFlow {
+        val send = { trySend(accentColor) }
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == KEY_ACCENT_COLOR) send()
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        send()
+        awaitClose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
+
     companion object {
         private const val KEY_SERVER_URL = "server_url"
         private const val KEY_API_KEY = "api_key"
@@ -97,5 +117,6 @@ class SettingsStore(context: Context) {
         private const val KEY_UPLOAD_COUNT = "upload_count"
         private const val KEY_IS_SUPPORTER = "is_supporter"
         private const val KEY_FILENAME_TEMPLATE = "filename_template"
+        private const val KEY_ACCENT_COLOR = "accent_color"
     }
 }

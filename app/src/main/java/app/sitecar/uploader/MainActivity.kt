@@ -10,6 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import app.sitecar.uploader.data.AccentColor
 import app.sitecar.uploader.data.ThemeMode
 import app.sitecar.uploader.ui.documents.DocumentsScreen
 import app.sitecar.uploader.ui.nav.AppBottomBar
@@ -34,8 +35,9 @@ class MainActivity : ComponentActivity() {
                 ThemeMode.DARK -> true
                 ThemeMode.SYSTEM -> isSystemInDarkTheme()
             }
+            val accentColor by app.settingsStore.accentColorFlow.collectAsState(initial = AccentColor.INDIGO)
 
-            PapraTheme(darkTheme = darkTheme) {
+            PapraTheme(darkTheme = darkTheme, accentColor = accentColor) {
                 val nav = rememberNavController()
                 val configured by app.settingsStore.isConfigured.collectAsState(initial = null)
 

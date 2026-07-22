@@ -9,18 +9,13 @@ import app.sitecar.uploader.MainActivity
 import app.sitecar.uploader.R
 
 /**
- * Dynamischer Long-Press-Shortcut "Scannen starten" — Unterstützer-Perk.
+ * Dynamischer Long-Press-Shortcut "Scannen starten", für alle Nutzer verfügbar.
  * Braucht keine Manifest-Deklaration (nur statische Shortcuts bräuchten das).
  */
 object AppShortcuts {
     private const val SHORTCUT_ID_SCAN = "quick_scan"
 
-    fun sync(context: Context, enabled: Boolean) {
-        if (!enabled) {
-            ShortcutManagerCompat.removeDynamicShortcuts(context, listOf(SHORTCUT_ID_SCAN))
-            return
-        }
-
+    fun register(context: Context) {
         val intent = Intent(context, MainActivity::class.java).apply {
             action = Intent.ACTION_VIEW
             putExtra(MainActivity.EXTRA_SHORTCUT_ROUTE, MainActivity.SHORTCUT_ROUTE_SCAN)

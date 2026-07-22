@@ -1,6 +1,10 @@
 package app.sitecar.uploader.ui.settings
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -8,12 +12,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -38,15 +45,22 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import app.sitecar.uploader.R
+import app.sitecar.uploader.data.AccentColor
 import app.sitecar.uploader.data.BillingManager
 import app.sitecar.uploader.data.PapraClient
 import app.sitecar.uploader.data.SettingsStore
 import app.sitecar.uploader.data.ThemeMode
+import app.sitecar.uploader.icon.LauncherIcon
 import app.sitecar.uploader.ui.support.SupportDialog
+import app.sitecar.uploader.ui.theme.accentPrimaryColor
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.launch
 
@@ -68,9 +82,11 @@ fun SettingsScreen(
     var themeMode by remember { mutableStateOf(store.themeMode) }
     var ocrEnabled by remember { mutableStateOf(store.onDeviceOcrEnabled) }
     var filenameTemplate by remember { mutableStateOf(store.filenameTemplate) }
+    var accentColor by remember { mutableStateOf(store.accentColor) }
     var showSupportDialog by remember { mutableStateOf(false) }
     val isSupporter by store.isSupporterFlow.collectAsState(initial = store.isSupporter)
 
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val missingFieldsMessage = stringResource(R.string.settings_error_missing_fields)
     val unknownErrorMessage = stringResource(R.string.error_unknown)
@@ -157,14 +173,62 @@ fun SettingsScreen(
                     filenameTemplate = it
                     store.filenameTemplate = it
                 },
-                enabled = isSupporter,
                 placeholder = { Text(stringResource(R.string.settings_filename_template_hint)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
             )
+
+            Spacer(Modifier.height(16.dp))
+
+            Text(
+                text = stringResource(R.string.settings_accent_title),
+                style = MaterialTheme.typography.labelLarge,
+            )
+            val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                AccentColor.entries.forEach { accent ->
+                    val unlocked = accent == AccentColor.INDIGO || isSupporter
+                    val swatchColor = accentPrimaryColor(accent, isDarkTheme)
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(swatchColor)
+                            .then(
+                                if (accentColor == accent) {
+                                    Modifier.border(3.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
+                                } else {
+                                    Modifier
+                                },
+                            )
+                            .clickable {
+                                if (unlocked) {
+                                    accentColor = accent
+                                    store.accentColor = accent
+                                    LauncherIcon.apply(context, accent)
+                                } else {
+                                    showSupportDialog = true
+                                }
+                            },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        if (!unlocked) {
+                            Icon(
+                                Icons.Default.Lock,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(16.dp),
+                            )
+                        }
+                    }
+                }
+            }
             if (!isSupporter) {
                 Text(
-                    text = stringResource(R.string.settings_support_cta_subtitle),
+                    text = stringResource(R.string.settings_accent_locked_hint),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

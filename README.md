@@ -24,12 +24,15 @@ eigenständiger Begleiter ("Sidecar") für Papra, vormals PapraCam.
   Tippen lädt die Datei herunter und öffnet sie im System-Viewer. Miniatur-Vorschau
   (erste PDF-Seite bzw. Bild) statt generischem Icon, lokal gerendert und gecacht.
 - Darstellung wählbar: Hell / Dunkel / System.
+- Schnellzugriff-Shortcut "Scannen" per Long-Press auf das App-Icon.
+- Anpassbares Dateinamen-Format für Scans (Platzhalter `{date}` `{time}`
+  `{org}` `{counter}`).
 - Freiwilliger "Sitecar unterstützen"-Hinweis (einmalig 0,99 €, Play Billing),
   erscheint nach dem 5. erfolgreichen Upload, danach alle 10 weiteren — oder
-  jederzeit manuell in den Einstellungen. Schaltet frei: Schnellzugriff-Shortcut
-  "Scannen" (Long-Press auf das App-Icon), anpassbares Dateinamen-Format und
-  ein Unterstützer-Abzeichen in den Einstellungen. Kein Feature wird Nicht-
-  Unterstützern weggenommen.
+  jederzeit manuell in den Einstellungen. Rein kosmetischer Dank: schaltet
+  drei weitere Akzentfarben frei (Smaragd/Bernstein/Rosé statt nur Indigo),
+  inklusive passend eingefärbtem App-Icon-Hintergrund. Kein bestehendes
+  Feature wird Nicht-Unterstützern weggenommen oder vorenthalten.
 
 ## Geplant
 
@@ -72,6 +75,11 @@ erzeugen. Der Key beginnt mit `ppapi_`.
   separate Activity in Play Services und fordert seine Permissions selbst an.
 - Texterkennung (OCR) auf dem Gerät lässt sich in den Einstellungen abschalten,
   falls die Papra-Instanz bereits serverseitig OCR durchführt (z. B. Mistral OCR).
+- Die Akzentfarben-Icons werden über vier `activity-alias`-Einträge im Manifest
+  realisiert (eine pro Farbe, nur eine ist jeweils `enabled`); `LauncherIcon.apply()`
+  schaltet zur Laufzeit um. Je nach Launcher kann die Aktualisierung des
+  Home-Screen-Icons ein bis zwei Sekunden dauern — normales Verhalten dieser
+  Technik, nicht spezifisch für Sitecar.
 
 ## Play-Store-Release
 
