@@ -16,7 +16,7 @@ import java.io.File
  * Vorschaubild gerendert und auf dem Gerät zwischengespeichert.
  */
 class DocumentThumbnailLoader(
-    private val client: PapraClient,
+    private val client: SitecarApiClient,
     private val cacheDir: File,
 ) {
     suspend fun load(organizationId: String, doc: DocumentDto): Bitmap? = withContext(Dispatchers.IO) {

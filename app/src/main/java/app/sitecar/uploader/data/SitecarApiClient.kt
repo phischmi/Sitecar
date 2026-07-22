@@ -21,7 +21,7 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import java.io.File
 
-class PapraClient(private val store: SettingsStore) {
+class SitecarApiClient(private val store: SettingsStore) {
 
     private val json = Json {
         ignoreUnknownKeys = true

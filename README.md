@@ -147,4 +147,29 @@ nur unsigniert.
 
 ## Lizenz
 
-MIT (TBD).
+Sitecar-Code: **MIT** – siehe [`LICENSE`](./LICENSE).
+
+### Verhältnis zu Papras AGPL-3.0
+
+[Papra](https://github.com/papra-hq/papra) selbst steht unter der
+**AGPL-3.0**. Sitecar ist davon nicht betroffen und muss die AGPL **nicht**
+übernehmen:
+
+- Sitecar ist eine **eigenständige, unabhängig geschriebene** Android-App.
+  Sie enthält **keinen** Quellcode, keine Ressourcen und keine kompilierten
+  Bestandteile aus Papra.
+- Die Kommunikation läuft ausschließlich über Papras **öffentliche HTTP-API**
+  (`/api/...`) über das Netzwerk. Der bloße Aufruf einer Netzwerk-API macht
+  einen Client nach GPL/AGPL-Verständnis **nicht** zu einem abgeleiteten Werk
+  ("derivative work") des Servers — die AGPL-Copyleft-Pflichten greifen daher
+  nicht auf Sitecar über.
+- Der Name **„Papra"** wird im Code und in der UI nur **nominativ** verwendet,
+  um den kompatiblen Zielserver zu benennen (z. B. „Send to Papra",
+  URL-Platzhalter, API-Kommentare). Eigene Klassen/Identifier tragen den Namen
+  **Sitecar** (z. B. `SitecarApp`, `SitecarApiClient`, `SitecarTheme`), damit
+  es keine Namens- oder Herkunftsverwechslung mit Papras Codebasis gibt.
+- Sitecar ist **inoffiziell** und stammt **nicht** von papra-hq (siehe oben).
+
+Kurz: Weil Sitecar Papra nur als API-Client anspricht und keinen AGPL-Code
+einbindet, verursacht die AGPL-3.0 von Papra keine Lizenzpflichten für dieses
+Projekt.

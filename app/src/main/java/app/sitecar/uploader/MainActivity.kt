@@ -17,7 +17,7 @@ import app.sitecar.uploader.ui.nav.AppBottomBar
 import app.sitecar.uploader.ui.nav.Route
 import app.sitecar.uploader.ui.scan.ScanScreen
 import app.sitecar.uploader.ui.settings.SettingsScreen
-import app.sitecar.uploader.ui.theme.PapraTheme
+import app.sitecar.uploader.ui.theme.SitecarTheme
 import app.sitecar.uploader.ui.upload.UploadScreen
 
 class MainActivity : ComponentActivity() {
@@ -25,7 +25,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        val app = application as PapraApp
+        val app = application as SitecarApp
         val startFromScanShortcut = intent?.getStringExtra(EXTRA_SHORTCUT_ROUTE) == SHORTCUT_ROUTE_SCAN
 
         setContent {
@@ -37,7 +37,7 @@ class MainActivity : ComponentActivity() {
             }
             val accentColor by app.settingsStore.accentColorFlow.collectAsState(initial = AccentColor.INDIGO)
 
-            PapraTheme(darkTheme = darkTheme, accentColor = accentColor) {
+            SitecarTheme(darkTheme = darkTheme, accentColor = accentColor) {
                 val nav = rememberNavController()
                 val configured by app.settingsStore.isConfigured.collectAsState(initial = null)
 
@@ -52,7 +52,7 @@ class MainActivity : ComponentActivity() {
                         composable<Route.Settings> {
                             SettingsScreen(
                                 store = app.settingsStore,
-                                client = app.papraClient,
+                                client = app.apiClient,
                                 billing = app.billingManager,
                                 onSaved = {
                                     nav.navigate(Route.Documents) {
@@ -74,7 +74,7 @@ class MainActivity : ComponentActivity() {
                         }
                         composable<Route.Documents> {
                             DocumentsScreen(
-                                client = app.papraClient,
+                                client = app.apiClient,
                                 store = app.settingsStore,
                                 onOpenSettings = { nav.navigate(Route.Settings) },
                                 bottomBar = { AppBottomBar(nav) },
@@ -83,7 +83,7 @@ class MainActivity : ComponentActivity() {
                         composable<Route.Upload> {
                             UploadScreen(
                                 pages = app.currentScanPages,
-                                client = app.papraClient,
+                                client = app.apiClient,
                                 pdfBuilder = app.pdfBuilder,
                                 store = app.settingsStore,
                                 billing = app.billingManager,

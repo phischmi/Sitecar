@@ -55,7 +55,7 @@ import androidx.compose.ui.unit.dp
 import app.sitecar.uploader.R
 import app.sitecar.uploader.data.AccentColor
 import app.sitecar.uploader.data.BillingManager
-import app.sitecar.uploader.data.PapraClient
+import app.sitecar.uploader.data.SitecarApiClient
 import app.sitecar.uploader.data.SettingsStore
 import app.sitecar.uploader.data.ThemeMode
 import app.sitecar.uploader.icon.LauncherIcon
@@ -70,7 +70,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun SettingsScreen(
     store: SettingsStore,
-    client: PapraClient,
+    client: SitecarApiClient,
     billing: BillingManager,
     onSaved: () -> Unit,
     onBack: () -> Unit,
