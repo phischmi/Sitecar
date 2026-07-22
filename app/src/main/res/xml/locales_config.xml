@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Unterstützte Sprachen für den System-Sprachwähler (Android 13+,
+  Einstellungen → Apps → Sitecar → Sprache). Neue Sprache hinzufügen:
+  1. res/values-<code>/strings.xml anlegen (alle Keys aus values/strings.xml übersetzen)
+  2. Hier einen <locale>-Eintrag ergänzen
+  3. "<code>" in app/build.gradle.kts (defaultConfig.resourceConfigurations) ergänzen
+-->
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <locale android:name="en" />
+    <locale android:name="de" />
+</locale-config>

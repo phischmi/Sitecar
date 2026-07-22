@@ -2,45 +2,79 @@
 <resources>
     <string name="app_name">Sitecar</string>
 
-    <string name="settings_title">Verbindung</string>
-    <string name="settings_theme_title">Darstellung</string>
-    <string name="settings_theme_light">Hell</string>
-    <string name="settings_theme_dark">Dunkel</string>
+    <string name="settings_title">Connection</string>
+    <string name="settings_theme_title">Appearance</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
     <string name="settings_theme_system">System</string>
-    <string name="settings_server_url">Server-URL</string>
+    <string name="settings_server_url">Server URL</string>
     <string name="settings_server_url_hint">https://papra.example.com</string>
-    <string name="settings_api_key">API-Key</string>
+    <string name="settings_api_key">API key</string>
     <string name="settings_api_key_hint">ppapi_…</string>
-    <string name="settings_test">Verbindung testen</string>
-    <string name="settings_save">Speichern</string>
-    <string name="settings_test_ok">Verbindung OK – %1$d Organisation(en) gefunden</string>
-    <string name="settings_test_failed">Test fehlgeschlagen: %1$s</string>
+    <string name="settings_test">Test connection</string>
+    <string name="settings_save">Save</string>
+    <string name="settings_test_ok">Connection OK – found %1$d organization(s)</string>
+    <string name="settings_test_failed">Test failed: %1$s</string>
+    <string name="settings_error_missing_fields">Please enter URL and API key.</string>
 
-    <string name="settings_ocr_title">Texterkennung auf dem Gerät (OCR)</string>
-    <string name="settings_ocr_subtitle">Bettet vor dem Upload einen durchsuchbaren Textlayer ins PDF ein. Deaktivieren, wenn dein Papra-Server bereits OCR durchführt (z. B. Mistral OCR).</string>
+    <string name="settings_ocr_title">On-device text recognition (OCR)</string>
+    <string name="settings_ocr_subtitle">Embeds a searchable text layer into the PDF before upload. Turn off if your Papra server already runs OCR (e.g. Mistral OCR).</string>
 
-    <string name="capture_title">Dokument scannen</string>
-    <string name="scan_hint">Halte die Kamera über das Dokument. Kanten und Perspektive werden automatisch erkannt.</string>
-    <string name="scan_start">Scanner starten</string>
+    <string name="settings_filename_template_title">Filename format</string>
+    <string name="settings_filename_template_hint">Scan-{date}-{time} — placeholders: {date} {time} {org} {counter}</string>
 
-    <string name="upload_title">Hochladen</string>
-    <string name="upload_org">Organisation</string>
-    <string name="upload_filename">Dateiname</string>
-    <string name="upload_button">An Papra senden</string>
-    <string name="upload_retake">Neu scannen</string>
-    <string name="upload_success">Upload erfolgreich</string>
-    <string name="upload_failed">Upload fehlgeschlagen: %1$s</string>
-    <string name="upload_pages_count">%1$d Seiten</string>
-    <string name="upload_pdf_progress">PDF wird erstellt – Seite %1$d von %2$d (OCR)</string>
-    <string name="upload_pdf_progress_no_ocr">PDF wird erstellt – Seite %1$d von %2$d</string>
+    <string name="settings_accent_title">Accent color</string>
+    <string name="settings_accent_locked_hint">Unlock more colors with a one-time donation.</string>
 
-    <string name="nav_settings">Einstellungen</string>
-    <string name="nav_scan">Scannen</string>
-    <string name="nav_documents">Dokumente</string>
+    <string name="settings_support_title">Support</string>
+    <string name="settings_support_badge">✓ You\'re supporting Sitecar — thank you!</string>
+    <string name="settings_support_cta">Support Sitecar</string>
 
-    <string name="documents_title">Dokumente</string>
-    <string name="documents_org">Organisation</string>
-    <string name="documents_empty">Keine Dokumente gefunden.</string>
-    <string name="documents_load_failed">Laden fehlgeschlagen: %1$s</string>
-    <string name="documents_no_viewer">Keine App zum Anzeigen dieses Dateityps gefunden.</string>
+    <string name="support_dialog_title">Enjoying Sitecar?</string>
+    <string name="support_dialog_body">If you find the app useful, I\'d appreciate a small one-time contribution. As a thank-you, you\'ll unlock more accent colors — the app icon adopts the matching color too.</string>
+    <string name="support_dialog_confirm">Support (%1$s)</string>
+    <string name="support_dialog_dismiss">Not now</string>
+    <string name="support_price_fallback">€0.99</string>
+
+    <string name="shortcut_scan_short_label">Scan</string>
+    <string name="shortcut_scan_long_label">Scan document</string>
+
+    <string name="capture_title">Scan document</string>
+    <string name="scan_hint">Hold the camera over the document. Edges and perspective are detected automatically.</string>
+    <string name="scan_start">Start scanner</string>
+    <string name="scan_error_load_failed">Couldn\'t load scans</string>
+    <string name="scan_error_no_pages">Scan returned no pages.</string>
+    <string name="scan_error_no_activity">Activity context not available</string>
+    <string name="scan_error_start_failed">Couldn\'t start scanner</string>
+
+    <string name="upload_title">Upload</string>
+    <string name="upload_org">Organization</string>
+    <string name="upload_filename">Filename</string>
+    <string name="upload_button">Send to Papra</string>
+    <string name="upload_retake">Scan again</string>
+    <string name="upload_failed">Upload failed: %1$s</string>
+    <string name="upload_pages_count">%1$d pages</string>
+    <string name="upload_pdf_progress">Creating PDF – page %1$d of %2$d (OCR)</string>
+    <string name="upload_pdf_progress_no_ocr">Creating PDF – page %1$d of %2$d</string>
+    <string name="upload_pdf_build_failed">Couldn\'t create PDF</string>
+
+    <string name="nav_settings">Settings</string>
+    <string name="nav_scan">Scan</string>
+    <string name="nav_documents">Documents</string>
+
+    <string name="documents_title">Documents</string>
+    <string name="documents_org">Organization</string>
+    <string name="documents_empty">No documents found.</string>
+    <string name="documents_load_failed">Loading failed: %1$s</string>
+    <string name="documents_no_viewer">No app found to open this file type.</string>
+
+    <string name="error_unknown">Unknown error</string>
+    <string name="error_unauthorized">Authentication failed — check your API key.</string>
+    <string name="error_not_found">Server not found — check the server URL.</string>
+    <string name="error_server">Server error — please try again later.</string>
+    <string name="error_no_connection">Couldn\'t reach the server.</string>
+    <string name="error_timeout">Request timed out.</string>
+
+    <string name="action_back">Back</string>
+    <string name="action_refresh">Refresh</string>
 </resources>

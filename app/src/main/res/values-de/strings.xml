@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Sitecar</string>
+
+    <string name="settings_title">Verbindung</string>
+    <string name="settings_theme_title">Darstellung</string>
+    <string name="settings_theme_light">Hell</string>
+    <string name="settings_theme_dark">Dunkel</string>
+    <string name="settings_theme_system">System</string>
+    <string name="settings_server_url">Server-URL</string>
+    <string name="settings_server_url_hint">https://papra.example.com</string>
+    <string name="settings_api_key">API-Key</string>
+    <string name="settings_api_key_hint">ppapi_…</string>
+    <string name="settings_test">Verbindung testen</string>
+    <string name="settings_save">Speichern</string>
+    <string name="settings_test_ok">Verbindung OK – %1$d Organisation(en) gefunden</string>
+    <string name="settings_test_failed">Test fehlgeschlagen: %1$s</string>
+    <string name="settings_error_missing_fields">Bitte URL und API-Key angeben.</string>
+
+    <string name="settings_ocr_title">Texterkennung auf dem Gerät (OCR)</string>
+    <string name="settings_ocr_subtitle">Bettet vor dem Upload einen durchsuchbaren Textlayer ins PDF ein. Deaktivieren, wenn dein Papra-Server bereits OCR durchführt (z. B. Mistral OCR).</string>
+
+    <string name="settings_filename_template_title">Dateinamen-Format</string>
+    <string name="settings_filename_template_hint">Scan-{date}-{time} — Platzhalter: {date} {time} {org} {counter}</string>
+
+    <string name="settings_accent_title">Akzentfarbe</string>
+    <string name="settings_accent_locked_hint">Weitere Farben mit einer einmaligen Spende freischalten.</string>
+
+    <string name="settings_support_title">Unterstützung</string>
+    <string name="settings_support_badge">✓ Du unterstützt Sitecar — danke!</string>
+    <string name="settings_support_cta">Sitecar unterstützen</string>
+
+    <string name="support_dialog_title">Gefällt dir Sitecar?</string>
+    <string name="support_dialog_body">Wenn dir die App nützlich ist, freue ich mich über eine kleine einmalige Unterstützung. Als Dankeschön schaltest du weitere Akzentfarben frei — auch das App-Icon nimmt dann den passenden Farbton an.</string>
+    <string name="support_dialog_confirm">Unterstützen (%1$s)</string>
+    <string name="support_dialog_dismiss">Nicht jetzt</string>
+    <string name="support_price_fallback">0,99 €</string>
+
+    <string name="shortcut_scan_short_label">Scannen</string>
+    <string name="shortcut_scan_long_label">Dokument scannen</string>
+
+    <string name="capture_title">Dokument scannen</string>
+    <string name="scan_hint">Halte die Kamera über das Dokument. Kanten und Perspektive werden automatisch erkannt.</string>
+    <string name="scan_start">Scanner starten</string>
+    <string name="scan_error_load_failed">Konnte Scans nicht laden</string>
+    <string name="scan_error_no_pages">Scan lieferte keine Seiten.</string>
+    <string name="scan_error_no_activity">Activity-Kontext nicht verfügbar</string>
+    <string name="scan_error_start_failed">Scanner konnte nicht gestartet werden</string>
+
+    <string name="upload_title">Hochladen</string>
+    <string name="upload_org">Organisation</string>
+    <string name="upload_filename">Dateiname</string>
+    <string name="upload_button">An Papra senden</string>
+    <string name="upload_retake">Neu scannen</string>
+    <string name="upload_failed">Upload fehlgeschlagen: %1$s</string>
+    <string name="upload_pages_count">%1$d Seiten</string>
+    <string name="upload_pdf_progress">PDF wird erstellt – Seite %1$d von %2$d (OCR)</string>
+    <string name="upload_pdf_progress_no_ocr">PDF wird erstellt – Seite %1$d von %2$d</string>
+    <string name="upload_pdf_build_failed">PDF konnte nicht erstellt werden</string>
+
+    <string name="nav_settings">Einstellungen</string>
+    <string name="nav_scan">Scannen</string>
+    <string name="nav_documents">Dokumente</string>
+
+    <string name="documents_title">Dokumente</string>
+    <string name="documents_org">Organisation</string>
+    <string name="documents_empty">Keine Dokumente gefunden.</string>
+    <string name="documents_load_failed">Laden fehlgeschlagen: %1$s</string>
+    <string name="documents_no_viewer">Keine App zum Anzeigen dieses Dateityps gefunden.</string>
+
+    <string name="error_unknown">Unbekannter Fehler</string>
+    <string name="error_unauthorized">Anmeldung fehlgeschlagen — API-Key prüfen.</string>
+    <string name="error_not_found">Server nicht gefunden — Server-URL prüfen.</string>
+    <string name="error_server">Serverfehler — bitte später erneut versuchen.</string>
+    <string name="error_no_connection">Server nicht erreichbar.</string>
+    <string name="error_timeout">Zeitüberschreitung bei der Anfrage.</string>
+
+    <string name="action_back">Zurück</string>
+    <string name="action_refresh">Aktualisieren</string>
+</resources>

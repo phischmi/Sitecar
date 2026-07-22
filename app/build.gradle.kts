@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -5,16 +7,44 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
+// Release-Signing: keystore.properties liegt lokal (gitignored) und wird nur
+// gelesen, wenn vorhanden — siehe keystore.properties.example für das Format.
+// Ohne diese Datei baut `assembleRelease`/`bundleRelease` weiterhin, nur unsigniert.
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val keystoreProperties = Properties().apply {
+    if (keystorePropertiesFile.exists()) {
+        keystorePropertiesFile.inputStream().use { load(it) }
+    }
+}
+
 android {
-    namespace = "app.papra.uploader"
+    namespace = "app.sitecar.uploader"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "app.papra.uploader"
+        applicationId = "app.sitecar.uploader"
         minSdk = 26
         targetSdk = 35
         versionCode = 1
         versionName = "0.1.0"
+
+        // Beschränkt gepackte String-Ressourcen auf unterstützte Sprachen (sonst
+        // landen z. B. Play-Billing-/ML-Kit-Übersetzungen für Dutzende weitere
+        // Sprachen ungenutzt in der APK). Beim Hinzufügen einer neuen Sprache
+        // (values-<code>/strings.xml) hier den Code ergänzen, siehe
+        // res/xml/locales_config.xml.
+        resourceConfigurations += listOf("en", "de")
+    }
+
+    signingConfigs {
+        if (keystorePropertiesFile.exists()) {
+            create("release") {
+                storeFile = file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
+        }
     }
 
     buildTypes {
@@ -25,6 +55,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+            if (keystorePropertiesFile.exists()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
         debug {
             applicationIdSuffix = ".debug"
@@ -73,6 +106,7 @@ dependencies {
     implementation(libs.mlkit.text.recognition)
     implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.pdfbox.android)
+    implementation(libs.billing.ktx)
 
     implementation(libs.ktor.client.android)
     implementation(libs.ktor.client.content.negotiation)

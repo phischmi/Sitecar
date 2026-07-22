@@ -5,7 +5,7 @@
 -keepclassmembers class **$$serializer {
     *** descriptor;
 }
--keepclasseswithmembers class app.papra.uploader.** {
+-keepclasseswithmembers class app.sitecar.uploader.** {
     kotlinx.serialization.KSerializer serializer(...);
 }
 
