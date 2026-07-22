@@ -25,6 +25,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         val app = application as PapraApp
+        val startFromScanShortcut = intent?.getStringExtra(EXTRA_SHORTCUT_ROUTE) == SHORTCUT_ROUTE_SCAN
 
         setContent {
             val themeMode by app.settingsStore.themeModeFlow.collectAsState(initial = ThemeMode.SYSTEM)
@@ -40,7 +41,7 @@ class MainActivity : ComponentActivity() {
 
                 val start = when (configured) {
                     null -> null
-                    true -> Route.Documents
+                    true -> if (startFromScanShortcut) Route.Scan else Route.Documents
                     false -> Route.Settings
                 }
 
@@ -50,6 +51,7 @@ class MainActivity : ComponentActivity() {
                             SettingsScreen(
                                 store = app.settingsStore,
                                 client = app.papraClient,
+                                billing = app.billingManager,
                                 onSaved = {
                                     nav.navigate(Route.Documents) {
                                         popUpTo<Route.Settings> { inclusive = true }
@@ -82,6 +84,7 @@ class MainActivity : ComponentActivity() {
                                 client = app.papraClient,
                                 pdfBuilder = app.pdfBuilder,
                                 store = app.settingsStore,
+                                billing = app.billingManager,
                                 onDone = {
                                     app.currentScanPages = emptyList()
                                     nav.popBackStack(Route.Scan, inclusive = false)
@@ -94,5 +97,10 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    companion object {
+        const val EXTRA_SHORTCUT_ROUTE = "shortcut_route"
+        const val SHORTCUT_ROUTE_SCAN = "scan"
     }
 }

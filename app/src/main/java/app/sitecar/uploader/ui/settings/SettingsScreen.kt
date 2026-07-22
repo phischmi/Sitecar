@@ -30,6 +30,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,9 +42,11 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import app.sitecar.uploader.R
+import app.sitecar.uploader.data.BillingManager
 import app.sitecar.uploader.data.PapraClient
 import app.sitecar.uploader.data.SettingsStore
 import app.sitecar.uploader.data.ThemeMode
+import app.sitecar.uploader.ui.support.SupportDialog
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.launch
 
@@ -52,6 +55,7 @@ import kotlinx.coroutines.launch
 fun SettingsScreen(
     store: SettingsStore,
     client: PapraClient,
+    billing: BillingManager,
     onSaved: () -> Unit,
     onBack: () -> Unit,
 ) {
@@ -63,6 +67,9 @@ fun SettingsScreen(
     var orgCount by remember { mutableStateOf<Int?>(null) }
     var themeMode by remember { mutableStateOf(store.themeMode) }
     var ocrEnabled by remember { mutableStateOf(store.onDeviceOcrEnabled) }
+    var filenameTemplate by remember { mutableStateOf(store.filenameTemplate) }
+    var showSupportDialog by remember { mutableStateOf(false) }
+    val isSupporter by store.isSupporterFlow.collectAsState(initial = store.isSupporter)
 
     val scope = rememberCoroutineScope()
     val missingFieldsMessage = stringResource(R.string.settings_error_missing_fields)
@@ -136,6 +143,51 @@ fun SettingsScreen(
                         store.onDeviceOcrEnabled = it
                     },
                 )
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            Text(
+                text = stringResource(R.string.settings_filename_template_title),
+                style = MaterialTheme.typography.labelLarge,
+            )
+            OutlinedTextField(
+                value = filenameTemplate,
+                onValueChange = {
+                    filenameTemplate = it
+                    store.filenameTemplate = it
+                },
+                enabled = isSupporter,
+                placeholder = { Text(stringResource(R.string.settings_filename_template_hint)) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            if (!isSupporter) {
+                Text(
+                    text = stringResource(R.string.settings_support_cta_subtitle),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            Text(
+                text = stringResource(R.string.settings_support_title),
+                style = MaterialTheme.typography.labelLarge,
+            )
+            if (isSupporter) {
+                Text(
+                    text = stringResource(R.string.settings_support_badge),
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            } else {
+                OutlinedButton(
+                    onClick = { showSupportDialog = true },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(stringResource(R.string.settings_support_cta))
+                }
             }
 
             Spacer(Modifier.height(8.dp))
@@ -229,4 +281,10 @@ fun SettingsScreen(
         }
     }
 
+    if (showSupportDialog) {
+        SupportDialog(
+            billing = billing,
+            onDismiss = { showSupportDialog = false },
+        )
+    }
 }

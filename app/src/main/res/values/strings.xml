@@ -20,6 +20,23 @@
     <string name="settings_ocr_title">Texterkennung auf dem Gerät (OCR)</string>
     <string name="settings_ocr_subtitle">Bettet vor dem Upload einen durchsuchbaren Textlayer ins PDF ein. Deaktivieren, wenn dein Papra-Server bereits OCR durchführt (z. B. Mistral OCR).</string>
 
+    <string name="settings_filename_template_title">Dateinamen-Format</string>
+    <string name="settings_filename_template_hint">Scan-{date}-{time} — Platzhalter: {date} {time} {org} {counter}</string>
+
+    <string name="settings_support_title">Unterstützung</string>
+    <string name="settings_support_badge">✓ Du unterstützt Sitecar — danke!</string>
+    <string name="settings_support_cta">Sitecar unterstützen</string>
+    <string name="settings_support_cta_subtitle">Unterstützer-Feature — schaltet frei mit einer einmaligen Spende.</string>
+
+    <string name="support_dialog_title">Gefällt dir Sitecar?</string>
+    <string name="support_dialog_body">Wenn dir die App nützlich ist, freue ich mich über eine kleine einmalige Unterstützung. Als Dankeschön schaltest du einen Schnellzugriff-Shortcut zum Scannen, ein anpassbares Dateinamen-Format und ein Unterstützer-Abzeichen frei.</string>
+    <string name="support_dialog_confirm">Unterstützen (%1$s)</string>
+    <string name="support_dialog_dismiss">Nicht jetzt</string>
+    <string name="support_price_fallback">0,99 €</string>
+
+    <string name="shortcut_scan_short_label">Scannen</string>
+    <string name="shortcut_scan_long_label">Dokument scannen</string>
+
     <string name="capture_title">Dokument scannen</string>
     <string name="scan_hint">Halte die Kamera über das Dokument. Kanten und Perspektive werden automatisch erkannt.</string>
     <string name="scan_start">Scanner starten</string>
@@ -37,6 +54,7 @@
     <string name="upload_pages_count">%1$d Seiten</string>
     <string name="upload_pdf_progress">PDF wird erstellt – Seite %1$d von %2$d (OCR)</string>
     <string name="upload_pdf_progress_no_ocr">PDF wird erstellt – Seite %1$d von %2$d</string>
+    <string name="upload_pdf_build_failed">PDF konnte nicht erstellt werden</string>
 
     <string name="nav_settings">Einstellungen</string>
     <string name="nav_scan">Scannen</string>

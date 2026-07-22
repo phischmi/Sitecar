@@ -38,6 +38,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.sitecar.uploader.R
+import app.sitecar.uploader.ui.util.findActivity
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanning
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
@@ -174,13 +175,4 @@ private fun copyUriToCache(context: Context, uri: Uri): File {
         out.outputStream().use { output -> input.copyTo(output) }
     }
     return out
-}
-
-private fun Context.findActivity(): Activity? {
-    var ctx: Context? = this
-    while (ctx is android.content.ContextWrapper) {
-        if (ctx is Activity) return ctx
-        ctx = ctx.baseContext
-    }
-    return null
 }

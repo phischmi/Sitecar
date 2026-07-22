@@ -50,17 +50,17 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.sitecar.uploader.R
+import app.sitecar.uploader.data.BillingManager
+import app.sitecar.uploader.data.FilenameTemplate
 import app.sitecar.uploader.data.Organization
 import app.sitecar.uploader.data.PapraClient
 import app.sitecar.uploader.data.PdfBuilder
 import app.sitecar.uploader.data.SettingsStore
+import app.sitecar.uploader.ui.support.SupportDialog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,6 +69,7 @@ fun UploadScreen(
     client: PapraClient,
     pdfBuilder: PdfBuilder,
     store: SettingsStore,
+    billing: BillingManager,
     onDone: () -> Unit,
     onBack: () -> Unit,
     onOpenSettings: () -> Unit,
@@ -81,13 +82,11 @@ fun UploadScreen(
 
     var orgs by remember { mutableStateOf<List<Organization>>(emptyList()) }
     var selectedOrg by remember { mutableStateOf<Organization?>(null) }
-    var fileName by remember {
-        mutableStateOf(
-            "Scan-${SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(Date())}.pdf",
-        )
-    }
+    var fileName by remember { mutableStateOf("") }
     var orgsLoading by remember { mutableStateOf(true) }
     var dropdownOpen by remember { mutableStateOf(false) }
+    var showSupportDialog by remember { mutableStateOf(false) }
+    val pdfBuildFailedMessage = stringResource(R.string.upload_pdf_build_failed)
 
     var pdfFile by remember { mutableStateOf<File?>(null) }
     var pdfProgressCurrent by remember { mutableIntStateOf(0) }
@@ -112,6 +111,16 @@ fun UploadScreen(
         orgsLoading = false
     }
 
+    LaunchedEffect(selectedOrg) {
+        if (fileName.isBlank()) {
+            fileName = FilenameTemplate.render(
+                template = store.filenameTemplate,
+                organizationName = selectedOrg?.name,
+                counter = store.uploadCount + 1,
+            ) + ".pdf"
+        }
+    }
+
     LaunchedEffect(pages) {
         val outFile = File(
             File(pages.first().parentFile?.parentFile, "pdfs").apply { mkdirs() },
@@ -126,7 +135,7 @@ fun UploadScreen(
             )
         }
         res.onSuccess { pdfFile = it }
-            .onFailure { errorMessage = it.message ?: "PDF konnte nicht erstellt werden" }
+            .onFailure { errorMessage = it.message ?: pdfBuildFailedMessage }
     }
 
     val pdfReady = pdfFile != null
@@ -284,7 +293,17 @@ fun UploadScreen(
                             // Cleanup: PDF und Quell-JPEGs löschen.
                             pdf.delete()
                             pages.forEach { it.delete() }
-                            onDone()
+
+                            store.uploadCount += 1
+                            val count = store.uploadCount
+                            val shouldPromptSupport = !store.isSupporter &&
+                                (count == 5 || (count > 5 && (count - 5) % 10 == 0))
+
+                            if (shouldPromptSupport) {
+                                showSupportDialog = true
+                            } else {
+                                onDone()
+                            }
                         }.onFailure { e ->
                             errorMessage = e.message
                         }
@@ -311,5 +330,15 @@ fun UploadScreen(
                 Text(stringResource(R.string.upload_retake))
             }
         }
+    }
+
+    if (showSupportDialog) {
+        SupportDialog(
+            billing = billing,
+            onDismiss = {
+                showSupportDialog = false
+                onDone()
+            },
+        )
     }
 }

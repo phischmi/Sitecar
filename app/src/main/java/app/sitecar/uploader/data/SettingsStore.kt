@@ -43,6 +43,23 @@ class SettingsStore(context: Context) {
         get() = prefs.getBoolean(KEY_ON_DEVICE_OCR, true)
         set(value) = prefs.edit().putBoolean(KEY_ON_DEVICE_OCR, value).apply()
 
+    /** Lebenszeit-Zähler erfolgreicher Uploads, steuert den Spenden-Hinweis. */
+    var uploadCount: Int
+        get() = prefs.getInt(KEY_UPLOAD_COUNT, 0)
+        set(value) = prefs.edit().putInt(KEY_UPLOAD_COUNT, value).apply()
+
+    /** True, sobald die einmalige Unterstützer-Freischaltung gekauft wurde. */
+    var isSupporter: Boolean
+        get() = prefs.getBoolean(KEY_IS_SUPPORTER, false)
+        set(value) = prefs.edit().putBoolean(KEY_IS_SUPPORTER, value).apply()
+
+    var filenameTemplate: String
+        get() = prefs.getString(KEY_FILENAME_TEMPLATE, null)?.takeIf { it.isNotBlank() }
+            ?: FilenameTemplate.DEFAULT
+        set(value) = prefs.edit()
+            .putString(KEY_FILENAME_TEMPLATE, value.ifBlank { FilenameTemplate.DEFAULT })
+            .apply()
+
     val isConfigured: Flow<Boolean> = callbackFlow {
         val send = { trySend(serverUrl.isNotBlank() && apiKey.isNotBlank()) }
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ -> send() }
@@ -61,11 +78,24 @@ class SettingsStore(context: Context) {
         awaitClose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
     }
 
+    val isSupporterFlow: Flow<Boolean> = callbackFlow {
+        val send = { trySend(isSupporter) }
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == KEY_IS_SUPPORTER) send()
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        send()
+        awaitClose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
+
     companion object {
         private const val KEY_SERVER_URL = "server_url"
         private const val KEY_API_KEY = "api_key"
         private const val KEY_DEFAULT_ORG = "default_org"
         private const val KEY_THEME_MODE = "theme_mode"
         private const val KEY_ON_DEVICE_OCR = "on_device_ocr_enabled"
+        private const val KEY_UPLOAD_COUNT = "upload_count"
+        private const val KEY_IS_SUPPORTER = "is_supporter"
+        private const val KEY_FILENAME_TEMPLATE = "filename_template"
     }
 }

@@ -20,6 +20,11 @@ von einer Einzelperson entwickelt und steht in keiner Verbindung zu papra-hq.
   Document Scanner), optionale Texterkennung (ML Kit Text Recognition) und
   PDF-Erstellung laufen vollständig lokal auf dem Gerät. Dabei werden keine
   Bild- oder Textdaten an Google oder Dritte übertragen.
+- **Freiwillige Unterstützung (0,99 €, einmalig)**: Der Kauf läuft
+  vollständig über Google Play Billing ab. Sitecar erhält dabei nur die
+  Information, ob der Kauf erfolgreich war — Zahlungsdaten (Zahlungsmittel,
+  Rechnungsadresse etc.) laufen ausschließlich über Google und sind für den
+  App-Entwickler nicht einsehbar.
 
 ## Was wird NICHT erhoben?
 

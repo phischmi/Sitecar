@@ -24,6 +24,12 @@ eigenständiger Begleiter ("Sidecar") für Papra, vormals PapraCam.
   Tippen lädt die Datei herunter und öffnet sie im System-Viewer. Miniatur-Vorschau
   (erste PDF-Seite bzw. Bild) statt generischem Icon, lokal gerendert und gecacht.
 - Darstellung wählbar: Hell / Dunkel / System.
+- Freiwilliger "Sitecar unterstützen"-Hinweis (einmalig 0,99 €, Play Billing),
+  erscheint nach dem 5. erfolgreichen Upload, danach alle 10 weiteren — oder
+  jederzeit manuell in den Einstellungen. Schaltet frei: Schnellzugriff-Shortcut
+  "Scannen" (Long-Press auf das App-Icon), anpassbares Dateinamen-Format und
+  ein Unterstützer-Abzeichen in den Einstellungen. Kein Feature wird Nicht-
+  Unterstützern weggenommen.
 
 ## Geplant
 
@@ -91,7 +97,20 @@ nur unsigniert.
   werden.
 - **Data-Safety-Formular**: Die App erhebt/übermittelt keine Daten an den
   Entwickler oder Dritte (siehe `PRIVACY.md`) — im Formular entsprechend
-  "Keine Daten erhoben" angeben.
+  "Keine Daten erhoben" angeben. Der In-App-Kauf läuft vollständig über
+  Google Play Billing; Zahlungsdaten sieht der Entwickler nie.
+- **Play Billing Library aktuell halten**: Google erzwingt regelmäßig
+  Mindestversionen für die Billing Library (aktuell `7.1.1` in
+  `libs.versions.toml`), sonst wird der Play-Store-Upload irgendwann
+  abgelehnt — vor dem Release-Build kurz gegen die aktuelle Version prüfen.
+- **In-App-Produkt anlegen**: In der Play Console unter
+  Monetarisierung → Produkte → In-App-Produkte ein **verwaltetes Produkt**
+  (kein Abo) mit der ID `sitecar_supporter_tip` und Preis 0,99 € anlegen —
+  diese ID ist im Client fest hinterlegt (`BillingManager.SUPPORTER_PRODUCT_ID`).
+  Ohne dieses Produkt lädt `SupportDialog` keine Preisdaten und der
+  Kauf-Button bleibt wirkungslos (`launchPurchaseFlow` bricht früh ab).
+  Erst ab dem ersten Internal-Testing-Release testbar (Play Billing
+  funktioniert nicht mit reinen Debug-Builds ohne Play-Console-Release-Track).
 - **Store-Assets**: Screenshots, Feature-Grafik, kurze/lange Beschreibung
   fehlen noch.
 - **Versionierung**: `versionCode`/`versionName` vor dem ersten Upload final
