@@ -12,10 +12,10 @@
       android:scaleY="0.8">
 
     <!-- Viewfinder-Eckklammern: Schatten -->
-    <group android:translateX="2" android:translateY="3">
+    <group android:translateX="3" android:translateY="4">
         <path
             android:fillColor="#000000"
-            android:fillAlpha="0.2"
+            android:fillAlpha="0.4"
             android:pathData="M27,27 L43,27 L43,30 L30,30 L30,43 L27,43 Z
                                M81,27 L65,27 L65,30 L78,30 L78,43 L81,43 Z
                                M27,81 L43,81 L43,78 L30,78 L30,65 L27,65 Z
@@ -32,9 +32,9 @@
 
     <!-- Dokument-Schatten -->
     <path
-        android:pathData="M45,39 L61,39 L71,49 L71,71 A4,4 0 0 1 67,75 L45,75 A4,4 0 0 1 41,71 L41,43 A4,4 0 0 1 45,39 Z"
+        android:pathData="M46,40 L62,40 L72,50 L72,72 A4,4 0 0 1 68,76 L46,76 A4,4 0 0 1 42,72 L42,44 A4,4 0 0 1 46,40 Z"
         android:fillColor="#000000"
-        android:fillAlpha="0.2" />
+        android:fillAlpha="0.4" />
 
     <!-- Dokument-Fläche mit umgeknickter Ecke, angelehnt an das Papra-Logo -->
     <path android:pathData="M43,36 L59,36 L69,46 L69,68 A4,4 0 0 1 65,72 L43,72 A4,4 0 0 1 39,68 L39,40 A4,4 0 0 1 43,36 Z">

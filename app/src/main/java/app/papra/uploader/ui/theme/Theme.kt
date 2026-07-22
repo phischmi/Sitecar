@@ -8,13 +8,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 // Palette an Papra angelehnt (neutrale Grau-Hintergründe, Warn-Orange als Tertiär).
-// Primärfarbe bewusst nicht Papras Neon-Lime (hue 77°), sondern ein Indigo-Blau (hue 230°) –
-// nahezu komplementär, harmoniert aber mit Papras Grün statt es zu duplizieren.
+// Primärfarbe bewusst nicht Papras Markenfarbe, sondern jeweils eine nahezu komplementäre Farbe –
+// harmoniert mit Papra, statt dessen Farbe zu duplizieren:
+//  - Dark Mode: Papras Neon-Lime (hue 77°) -> Indigo-Blau (hue 230°)
+//  - Light Mode: Papras Orange (hue ~30°) -> Azurblau (hue 201°)
 private val LightColors = lightColorScheme(
-    primary = Color(0xFF223DC3),
+    primary = Color(0xFF0369A1),
     onPrimary = Color(0xFFFFFFFF),
-    primaryContainer = Color(0xFFD0D7FB),
-    onPrimaryContainer = Color(0xFF0F173D),
+    primaryContainer = Color(0xFFE0F2FE),
+    onPrimaryContainer = Color(0xFF082F49),
     secondary = Color(0xFF505362),
     onSecondary = Color(0xFFFFFFFF),
     secondaryContainer = Color(0xFFF5F5F5),

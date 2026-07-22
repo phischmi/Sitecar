@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.DocumentScanner
@@ -22,6 +23,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import app.papra.uploader.data.ThemeMode
 import app.papra.uploader.ui.documents.DocumentsScreen
 import app.papra.uploader.ui.nav.Route
 import app.papra.uploader.ui.scan.ScanScreen
@@ -37,7 +39,14 @@ class MainActivity : ComponentActivity() {
         val app = application as PapraApp
 
         setContent {
-            PapraTheme {
+            val themeMode by app.settingsStore.themeModeFlow.collectAsState(initial = ThemeMode.SYSTEM)
+            val darkTheme = when (themeMode) {
+                ThemeMode.LIGHT -> false
+                ThemeMode.DARK -> true
+                ThemeMode.SYSTEM -> isSystemInDarkTheme()
+            }
+
+            PapraTheme(darkTheme = darkTheme) {
                 val nav = rememberNavController()
                 val configured by app.settingsStore.isConfigured.collectAsState(initial = null)
 

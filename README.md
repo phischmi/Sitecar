@@ -1,7 +1,8 @@
-# PapraCam (Android)
+# Sitecar (Android)
 
 Schlanke native Android-App zum Aufnehmen und Hochladen von Dokumenten an eine
-selbst gehostete [Papra](https://github.com/papra-hq/papra)-Instanz.
+selbst gehostete [Papra](https://github.com/papra-hq/papra)-Instanz — ein
+eigenständiger Begleiter ("Sidecar") für Papra, vormals PapraCam.
 
 - Inoffiziell, nicht von papra-hq
 - Anbindung via API-Key (kein OAuth/Login)
