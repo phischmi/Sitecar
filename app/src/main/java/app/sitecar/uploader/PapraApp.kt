@@ -1,9 +1,9 @@
-package app.papra.uploader
+package app.sitecar.uploader
 
 import android.app.Application
-import app.papra.uploader.data.PapraClient
-import app.papra.uploader.data.PdfBuilder
-import app.papra.uploader.data.SettingsStore
+import app.sitecar.uploader.data.PapraClient
+import app.sitecar.uploader.data.PdfBuilder
+import app.sitecar.uploader.data.SettingsStore
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import java.io.File
 

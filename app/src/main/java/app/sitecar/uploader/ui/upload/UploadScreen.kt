@@ -1,4 +1,4 @@
-package app.papra.uploader.ui.upload
+package app.sitecar.uploader.ui.upload
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -49,11 +49,11 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import app.papra.uploader.R
-import app.papra.uploader.data.Organization
-import app.papra.uploader.data.PapraClient
-import app.papra.uploader.data.PdfBuilder
-import app.papra.uploader.data.SettingsStore
+import app.sitecar.uploader.R
+import app.sitecar.uploader.data.Organization
+import app.sitecar.uploader.data.PapraClient
+import app.sitecar.uploader.data.PdfBuilder
+import app.sitecar.uploader.data.SettingsStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

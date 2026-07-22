@@ -94,10 +94,6 @@ nur unsigniert.
   "Keine Daten erhoben" angeben.
 - **Store-Assets**: Screenshots, Feature-Grafik, kurze/lange Beschreibung
   fehlen noch.
-- **`applicationId`**: aktuell weiterhin `app.papra.uploader` (historisch, vor
-  der Umbenennung zu Sitecar). Lässt sich nach der ersten Veröffentlichung
-  praktisch nicht mehr ändern, ohne den Store-Eintrag/die Bewertungen zu
-  verlieren — letzte Gelegenheit für eine Umbenennung ist jetzt.
 - **Versionierung**: `versionCode`/`versionName` vor dem ersten Upload final
   festlegen (aktuell `1` / `0.1.0`).
 

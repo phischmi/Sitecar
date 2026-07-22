@@ -1,4 +1,4 @@
-package app.papra.uploader
+package app.sitecar.uploader
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -10,14 +10,14 @@ import androidx.compose.runtime.getValue
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import app.papra.uploader.data.ThemeMode
-import app.papra.uploader.ui.documents.DocumentsScreen
-import app.papra.uploader.ui.nav.AppBottomBar
-import app.papra.uploader.ui.nav.Route
-import app.papra.uploader.ui.scan.ScanScreen
-import app.papra.uploader.ui.settings.SettingsScreen
-import app.papra.uploader.ui.theme.PapraTheme
-import app.papra.uploader.ui.upload.UploadScreen
+import app.sitecar.uploader.data.ThemeMode
+import app.sitecar.uploader.ui.documents.DocumentsScreen
+import app.sitecar.uploader.ui.nav.AppBottomBar
+import app.sitecar.uploader.ui.nav.Route
+import app.sitecar.uploader.ui.scan.ScanScreen
+import app.sitecar.uploader.ui.settings.SettingsScreen
+import app.sitecar.uploader.ui.theme.PapraTheme
+import app.sitecar.uploader.ui.upload.UploadScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

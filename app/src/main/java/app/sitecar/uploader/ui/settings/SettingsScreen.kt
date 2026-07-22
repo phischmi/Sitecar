@@ -1,4 +1,4 @@
-package app.papra.uploader.ui.settings
+package app.sitecar.uploader.ui.settings
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -40,10 +40,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import app.papra.uploader.R
-import app.papra.uploader.data.PapraClient
-import app.papra.uploader.data.SettingsStore
-import app.papra.uploader.data.ThemeMode
+import app.sitecar.uploader.R
+import app.sitecar.uploader.data.PapraClient
+import app.sitecar.uploader.data.SettingsStore
+import app.sitecar.uploader.data.ThemeMode
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.launch
 

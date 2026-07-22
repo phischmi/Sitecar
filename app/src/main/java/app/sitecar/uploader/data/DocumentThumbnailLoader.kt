@@ -1,4 +1,4 @@
-package app.papra.uploader.data
+package app.sitecar.uploader.data
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory

@@ -1,4 +1,4 @@
-package app.papra.uploader.ui.documents
+package app.sitecar.uploader.ui.documents
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
@@ -51,12 +51,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
-import app.papra.uploader.R
-import app.papra.uploader.data.DocumentDto
-import app.papra.uploader.data.DocumentThumbnailLoader
-import app.papra.uploader.data.Organization
-import app.papra.uploader.data.PapraClient
-import app.papra.uploader.data.SettingsStore
+import app.sitecar.uploader.R
+import app.sitecar.uploader.data.DocumentDto
+import app.sitecar.uploader.data.DocumentThumbnailLoader
+import app.sitecar.uploader.data.Organization
+import app.sitecar.uploader.data.PapraClient
+import app.sitecar.uploader.data.SettingsStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

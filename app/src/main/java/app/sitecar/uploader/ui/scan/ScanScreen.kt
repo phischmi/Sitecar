@@ -1,4 +1,4 @@
-package app.papra.uploader.ui.scan
+package app.sitecar.uploader.ui.scan
 
 import android.app.Activity
 import android.content.Context
@@ -37,7 +37,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import app.papra.uploader.R
+import app.sitecar.uploader.R
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanning
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult

@@ -1,4 +1,4 @@
-package app.papra.uploader.ui.theme
+package app.sitecar.uploader.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme

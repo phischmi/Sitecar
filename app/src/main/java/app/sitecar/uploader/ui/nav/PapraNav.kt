@@ -1,4 +1,4 @@
-package app.papra.uploader.ui.nav
+package app.sitecar.uploader.ui.nav
 
 import kotlinx.serialization.Serializable
 

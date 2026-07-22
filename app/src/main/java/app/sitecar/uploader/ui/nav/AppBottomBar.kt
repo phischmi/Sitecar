@@ -1,4 +1,4 @@
-package app.papra.uploader.ui.nav
+package app.sitecar.uploader.ui.nav
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Description
@@ -14,7 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import app.papra.uploader.R
+import app.sitecar.uploader.R
 
 @Composable
 fun AppBottomBar(nav: NavHostController) {
