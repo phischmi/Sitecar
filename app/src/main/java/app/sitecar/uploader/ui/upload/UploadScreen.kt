@@ -57,6 +57,8 @@ import app.sitecar.uploader.data.PapraClient
 import app.sitecar.uploader.data.PdfBuilder
 import app.sitecar.uploader.data.SettingsStore
 import app.sitecar.uploader.ui.support.SupportDialog
+import app.sitecar.uploader.ui.util.ApiErrorMessages
+import app.sitecar.uploader.ui.util.friendlyErrorMessage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -87,6 +89,14 @@ fun UploadScreen(
     var dropdownOpen by remember { mutableStateOf(false) }
     var showSupportDialog by remember { mutableStateOf(false) }
     val pdfBuildFailedMessage = stringResource(R.string.upload_pdf_build_failed)
+    val apiErrorMessages = ApiErrorMessages(
+        unauthorized = stringResource(R.string.error_unauthorized),
+        notFound = stringResource(R.string.error_not_found),
+        server = stringResource(R.string.error_server),
+        noConnection = stringResource(R.string.error_no_connection),
+        timeout = stringResource(R.string.error_timeout),
+        unknown = stringResource(R.string.error_unknown),
+    )
 
     var pdfFile by remember { mutableStateOf<File?>(null) }
     var pdfProgressCurrent by remember { mutableIntStateOf(0) }
@@ -107,7 +117,7 @@ fun UploadScreen(
                 orgs = it
                 selectedOrg = it.firstOrNull()
             }
-            .onFailure { errorMessage = it.message }
+            .onFailure { errorMessage = friendlyErrorMessage(it, apiErrorMessages) }
         orgsLoading = false
     }
 
@@ -146,7 +156,10 @@ fun UploadScreen(
                 title = { Text(stringResource(R.string.upload_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.action_back),
+                        )
                     }
                 },
                 actions = {
@@ -305,7 +318,7 @@ fun UploadScreen(
                                 onDone()
                             }
                         }.onFailure { e ->
-                            errorMessage = e.message
+                            errorMessage = friendlyErrorMessage(e, apiErrorMessages)
                         }
                     }
                 },

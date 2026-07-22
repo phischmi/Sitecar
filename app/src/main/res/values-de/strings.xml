@@ -69,4 +69,12 @@
     <string name="documents_no_viewer">Keine App zum Anzeigen dieses Dateityps gefunden.</string>
 
     <string name="error_unknown">Unbekannter Fehler</string>
+    <string name="error_unauthorized">Anmeldung fehlgeschlagen — API-Key prüfen.</string>
+    <string name="error_not_found">Server nicht gefunden — Server-URL prüfen.</string>
+    <string name="error_server">Serverfehler — bitte später erneut versuchen.</string>
+    <string name="error_no_connection">Server nicht erreichbar.</string>
+    <string name="error_timeout">Zeitüberschreitung bei der Anfrage.</string>
+
+    <string name="action_back">Zurück</string>
+    <string name="action_refresh">Aktualisieren</string>
 </resources>

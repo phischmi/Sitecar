@@ -57,6 +57,8 @@ import app.sitecar.uploader.data.DocumentThumbnailLoader
 import app.sitecar.uploader.data.Organization
 import app.sitecar.uploader.data.PapraClient
 import app.sitecar.uploader.data.SettingsStore
+import app.sitecar.uploader.ui.util.ApiErrorMessages
+import app.sitecar.uploader.ui.util.friendlyErrorMessage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -87,6 +89,14 @@ fun DocumentsScreen(
     var loading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var openingDocumentId by remember { mutableStateOf<String?>(null) }
+    val apiErrorMessages = ApiErrorMessages(
+        unauthorized = stringResource(R.string.error_unauthorized),
+        notFound = stringResource(R.string.error_not_found),
+        server = stringResource(R.string.error_server),
+        noConnection = stringResource(R.string.error_no_connection),
+        timeout = stringResource(R.string.error_timeout),
+        unknown = stringResource(R.string.error_unknown),
+    )
 
     LaunchedEffect(Unit) {
         client.listOrganizations()
@@ -94,7 +104,7 @@ fun DocumentsScreen(
                 orgs = list
                 selectedOrg = list.firstOrNull { it.id == store.defaultOrgId } ?: list.firstOrNull()
             }
-            .onFailure { errorMessage = it.message }
+            .onFailure { errorMessage = friendlyErrorMessage(it, apiErrorMessages) }
     }
 
     LaunchedEffect(selectedOrg) {
@@ -103,7 +113,7 @@ fun DocumentsScreen(
         errorMessage = null
         client.listDocuments(organizationId = org.id)
             .onSuccess { documents = it.documents }
-            .onFailure { errorMessage = it.message }
+            .onFailure { errorMessage = friendlyErrorMessage(it, apiErrorMessages) }
         loading = false
     }
 
@@ -133,10 +143,10 @@ fun DocumentsScreen(
                         errorMessage = if (it is ActivityNotFoundException) {
                             context.getString(R.string.documents_no_viewer)
                         } else {
-                            it.message
+                            friendlyErrorMessage(it, apiErrorMessages)
                         }
                     }
-            }.onFailure { errorMessage = it.message }
+            }.onFailure { errorMessage = friendlyErrorMessage(it, apiErrorMessages) }
         }
     }
 
@@ -153,13 +163,16 @@ fun DocumentsScreen(
                                     loading = true
                                     client.listDocuments(organizationId = org.id)
                                         .onSuccess { documents = it.documents }
-                                        .onFailure { errorMessage = it.message }
+                                        .onFailure { errorMessage = friendlyErrorMessage(it, apiErrorMessages) }
                                     loading = false
                                 }
                             }
                         },
                     ) {
-                        Icon(Icons.Default.Refresh, contentDescription = null)
+                        Icon(
+                            Icons.Default.Refresh,
+                            contentDescription = stringResource(R.string.action_refresh),
+                        )
                     }
                     IconButton(onClick = onOpenSettings) {
                         Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.nav_settings))

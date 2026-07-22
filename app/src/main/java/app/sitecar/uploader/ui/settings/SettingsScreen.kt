@@ -61,6 +61,8 @@ import app.sitecar.uploader.data.ThemeMode
 import app.sitecar.uploader.icon.LauncherIcon
 import app.sitecar.uploader.ui.support.SupportDialog
 import app.sitecar.uploader.ui.theme.accentPrimaryColor
+import app.sitecar.uploader.ui.util.ApiErrorMessages
+import app.sitecar.uploader.ui.util.friendlyErrorMessage
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.launch
 
@@ -89,7 +91,14 @@ fun SettingsScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val missingFieldsMessage = stringResource(R.string.settings_error_missing_fields)
-    val unknownErrorMessage = stringResource(R.string.error_unknown)
+    val apiErrorMessages = ApiErrorMessages(
+        unauthorized = stringResource(R.string.error_unauthorized),
+        notFound = stringResource(R.string.error_not_found),
+        server = stringResource(R.string.error_server),
+        noConnection = stringResource(R.string.error_no_connection),
+        timeout = stringResource(R.string.error_timeout),
+        unknown = stringResource(R.string.error_unknown),
+    )
 
     Scaffold(
         topBar = {
@@ -97,7 +106,10 @@ fun SettingsScreen(
                 title = { Text(stringResource(R.string.settings_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.action_back),
+                        )
                     }
                 },
             )
@@ -299,7 +311,7 @@ fun SettingsScreen(
                         }.onFailure { e ->
                             isError = true
                             orgCount = null
-                            status = e.message ?: unknownErrorMessage
+                            status = friendlyErrorMessage(e, apiErrorMessages)
                         }
                     }
                 },
