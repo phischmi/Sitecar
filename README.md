@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/logo.svg" width="96" height="96" alt="Sitecar Logo">
+</p>
+
 # Sitecar (Android)
 
 Schlanke native Android-App zum Aufnehmen und Hochladen von Dokumenten an eine
