@@ -2,6 +2,8 @@ package app.papra.uploader.ui.documents
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,8 +12,10 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Refresh
@@ -40,12 +44,16 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import app.papra.uploader.R
 import app.papra.uploader.data.DocumentDto
+import app.papra.uploader.data.DocumentThumbnailLoader
 import app.papra.uploader.data.Organization
 import app.papra.uploader.data.PapraClient
 import app.papra.uploader.data.SettingsStore
@@ -67,6 +75,9 @@ fun DocumentsScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val thumbnailLoader = remember(client) {
+        DocumentThumbnailLoader(client, File(context.cacheDir, "thumbnails"))
+    }
 
     var orgs by remember { mutableStateOf<List<Organization>>(emptyList()) }
     var selectedOrg by remember { mutableStateOf<Organization?>(null) }
@@ -215,6 +226,7 @@ fun DocumentsScreen(
                     contentPadding = PaddingValues(vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(2.dp),
                 ) {
+                    val orgId = selectedOrg?.id.orEmpty()
                     items(documents, key = { it.id }) { doc ->
                         ListItem(
                             headlineContent = { Text(doc.name ?: doc.id) },
@@ -222,10 +234,22 @@ fun DocumentsScreen(
                                 Text("${formatDate(doc.createdAt)} · ${formatSize(doc.originalSize)}")
                             },
                             leadingContent = {
-                                if (openingDocumentId == doc.id) {
-                                    CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.padding(4.dp))
-                                } else {
-                                    Icon(Icons.Default.Description, contentDescription = null)
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    if (openingDocumentId == doc.id) {
+                                        CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(20.dp))
+                                    } else {
+                                        DocumentThumbnail(
+                                            doc = doc,
+                                            organizationId = orgId,
+                                            loader = thumbnailLoader,
+                                        )
+                                    }
                                 }
                             },
                             modifier = Modifier
@@ -236,6 +260,32 @@ fun DocumentsScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun DocumentThumbnail(
+    doc: DocumentDto,
+    organizationId: String,
+    loader: DocumentThumbnailLoader,
+) {
+    var bitmap by remember(doc.id) { mutableStateOf<android.graphics.Bitmap?>(null) }
+
+    LaunchedEffect(doc.id, organizationId) {
+        if (organizationId.isBlank()) return@LaunchedEffect
+        bitmap = loader.load(organizationId, doc)
+    }
+
+    val loaded = bitmap
+    if (loaded != null) {
+        Image(
+            bitmap = loaded.asImageBitmap(),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop,
+        )
+    } else {
+        Icon(Icons.Default.Description, contentDescription = null)
     }
 }
 
