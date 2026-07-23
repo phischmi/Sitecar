@@ -102,6 +102,7 @@
     <string name="tags_document_count">%1$d Dokument(e)</string>
     <string name="tags_delete_title">Tag löschen?</string>
     <string name="tags_delete_message">„%1$s“ wird von allen Dokumenten entfernt. Die Dokumente selbst bleiben unverändert.</string>
+    <string name="tags_edit_title">Tag bearbeiten</string>
 
     <string name="error_unknown">Unbekannter Fehler</string>
     <string name="error_unauthorized">Anmeldung fehlgeschlagen — API-Key prüfen.</string>
@@ -112,7 +113,9 @@
 
     <string name="action_back">Zurück</string>
     <string name="action_delete">Löschen</string>
+    <string name="action_edit">Bearbeiten</string>
     <string name="action_cancel">Abbrechen</string>
+    <string name="action_save">Speichern</string>
     <string name="action_clear_search">Suche löschen</string>
     <string name="action_more">Weitere Optionen</string>
     <string name="action_rename">Umbenennen</string>

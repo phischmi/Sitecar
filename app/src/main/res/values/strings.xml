@@ -102,6 +102,7 @@
     <string name="tags_document_count">%1$d document(s)</string>
     <string name="tags_delete_title">Delete tag?</string>
     <string name="tags_delete_message">\"%1$s\" will be removed from all documents. Documents themselves are not affected.</string>
+    <string name="tags_edit_title">Edit tag</string>
 
     <string name="error_unknown">Unknown error</string>
     <string name="error_unauthorized">Authentication failed — check your API key.</string>
@@ -112,7 +113,9 @@
 
     <string name="action_back">Back</string>
     <string name="action_delete">Delete</string>
+    <string name="action_edit">Edit</string>
     <string name="action_cancel">Cancel</string>
+    <string name="action_save">Save</string>
     <string name="action_clear_search">Clear search</string>
     <string name="action_more">More options</string>
     <string name="action_rename">Rename</string>

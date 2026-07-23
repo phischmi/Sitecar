@@ -81,6 +81,18 @@ data class CreateTagResponse(
 )
 
 @Serializable
+data class UpdateTagBody(
+    val name: String,
+    val color: String,
+    val description: String? = null,
+)
+
+@Serializable
+data class UpdateTagResponse(
+    val tag: TagDto,
+)
+
+@Serializable
 data class AddTagToDocumentBody(
     val tagId: String,
 )
