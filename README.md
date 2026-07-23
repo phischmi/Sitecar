@@ -90,16 +90,17 @@ eigenständiger Begleiter ("Sidecar") für Papra, vormals PapraCam.
 
 Die freiwillige Unterstützer-Bezahlfunktion ist über den zentralen Schalter
 `Features.SUPPORTER_ENABLED` (in `app/src/main/java/app/sitecar/uploader/Features.kt`)
-**abgeschaltet** (`false`). Die Akzentfarben-Auswahl in den Einstellungen ist
-davon unabhängig über `Features.ACCENT_COLOR_PICKER_ENABLED` (aktuell `true`)
-zum Testen freigeschaltet — alle vier Farben sind ohne Sperre wählbar.
-Sobald `SUPPORTER_ENABLED` wieder aktiviert wird, greift automatisch erneut
-die echte Unterstützer-Sperre (nur Indigo kostenlos), ganz ohne weitere
-Code-Änderung. Solange die Bezahlfunktion aus ist:
+**abgeschaltet** (`false`). Akzentfarben-Auswahl und Unterstützer-Bereich in
+den Einstellungen sind davon unabhängig über `Features.SUPPORTER_PREVIEW_ENABLED`
+(aktuell `true`) zum Testen/Vorschauen freigeschaltet: alle fünf Farben sind
+ohne Sperre wählbar, und der Unterstützer-Bereich zeigt den "bereits
+Unterstützer"-Zustand (Badge) statt einer Kauf-CTA, da ohne echte
+Bezahlfunktion kein In-App-Produkt zum Kaufen existiert. Sobald
+`SUPPORTER_ENABLED` wieder aktiviert wird, greifen an beiden Stellen
+automatisch wieder die echte Unterstützer-Sperre bzw. der echte Kauf-Flow,
+ganz ohne weitere Code-Änderung. Solange die Bezahlfunktion aus ist:
 
 - kein In-App-Kauf, kein Spenden-Dialog, keine Kauf-Aufforderung nach Uploads;
-- der Akzentfarben- und Unterstützer-Bereich in den Einstellungen ist
-  ausgeblendet (nur das Standard-Indigo ist aktiv);
 - die App baut keine Play-Billing-Verbindung auf und deklariert im finalen
   Manifest **keine** `com.android.vending.BILLING`-Permission (per
   `tools:node="remove"` entfernt).

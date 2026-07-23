@@ -265,11 +265,10 @@ fun SettingsScreen(
                 },
             )
 
-            // Akzentfarben-Auswahl lässt sich unabhängig von der (vorerst
-            // deaktivierten) Bezahlfunktion zum Testen freischalten, siehe
-            // Features.ACCENT_COLOR_PICKER_ENABLED. Der Unterstützer-Kauf-Bereich
-            // selbst bleibt an Features.SUPPORTER_ENABLED gebunden.
-            if (Features.SUPPORTER_ENABLED || Features.ACCENT_COLOR_PICKER_ENABLED) {
+            // Akzentfarben-Auswahl und Unterstützer-Bereich lassen sich unabhängig
+            // von der (vorerst deaktivierten) Bezahlfunktion zum Testen/Vorschauen
+            // freischalten, siehe Features.SUPPORTER_PREVIEW_ENABLED.
+            if (Features.SUPPORTER_ENABLED || Features.SUPPORTER_PREVIEW_ENABLED) {
                 Spacer(Modifier.height(16.dp))
 
                 Text(
@@ -315,14 +314,18 @@ fun SettingsScreen(
                 }
             }
 
-            if (Features.SUPPORTER_ENABLED) {
+            if (Features.SUPPORTER_ENABLED || Features.SUPPORTER_PREVIEW_ENABLED) {
                 Spacer(Modifier.height(16.dp))
 
                 Text(
                     text = stringResource(R.string.settings_support_title),
                     style = MaterialTheme.typography.labelLarge,
                 )
-                if (isSupporter) {
+                // Ohne echte Bezahlfunktion gibt es kein In-App-Produkt zum Kaufen —
+                // die Vorschau zeigt daher immer den "bereits Unterstützer"-Zustand
+                // statt einer Kauf-CTA, die ins Leere liefe.
+                val previewingAsSupporter = Features.SUPPORTER_PREVIEW_ENABLED && !Features.SUPPORTER_ENABLED
+                if (isSupporter || previewingAsSupporter) {
                     Text(
                         text = stringResource(R.string.settings_support_badge),
                         color = MaterialTheme.colorScheme.primary,

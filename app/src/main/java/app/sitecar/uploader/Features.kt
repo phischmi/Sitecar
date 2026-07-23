@@ -21,11 +21,17 @@ object Features {
     const val SUPPORTER_ENABLED = false
 
     /**
-     * Zeigt die Akzentfarben-Auswahl in den Einstellungen unabhängig von
-     * [SUPPORTER_ENABLED] und ohne Sperre — zum Testen der Farben, bevor sie
-     * perspektivisch wieder exklusiv an [SUPPORTER_ENABLED] geknüpft werden.
-     * Sobald [SUPPORTER_ENABLED] wieder `true` ist, greift automatisch wieder
-     * die echte Unterstützer-Sperre (siehe `unlocked` in SettingsScreen).
+     * Zeigt zwei sonst an [SUPPORTER_ENABLED] gebundene UI-Teile unabhängig
+     * davon und ohne echten Kauf an — zum Testen/Vorschauen, bevor die
+     * Bezahlfunktion selbst aktiviert wird:
+     *  - Akzentfarben-Auswahl in den Einstellungen, alle Farben ohne Sperre
+     *    wählbar (siehe `unlocked` in SettingsScreen).
+     *  - Unterstützer-Bereich in den Einstellungen, dargestellt als bereits
+     *    freigeschaltetes Badge (keine Kauf-CTA, da noch kein echtes
+     *    In-App-Produkt existiert).
+     * Sobald [SUPPORTER_ENABLED] wieder `true` ist, greifen automatisch
+     * wieder die echte Unterstützer-Sperre und der echte Kauf-Flow — dieses
+     * Flag wird dann für beide Stellen automatisch wirkungslos.
      */
-    const val ACCENT_COLOR_PICKER_ENABLED = true
+    const val SUPPORTER_PREVIEW_ENABLED = true
 }
