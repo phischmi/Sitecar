@@ -73,9 +73,11 @@ Eintrag → App-Name), nicht im Code.
   irgendwo im Share-Sheet auftaucht.
 - Intelligente Vorschläge beim Hochladen (regelbasiert, komplett on-device,
   abschaltbar in den Einstellungen): erkennt Tags aus einem kleinen
-  Schlüsselwort-Vokabular und schlägt bereits in der Organisation vorhandene
-  Tags vor; erkennt das Dokumentdatum (z. B. Rechnungsdatum) und den
-  Absender (Briefkopf-Firmenname oder ein "Von:"/"Absender:"-Label) als
+  Schlüsselwort-Vokabular. Existiert der erkannte Tag bereits in der
+  Organisation, ist er vorausgewählt; existiert er noch nicht, wird er nur
+  als Vorschlag angezeigt und erst beim manuellen Auswählen tatsächlich
+  angelegt. Erkennt außerdem das Dokumentdatum (z. B. Rechnungsdatum) und
+  den Absender (Briefkopf-Firmenname oder ein "Von:"/"Absender:"-Label) als
   Alternative zum Scan-Datum bzw. zur Organisation im Dateinamen.
 - Duplikat-Warnung: vergleicht einen Perceptual-Hash der ersten Seite mit den
   letzten Uploads derselben Organisation (rein lokal, 14 Tage Gedächtnis,
