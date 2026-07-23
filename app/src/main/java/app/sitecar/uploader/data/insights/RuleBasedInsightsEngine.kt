@@ -5,7 +5,7 @@ import java.time.LocalDate
 /**
  * Regelbasierte (rein lokale, keyword-/regex-basierte) Standard-Implementierung
  * von [SmartInsightsEngine]. Erkennt deutsche und englische Datumsformate sowie
- * ein kleines, festes Vokabular an Dokumentarten- und Fristen-Schlüsselwörtern.
+ * ein kleines, festes Vokabular an Dokumentarten-Schlüsselwörtern.
  * Läuft komplett offline, ohne zusätzliches Modell.
  */
 object RuleBasedInsightsEngine : SmartInsightsEngine {
@@ -15,7 +15,7 @@ object RuleBasedInsightsEngine : SmartInsightsEngine {
 
         val dates = findDates(text)
         val documentDate = dates.minByOrNull { it.first }?.second
-        val deadline = findDeadline(text)
+        val senderName = findSenderName(text)
         val tags = TAG_KEYWORDS
             .filter { (keyword, _) -> containsWord(text, keyword) }
             .map { (_, tagName) -> tagName }
@@ -24,19 +24,27 @@ object RuleBasedInsightsEngine : SmartInsightsEngine {
         return DocumentInsights(
             suggestedTagNames = tags,
             documentDate = documentDate,
-            deadline = deadline,
+            senderName = senderName,
         )
     }
 
-    private fun findDeadline(text: String): Deadline? {
-        val lines = text.lines()
-        lines.forEachIndexed { index, line ->
-            val keyword = DEADLINE_KEYWORDS.firstOrNull { containsWord(line, it) } ?: return@forEachIndexed
-            val window = if (index + 1 < lines.size) "$line ${lines[index + 1]}" else line
-            val date = findDates(window).minByOrNull { it.first }?.second
-            if (date != null) return Deadline(date, keyword.replaceFirstChar { it.uppercase() })
+    /**
+     * Sucht den Absender: zuerst ein explizites "Von:"/"Absender:"/"From:"-Label,
+     * sonst den Briefkopf — die erste Zeile in den obersten Zeilen des Textes mit
+     * einer gängigen Rechtsform (GmbH, AG, Ltd. ...). Rechtsform-Kürzel werden
+     * bewusst case-sensitiv gesucht (sonst z. B. Fehltreffer bei "5 kg" auf "AG"/"KG").
+     */
+    private fun findSenderName(text: String): String? {
+        val lines = text.lines().map { it.trim() }.filter { it.isNotBlank() }
+
+        for (line in lines) {
+            val inline = SENDER_LABEL.find(line)?.groupValues?.get(1)?.trim()
+            if (!inline.isNullOrBlank()) return inline.take(60)
         }
-        return null
+
+        return lines.take(15)
+            .firstOrNull { line -> LEGAL_FORM_SUFFIXES.any { containsWord(line, it, ignoreCase = false) } }
+            ?.take(60)
     }
 
     /** Findet alle erkennbaren Datumsangaben im Text, sortiert nach Position im Text. */
@@ -75,11 +83,11 @@ object RuleBasedInsightsEngine : SmartInsightsEngine {
         return found.sortedBy { it.first }
     }
 
-    /** Ganzwort-Suche (case-insensitive, unicode-sicher) ohne die Java-`\b`-Falle bei Umlauten. */
-    private fun containsWord(text: String, word: String): Boolean {
+    /** Ganzwort-Suche (unicode-sicher) ohne die Java-`\b`-Falle bei Umlauten. */
+    private fun containsWord(text: String, word: String, ignoreCase: Boolean = true): Boolean {
         var from = 0
         while (true) {
-            val idx = text.indexOf(word, from, ignoreCase = true)
+            val idx = text.indexOf(word, from, ignoreCase = ignoreCase)
             if (idx < 0) return false
             val before = idx - 1
             val after = idx + word.length
@@ -95,6 +103,13 @@ object RuleBasedInsightsEngine : SmartInsightsEngine {
     private val WRITTEN_DATE = Regex(
         """\b(\d{1,2})\.?\s+(Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember)\s+(\d{4})\b""",
         RegexOption.IGNORE_CASE,
+    )
+
+    private val SENDER_LABEL = Regex("""(?:Von|Absender|From)\s*:\s*(.+)""", RegexOption.IGNORE_CASE)
+
+    /** Gängige Rechtsform-Kürzel für die Briefkopf-Erkennung des Absenders (deutsch + englisch). */
+    private val LEGAL_FORM_SUFFIXES = listOf(
+        "GmbH", "AG", "KG", "OHG", "UG", "SE", "eG", "e.V.", "Ltd", "LLC", "Inc", "Corp",
     )
 
     private val MONTHS = mapOf(
@@ -126,20 +141,5 @@ object RuleBasedInsightsEngine : SmartInsightsEngine {
         "Quote" to "Angebot",
         "Bestellung" to "Bestellung",
         "Mahnung" to "Mahnung",
-    )
-
-    /** Schlüsselwörter, die auf eine relevante Frist hindeuten (Kündigung, Garantie-Ablauf, Fälligkeit). */
-    private val DEADLINE_KEYWORDS = listOf(
-        "gültig bis",
-        "kündigen bis",
-        "Kündigungsfrist",
-        "Garantie bis",
-        "zahlbar bis",
-        "fällig am",
-        "Ablaufdatum",
-        "expires",
-        "valid until",
-        "cancel by",
-        "due date",
     )
 }

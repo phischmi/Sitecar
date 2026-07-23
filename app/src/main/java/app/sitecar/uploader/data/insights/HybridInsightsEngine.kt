@@ -23,7 +23,7 @@ object HybridInsightsEngine : SmartInsightsEngine {
         return DocumentInsights(
             suggestedTagNames = (genAi.suggestedTagNames + ruleBased.suggestedTagNames).distinct(),
             documentDate = genAi.documentDate ?: ruleBased.documentDate,
-            deadline = genAi.deadline ?: ruleBased.deadline,
+            senderName = genAi.senderName ?: ruleBased.senderName,
         )
     }
 }

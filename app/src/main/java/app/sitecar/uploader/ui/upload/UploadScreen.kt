@@ -1,18 +1,11 @@
 package app.sitecar.uploader.ui.upload
 
-import android.Manifest
-import android.content.pm.PackageManager
-import android.os.Build
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,12 +14,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.InsertDriveFile
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -45,7 +38,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -61,7 +53,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.sitecar.uploader.Features
@@ -78,14 +69,12 @@ import app.sitecar.uploader.data.TagDto
 import app.sitecar.uploader.data.duplicates.PerceptualHash
 import app.sitecar.uploader.data.duplicates.RecentUpload
 import app.sitecar.uploader.data.duplicates.RecentUploadsStore
-import app.sitecar.uploader.data.insights.Deadline
 import app.sitecar.uploader.data.insights.DocumentInsights
 import app.sitecar.uploader.data.insights.HybridInsightsEngine
 import app.sitecar.uploader.data.insights.RuleBasedInsightsEngine
-import app.sitecar.uploader.data.reminders.ReminderScheduler
 import app.sitecar.uploader.ui.support.SupportDialog
-import app.sitecar.uploader.ui.util.ApiErrorMessages
 import app.sitecar.uploader.ui.util.friendlyErrorMessage
+import app.sitecar.uploader.ui.util.rememberApiErrorMessages
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -120,14 +109,7 @@ fun UploadScreen(
     var dropdownOpen by remember { mutableStateOf(false) }
     var showSupportDialog by remember { mutableStateOf(false) }
     val pdfBuildFailedMessage = stringResource(R.string.upload_pdf_build_failed)
-    val apiErrorMessages = ApiErrorMessages(
-        unauthorized = stringResource(R.string.error_unauthorized),
-        notFound = stringResource(R.string.error_not_found),
-        server = stringResource(R.string.error_server),
-        noConnection = stringResource(R.string.error_no_connection),
-        timeout = stringResource(R.string.error_timeout),
-        unknown = stringResource(R.string.error_unknown),
-    )
+    val apiErrorMessages = rememberApiErrorMessages()
 
     var documentFile by remember { mutableStateOf<File?>(null) }
     var documentMimeType by remember { mutableStateOf("application/pdf") }
@@ -140,15 +122,8 @@ fun UploadScreen(
     var insights by remember { mutableStateOf(DocumentInsights.EMPTY) }
     var orgTags by remember { mutableStateOf<List<TagDto>>(emptyList()) }
     var selectedTagIds by remember { mutableStateOf<Set<String>>(emptySet()) }
-    var pendingDeadline by remember { mutableStateOf<Deadline?>(null) }
-    var pendingDeadlineDocumentName by remember { mutableStateOf("") }
-    var pendingShouldPromptSupport by remember { mutableStateOf(false) }
-
-    val context = LocalContext.current
-    val notificationPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission(),
-        onResult = {},
-    )
+    /** Vorgeschlagene Tags, die es in der Organisation noch nicht gibt — per Name, nicht vorausgewählt. */
+    var selectedNewTagNames by remember { mutableStateOf<Set<String>>(emptySet()) }
 
     val scope = rememberCoroutineScope()
     val previewBitmap = remember(pendingUpload) {
@@ -296,7 +271,8 @@ fun UploadScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(inner)
-                .padding(horizontal = 20.dp, vertical = 12.dp),
+                .padding(horizontal = 20.dp, vertical = 12.dp)
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Box(
@@ -411,29 +387,50 @@ fun UploadScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
 
+            val filenameExtension = if (pendingUpload is PendingUpload.Images) {
+                "pdf"
+            } else {
+                extensionForMimeType(documentMimeType)
+            }
+
             insights.documentDate?.let { docDate ->
                 AssistChip(
                     onClick = {
-                        val extension = if (pendingUpload is PendingUpload.Images) {
-                            "pdf"
-                        } else {
-                            extensionForMimeType(documentMimeType)
-                        }
                         fileName = FilenameTemplate.render(
                             template = store.filenameTemplate,
                             organizationName = selectedOrg?.name,
                             counter = store.uploadCount + 1,
                             documentDate = docDate,
-                        ) + ".$extension"
+                        ) + ".$filenameExtension"
                     },
                     label = { Text(stringResource(R.string.upload_use_document_date, docDate.format(DISPLAY_DATE_FORMATTER))) },
                 )
             }
 
-            val suggestedTags = orgTags.filter { tag ->
-                insights.suggestedTagNames.any { it.equals(tag.name, ignoreCase = true) }
+            insights.senderName?.let { sender ->
+                AssistChip(
+                    onClick = {
+                        fileName = FilenameTemplate.render(
+                            template = store.filenameTemplate,
+                            organizationName = selectedOrg?.name,
+                            counter = store.uploadCount + 1,
+                            senderName = sender,
+                        ) + ".$filenameExtension"
+                    },
+                    label = { Text(stringResource(R.string.upload_use_sender_name, sender)) },
+                )
             }
-            if (suggestedTags.isNotEmpty()) {
+
+            // Jeder erkannte Tag-Name wird angezeigt, auch wenn er in der Organisation noch
+            // nicht existiert. Bereits vorhandene Tags sind vorausgewählt (siehe LaunchedEffect
+            // oben); noch nicht existierende sind nur ein Vorschlag und werden erst beim
+            // manuellen Auswählen tatsächlich angelegt (siehe Upload-Button unten).
+            val suggestedTagOptions = insights.suggestedTagNames.map { name ->
+                orgTags.firstOrNull { it.name.equals(name, ignoreCase = true) }
+                    ?.let { SuggestedTagOption.Existing(it) }
+                    ?: SuggestedTagOption.New(name)
+            }
+            if (suggestedTagOptions.isNotEmpty()) {
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(
                         text = stringResource(R.string.upload_suggested_tags),
@@ -444,17 +441,32 @@ fun UploadScreen(
                         modifier = Modifier.horizontalScroll(rememberScrollState()),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        suggestedTags.forEach { tag ->
+                        suggestedTagOptions.forEach { option ->
+                            val selected = when (option) {
+                                is SuggestedTagOption.Existing -> option.tag.id in selectedTagIds
+                                is SuggestedTagOption.New -> option.name in selectedNewTagNames
+                            }
                             FilterChip(
-                                selected = tag.id in selectedTagIds,
+                                selected = selected,
                                 onClick = {
-                                    selectedTagIds = if (tag.id in selectedTagIds) {
-                                        selectedTagIds - tag.id
-                                    } else {
-                                        selectedTagIds + tag.id
+                                    when (option) {
+                                        is SuggestedTagOption.Existing -> {
+                                            selectedTagIds = if (selected) {
+                                                selectedTagIds - option.tag.id
+                                            } else {
+                                                selectedTagIds + option.tag.id
+                                            }
+                                        }
+                                        is SuggestedTagOption.New -> {
+                                            selectedNewTagNames = if (selected) {
+                                                selectedNewTagNames - option.name
+                                            } else {
+                                                selectedNewTagNames + option.name
+                                            }
+                                        }
                                     }
                                 },
-                                label = { Text(tag.name) },
+                                label = { Text(option.name) },
                             )
                         }
                     }
@@ -482,8 +494,6 @@ fun UploadScreen(
                     color = MaterialTheme.colorScheme.error,
                 )
             }
-
-            Spacer(Modifier.height(4.dp))
 
             Button(
                 onClick = onClick@{
@@ -521,10 +531,18 @@ fun UploadScreen(
                         doc.delete()
                         (pendingUpload as? PendingUpload.Images)?.pages?.forEach { it.delete() }
 
-                        if (selectedTagIds.isNotEmpty()) {
+                        if (selectedTagIds.isNotEmpty() || selectedNewTagNames.isNotEmpty()) {
                             withContext(Dispatchers.IO) {
                                 selectedTagIds.forEach { tagId ->
                                     runCatching { client.addTagToDocument(org.id, uploadedDoc.id, tagId) }
+                                }
+                                // Manuell ausgewählte, noch nicht existierende Vorschläge werden
+                                // jetzt erst angelegt — nicht schon bei der bloßen Anzeige des Chips.
+                                selectedNewTagNames.forEach { name ->
+                                    client.createTag(organizationId = org.id, name = name, color = NEW_TAG_COLOR)
+                                        .onSuccess { newTag ->
+                                            runCatching { client.addTagToDocument(org.id, uploadedDoc.id, newTag.id) }
+                                        }
                                 }
                             }
                         }
@@ -546,16 +564,7 @@ fun UploadScreen(
                             !store.isSupporter &&
                             (count == 5 || (count > 5 && (count - 5) % 10 == 0))
 
-                        val deadline = insights.deadline
-                        when {
-                            deadline != null && store.smartInsightsEnabled -> {
-                                pendingDeadlineDocumentName = finalName
-                                pendingShouldPromptSupport = shouldPromptSupport
-                                pendingDeadline = deadline
-                            }
-                            shouldPromptSupport -> showSupportDialog = true
-                            else -> onDone()
-                        }
+                        if (shouldPromptSupport) showSupportDialog = true else onDone()
                     }
                 },
                 enabled = !uploading && documentReady && selectedOrg != null && fileName.isNotBlank(),
@@ -579,57 +588,6 @@ fun UploadScreen(
                 Text(stringResource(if (isReadyDocument) R.string.upload_cancel else R.string.upload_retake))
             }
         }
-    }
-
-    pendingDeadline?.let { deadline ->
-        AlertDialog(
-            onDismissRequest = {
-                pendingDeadline = null
-                if (pendingShouldPromptSupport) showSupportDialog = true else onDone()
-            },
-            title = { Text(stringResource(R.string.upload_deadline_dialog_title)) },
-            text = {
-                Text(
-                    stringResource(
-                        R.string.upload_deadline_dialog_message,
-                        deadline.label,
-                        deadline.date.format(DISPLAY_DATE_FORMATTER),
-                    ),
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-                            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) !=
-                            PackageManager.PERMISSION_GRANTED
-                        ) {
-                            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                        }
-                        ReminderScheduler.schedule(
-                            context = context,
-                            date = deadline.date,
-                            label = deadline.label,
-                            documentName = pendingDeadlineDocumentName,
-                        )
-                        pendingDeadline = null
-                        if (pendingShouldPromptSupport) showSupportDialog = true else onDone()
-                    },
-                ) {
-                    Text(stringResource(R.string.upload_deadline_dialog_confirm))
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        pendingDeadline = null
-                        if (pendingShouldPromptSupport) showSupportDialog = true else onDone()
-                    },
-                ) {
-                    Text(stringResource(R.string.upload_deadline_dialog_dismiss))
-                }
-            },
-        )
     }
 
     if (Features.SUPPORTER_ENABLED && showSupportDialog) {
@@ -660,7 +618,7 @@ private fun renderPdfFirstPage(file: File): android.graphics.Bitmap? {
                 }
             }
         }
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         null
     }
 }
@@ -678,3 +636,17 @@ private fun ensureExtension(name: String, mimeType: String): String {
     if (name.contains('.')) return name
     return "$name.${extensionForMimeType(mimeType)}"
 }
+
+/** Ein vorgeschlagener Tag: entweder schon in der Organisation vorhanden oder (noch) nicht. */
+private sealed interface SuggestedTagOption {
+    val name: String
+
+    data class Existing(val tag: TagDto) : SuggestedTagOption {
+        override val name get() = tag.name
+    }
+
+    data class New(override val name: String) : SuggestedTagOption
+}
+
+/** Default-Farbe für automatisch angelegte Smart-Suggestion-Tags — gleicher Wert wie TagsScreens Standard-Swatch. */
+private const val NEW_TAG_COLOR = "#D8FF75"

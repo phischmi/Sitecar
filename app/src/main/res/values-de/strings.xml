@@ -20,8 +20,11 @@
     <string name="settings_ocr_title">Texterkennung auf dem Gerät (OCR)</string>
     <string name="settings_ocr_subtitle">Bettet vor dem Upload einen durchsuchbaren Textlayer ins PDF ein. Deaktivieren, wenn dein Papra-Server bereits OCR durchführt (z. B. Mistral OCR).</string>
 
+    <string name="settings_share_intent_title">Teilen an Sitecar</string>
+    <string name="settings_share_intent_subtitle">Erlaubt anderen Apps, Bilder und PDFs direkt per Android-Share-Sheet an Sitecar zu senden.</string>
+
     <string name="settings_smart_insights_title">Intelligente Vorschläge</string>
-    <string name="settings_smart_insights_subtitle">Schlägt Tags, das Dokumentdatum und erkannte Fristen aus dem gescannten Text vor — komplett on-device, regelbasiert.</string>
+    <string name="settings_smart_insights_subtitle">Schlägt Tags, das Dokumentdatum und den erkannten Absender aus dem gescannten Text vor — komplett on-device, regelbasiert.</string>
 
     <string name="settings_on_device_ai_title">KI auf dem Gerät (Gemini Nano)</string>
     <string name="settings_on_device_ai_subtitle">Verbessert die intelligenten Vorschläge mit Gemini Nano über Android AICore — komplett on-device, es verlassen keine Daten das Gerät. Benötigt ein kompatibles Gerät und einen einmaligen Modell-Download; ohne Verfügbarkeit greifen weiterhin die regelbasierten Vorschläge oben.</string>
@@ -29,13 +32,25 @@
     <string name="settings_on_device_ai_download_failed">Modell-Download fehlgeschlagen. Bitte Verbindung prüfen und erneut versuchen.</string>
 
     <string name="settings_filename_template_title">Dateinamen-Format</string>
-    <string name="settings_filename_template_hint">Scan-{date}-{time} — Platzhalter: {date} {time} {org} {counter}</string>
+    <string name="settings_filename_template_hint">Scan-{date}-{time} — Platzhalter: {date} {time} {org} {sender} {counter}</string>
+    <string name="settings_filename_template_help">Platzhalter-Hilfe</string>
+    <string name="settings_filename_placeholder_date">Scan-Datum (yyyyMMdd)</string>
+    <string name="settings_filename_placeholder_time">Scan-Uhrzeit (HHmmss)</string>
+    <string name="settings_filename_placeholder_org">Name der Ziel-Organisation</string>
+    <string name="settings_filename_placeholder_sender">Erkannter Absender (z. B. Firmenname), falls erkannt</string>
+    <string name="settings_filename_placeholder_counter">Upload-Zähler, 3-stellig (z. B. 007)</string>
+
+    <string name="settings_swipe_title">Wischgesten</string>
+    <string name="settings_swipe_start_to_end">Nach rechts wischen</string>
+    <string name="settings_swipe_end_to_start">Nach links wischen</string>
+    <string name="settings_swipe_action_none">Aus</string>
 
     <string name="settings_accent_title">Akzentfarbe</string>
+    <string name="settings_accent_subtitle">Jeder Kreis zeigt die Hellmodus-Farbe (oben links) und die Dunkelmodus-Farbe (unten rechts).</string>
     <string name="settings_accent_locked_hint">Weitere Farben mit einer einmaligen Spende freischalten.</string>
 
-    <string name="settings_support_title">Unterstützung</string>
-    <string name="settings_support_badge">✓ Du unterstützt Sitecar — danke!</string>
+    <string name="settings_support_title">Unterstützung 🏆</string>
+    <string name="settings_support_badge">Du unterstützt Sitecar — danke! ❤️</string>
     <string name="settings_support_cta">Sitecar unterstützen</string>
 
     <string name="support_dialog_title">Gefällt dir Sitecar?</string>
@@ -69,14 +84,8 @@
     <string name="upload_shared_multiple_ignored">Nur die erste von %1$d geteilten Dateien wird verwendet.</string>
     <string name="upload_suggested_tags">Vorgeschlagene Tags</string>
     <string name="upload_use_document_date">Dokumentdatum verwenden: %1$s</string>
-    <string name="upload_deadline_dialog_title">Frist erkannt</string>
-    <string name="upload_deadline_dialog_message">%1$s am %2$s. Lokale Erinnerung setzen?</string>
-    <string name="upload_deadline_dialog_confirm">Erinnerung setzen</string>
-    <string name="upload_deadline_dialog_dismiss">Nein danke</string>
+    <string name="upload_use_sender_name">Absendername verwenden: %1$s</string>
     <string name="upload_duplicate_warning">Ähnlich zu \"%1$s\", hochgeladen am %2$s.</string>
-
-    <string name="reminder_channel_name">Dokument-Fristen</string>
-    <string name="reminder_default_title">Frist-Erinnerung</string>
 
     <string name="nav_settings">Einstellungen</string>
     <string name="nav_scan">Scannen</string>
@@ -100,6 +109,12 @@
     <string name="documents_sort_name_asc">Name (A–Z)</string>
     <string name="documents_sort_name_desc">Name (Z–A)</string>
     <string name="documents_manage_tags_title">Tags verwalten</string>
+    <string name="documents_selected_count">%1$d ausgewählt</string>
+    <string name="documents_bulk_delete_title">%1$d Dokumente löschen?</string>
+    <string name="documents_bulk_delete_message">Sie werden auf deinem Papra-Server in den Papierkorb verschoben.</string>
+    <string name="documents_bulk_delete_partial_failure">Einige Dokumente konnten nicht gelöscht werden.</string>
+    <string name="documents_bulk_tags_title">Tags für %1$d Dokumente bearbeiten</string>
+    <string name="documents_bulk_tags_partial_failure">Einige Tags konnten nicht bei allen Dokumenten aktualisiert werden.</string>
     <string name="documents_manage_tags_empty">Diese Organisation hat noch keine Tags. Lege zuerst einen im Tags-Tab an.</string>
 
     <string name="trash_title">Papierkorb</string>
@@ -126,6 +141,8 @@
 
     <string name="error_unknown">Unbekannter Fehler</string>
     <string name="error_unauthorized">Anmeldung fehlgeschlagen — API-Key prüfen.</string>
+    <string name="error_forbidden">Dein API-Key hat keine Berechtigung für diese Aktion — prüfe seine Scopes in Papra (Einstellungen → API-Keys).</string>
+    <string name="error_trash_action_unsupported">Papras Server lehnt für Wiederherstellen, endgültiges Löschen und Papierkorb leeren aktuell jeden API-Key ab (ein Fehler in Papra selbst, nicht an deinem Key) — nutze dafür vorerst die Papra-Weboberfläche.</string>
     <string name="error_not_found">Server nicht gefunden — Server-URL prüfen.</string>
     <string name="error_server">Serverfehler — bitte später erneut versuchen.</string>
     <string name="error_no_connection">Server nicht erreichbar.</string>

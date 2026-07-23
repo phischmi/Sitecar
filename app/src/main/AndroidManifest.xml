@@ -3,8 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- Nur für lokale Erinnerungen an erkannte Fristen (Feature "Intelligente Vorschläge"). -->
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <!--
       Bezahlfunktion vorerst deaktiviert (siehe Features.SUPPORTER_ENABLED): die
@@ -33,28 +31,44 @@
             android:name=".MainActivity"
             android:exported="true"
             android:launchMode="singleTask"
-            android:theme="@style/Theme.Sitecar">
+            android:theme="@style/Theme.Sitecar" />
 
-            <!--
-              "Teilen an Sitecar": empfängt Bilder und PDFs aus anderen Apps
-              (z. B. Mail-Anhänge, Galerie-Fotos, Chat-Bilder) und schickt sie
-              in denselben Upload-Screen wie ein Kamera-Scan. Bewusst auf
-              image/* und application/pdf beschränkt, damit die App im
-              Share-Sheet nicht für beliebige Inhalte auftaucht.
-            -->
+        <!--
+          "Teilen an Sitecar": empfängt Bilder und PDFs aus anderen Apps
+          (z. B. Mail-Anhänge, Galerie-Fotos, Chat-Bilder) und schickt sie in
+          denselben Upload-Screen wie ein Kamera-Scan. Bewusst auf image/*,
+          application/pdf und application/octet-stream (manche Apps deklarieren
+          PDFs darüber, z. B. wenn ihr FileProvider keinen expliziten Typ
+          zuordnet) beschränkt, damit die App im Share-Sheet nicht für beliebige
+          Inhalte auftaucht.
+
+          Opt-in: eigener activity-alias statt Intent-Filter direkt auf
+          .MainActivity, damit sich die Sichtbarkeit im Share-Sheet zur
+          Laufzeit per PackageManager.setComponentEnabledSetting() an-/abschalten
+          lässt (siehe ShareReceiver.kt, SettingsStore.shareIntentEnabled) —
+          Standard ist deaktiviert.
+        -->
+        <activity-alias
+            android:name=".ShareReceiver"
+            android:targetActivity=".MainActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="image/*" />
                 <data android:mimeType="application/pdf" />
+                <data android:mimeType="application/octet-stream" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SEND_MULTIPLE" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="image/*" />
                 <data android:mimeType="application/pdf" />
+                <data android:mimeType="application/octet-stream" />
             </intent-filter>
-        </activity>
+        </activity-alias>
 
         <!--
           Launcher-Icon-Varianten (eine pro Akzentfarbe, siehe LauncherIcon.kt).
@@ -112,6 +126,26 @@
             android:exported="true"
             android:icon="@mipmap/ic_launcher_rose"
             android:roundIcon="@mipmap/ic_launcher_rose_round"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <!--
+          "Papra"-Akzent: reproduziert Papras eigenes Orange (Hellmodus-Farbe,
+          siehe Theme.kt/AccentColor.PAPRA) als Icon-Hintergrund — beim Icon
+          wird bewusst immer die (dunklere, kontrastreichere) Hellmodus-
+          Akzentfarbe verwendet, nicht die hellere Dunkelmodus-Variante.
+        -->
+        <activity-alias
+            android:name=".LauncherPapra"
+            android:targetActivity=".MainActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_papra"
+            android:roundIcon="@mipmap/ic_launcher_papra_round"
             android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

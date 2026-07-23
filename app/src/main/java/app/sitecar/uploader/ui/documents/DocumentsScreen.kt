@@ -2,16 +2,20 @@ package app.sitecar.uploader.ui.documents
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -24,6 +28,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
@@ -48,12 +53,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -62,6 +71,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -76,9 +86,10 @@ import app.sitecar.uploader.data.DocumentThumbnailLoader
 import app.sitecar.uploader.data.Organization
 import app.sitecar.uploader.data.SitecarApiClient
 import app.sitecar.uploader.data.SettingsStore
+import app.sitecar.uploader.data.SwipeAction
 import app.sitecar.uploader.data.TagDto
-import app.sitecar.uploader.ui.util.ApiErrorMessages
 import app.sitecar.uploader.ui.util.friendlyErrorMessage
+import app.sitecar.uploader.ui.util.rememberApiErrorMessages
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -126,14 +137,21 @@ fun DocumentsScreen(
     var orgTags by remember { mutableStateOf<List<TagDto>>(emptyList()) }
     var orgTagsLoading by remember { mutableStateOf(false) }
     var togglingTagId by remember { mutableStateOf<String?>(null) }
-    val apiErrorMessages = ApiErrorMessages(
-        unauthorized = stringResource(R.string.error_unauthorized),
-        notFound = stringResource(R.string.error_not_found),
-        server = stringResource(R.string.error_server),
-        noConnection = stringResource(R.string.error_no_connection),
-        timeout = stringResource(R.string.error_timeout),
-        unknown = stringResource(R.string.error_unknown),
-    )
+    var selectionMode by remember { mutableStateOf(false) }
+    var selectedDocIds by remember { mutableStateOf<Set<String>>(emptySet()) }
+    var bulkTagsDialogOpen by remember { mutableStateOf(false) }
+    var bulkDeleteDialogOpen by remember { mutableStateOf(false) }
+    var bulkActionInProgress by remember { mutableStateOf(false) }
+    val swipeStartToEndAction by store.swipeStartToEndActionFlow.collectAsState(initial = store.swipeStartToEndAction)
+    val swipeEndToStartAction by store.swipeEndToStartActionFlow.collectAsState(initial = store.swipeEndToStartAction)
+    val apiErrorMessages = rememberApiErrorMessages()
+    val bulkDeletePartialFailureMessage = stringResource(R.string.documents_bulk_delete_partial_failure)
+    val bulkTagsPartialFailureMessage = stringResource(R.string.documents_bulk_tags_partial_failure)
+
+    BackHandler(enabled = selectionMode) {
+        selectionMode = false
+        selectedDocIds = emptySet()
+    }
 
     suspend fun fetchDocuments(org: Organization, query: String) {
         loading = true
@@ -207,6 +225,95 @@ fun DocumentsScreen(
         }
     }
 
+    fun clearSelection() {
+        selectionMode = false
+        selectedDocIds = emptySet()
+    }
+
+    fun startSelection(id: String) {
+        selectionMode = true
+        selectedDocIds = setOf(id)
+        menuOpenForId = null
+    }
+
+    fun toggleSelection(id: String) {
+        selectedDocIds = if (id in selectedDocIds) selectedDocIds - id else selectedDocIds + id
+        if (selectedDocIds.isEmpty()) selectionMode = false
+    }
+
+    fun bulkDelete() {
+        val org = selectedOrg ?: return
+        val ids = selectedDocIds
+        bulkActionInProgress = true
+        scope.launch {
+            val succeeded = mutableSetOf<String>()
+            ids.forEach { id ->
+                client.deleteDocument(organizationId = org.id, documentId = id).onSuccess { succeeded += id }
+            }
+            documents = documents.filterNot { it.id in succeeded }
+            bulkActionInProgress = false
+            if (succeeded.size < ids.size) {
+                errorMessage = bulkDeletePartialFailureMessage
+            }
+            clearSelection()
+        }
+    }
+
+    // Setzt/entfernt einen Tag bei allen ausgewählten Dokumenten: "checked" bedeutet
+    // "haben ihn schon alle" — ein Klick schaltet dann für alle in die jeweils andere
+    // Richtung, Dokumente, die den Zieltag schon/noch nicht hatten, bleiben unberührt.
+    fun toggleBulkTag(tag: TagDto, currentlyAllHave: Boolean) {
+        val org = selectedOrg ?: return
+        val targets = documents.filter { it.id in selectedDocIds }
+        togglingTagId = tag.id
+        scope.launch {
+            var anyFailure = false
+            targets.forEach { doc ->
+                val hasTag = doc.tags.any { it.id == tag.id }
+                val result = when {
+                    currentlyAllHave && hasTag ->
+                        client.removeTagFromDocument(organizationId = org.id, documentId = doc.id, tagId = tag.id)
+                    !currentlyAllHave && !hasTag ->
+                        client.addTagToDocument(organizationId = org.id, documentId = doc.id, tagId = tag.id)
+                    else -> Result.success(Unit)
+                }
+                if (result.isFailure) anyFailure = true
+            }
+            documents = documents.map { doc ->
+                if (doc.id in selectedDocIds) {
+                    val updatedTags = if (currentlyAllHave) {
+                        doc.tags.filterNot { it.id == tag.id }
+                    } else {
+                        (doc.tags + tag).distinctBy { it.id }
+                    }
+                    doc.copy(tags = updatedTags)
+                } else {
+                    doc
+                }
+            }
+            if (anyFailure) errorMessage = bulkTagsPartialFailureMessage
+            togglingTagId = null
+        }
+    }
+
+    // Wischgesten lösen dieselben Aktionen aus wie das "..."-Kontextmenü — nie
+    // direkt destruktiv, sondern öffnen den jeweiligen Bestätigungs-/Bearbeiten-
+    // Dialog, damit ein versehentliches Wischen kein Dokument sofort löscht.
+    fun performSwipeAction(action: SwipeAction, doc: DocumentDto) {
+        when (action) {
+            SwipeAction.DELETE -> docPendingDelete = doc
+            SwipeAction.RENAME -> {
+                renameText = doc.name.orEmpty()
+                docPendingRename = doc
+            }
+            SwipeAction.EDIT_TAGS -> {
+                docPendingTags = doc
+                selectedOrg?.let { ensureOrgTagsLoaded(it) }
+            }
+            SwipeAction.NONE -> {}
+        }
+    }
+
     fun toggleTag(doc: DocumentDto, tag: TagDto) {
         val org = selectedOrg ?: return
         val isAssigned = doc.tags.any { it.id == tag.id }
@@ -261,56 +368,87 @@ fun DocumentsScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.documents_title)) },
-                actions = {
-                    Box {
-                        IconButton(onClick = { sortMenuOpen = true }) {
-                            Icon(Icons.Default.Sort, contentDescription = stringResource(R.string.documents_sort))
+            if (selectionMode) {
+                TopAppBar(
+                    title = { Text(stringResource(R.string.documents_selected_count, selectedDocIds.size)) },
+                    navigationIcon = {
+                        IconButton(onClick = { clearSelection() }) {
+                            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.action_cancel))
                         }
-                        DropdownMenu(
-                            expanded = sortMenuOpen,
-                            onDismissRequest = { sortMenuOpen = false },
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.documents_sort_date_desc)) },
-                                onClick = {
-                                    sortField = DocumentSortField.CREATED_AT
-                                    sortOrder = DocumentSortOrder.DESC
-                                    sortMenuOpen = false
-                                },
+                    },
+                    actions = {
+                        if (bulkActionInProgress) {
+                            CircularProgressIndicator(
+                                strokeWidth = 2.dp,
+                                modifier = Modifier.size(20.dp).padding(horizontal = 12.dp),
                             )
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.documents_sort_date_asc)) },
+                        } else {
+                            IconButton(
                                 onClick = {
-                                    sortField = DocumentSortField.CREATED_AT
-                                    sortOrder = DocumentSortOrder.ASC
-                                    sortMenuOpen = false
+                                    bulkTagsDialogOpen = true
+                                    selectedOrg?.let { ensureOrgTagsLoaded(it) }
                                 },
-                            )
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.documents_sort_name_asc)) },
-                                onClick = {
-                                    sortField = DocumentSortField.NAME
-                                    sortOrder = DocumentSortOrder.ASC
-                                    sortMenuOpen = false
-                                },
-                            )
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.documents_sort_name_desc)) },
-                                onClick = {
-                                    sortField = DocumentSortField.NAME
-                                    sortOrder = DocumentSortOrder.DESC
-                                    sortMenuOpen = false
-                                },
-                            )
+                            ) {
+                                Icon(Icons.Default.Sell, contentDescription = stringResource(R.string.action_manage_tags))
+                            }
+                            IconButton(onClick = { bulkDeleteDialogOpen = true }) {
+                                Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.action_delete))
+                            }
                         }
-                    }
-                    IconButton(onClick = onOpenSettings) {
-                        Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.nav_settings))
-                    }
-                },
-            )
+                    },
+                )
+            } else {
+                TopAppBar(
+                    title = { Text(stringResource(R.string.documents_title)) },
+                    actions = {
+                        Box {
+                            IconButton(onClick = { sortMenuOpen = true }) {
+                                Icon(Icons.Default.Sort, contentDescription = stringResource(R.string.documents_sort))
+                            }
+                            DropdownMenu(
+                                expanded = sortMenuOpen,
+                                onDismissRequest = { sortMenuOpen = false },
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.documents_sort_date_desc)) },
+                                    onClick = {
+                                        sortField = DocumentSortField.CREATED_AT
+                                        sortOrder = DocumentSortOrder.DESC
+                                        sortMenuOpen = false
+                                    },
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.documents_sort_date_asc)) },
+                                    onClick = {
+                                        sortField = DocumentSortField.CREATED_AT
+                                        sortOrder = DocumentSortOrder.ASC
+                                        sortMenuOpen = false
+                                    },
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.documents_sort_name_asc)) },
+                                    onClick = {
+                                        sortField = DocumentSortField.NAME
+                                        sortOrder = DocumentSortOrder.ASC
+                                        sortMenuOpen = false
+                                    },
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.documents_sort_name_desc)) },
+                                    onClick = {
+                                        sortField = DocumentSortField.NAME
+                                        sortOrder = DocumentSortOrder.DESC
+                                        sortMenuOpen = false
+                                    },
+                                )
+                            }
+                        }
+                        IconButton(onClick = onOpenSettings) {
+                            Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.nav_settings))
+                        }
+                    },
+                )
+            }
         },
         bottomBar = bottomBar,
     ) { inner ->
@@ -412,96 +550,70 @@ fun DocumentsScreen(
                     ) {
                         val orgId = selectedOrg?.id.orEmpty()
                         items(documents, key = { it.id }) { doc ->
-                            ListItem(
-                                headlineContent = { Text(doc.name ?: doc.id) },
-                                supportingContent = {
-                                    Column {
-                                        Text("${formatDate(doc.createdAt)} · ${formatSize(doc.originalSize)}")
-                                        if (doc.tags.isNotEmpty()) {
-                                            Row(
-                                                modifier = Modifier
-                                                    .horizontalScroll(rememberScrollState())
-                                                    .padding(top = 4.dp),
-                                                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                            ) {
-                                                doc.tags.forEach { tag ->
-                                                    TagChip(
-                                                        tag = tag,
-                                                        onClick = { searchQuery = buildTagSearchQuery(tag.name) },
-                                                    )
-                                                }
-                                            }
+                            val rowContent: @Composable () -> Unit = {
+                                DocumentRow(
+                                    doc = doc,
+                                    organizationId = orgId,
+                                    thumbnailLoader = thumbnailLoader,
+                                    showOpeningIndicator = openingDocumentId == doc.id,
+                                    clickEnabled = openingDocumentId == null,
+                                    isBusy = deletingDocumentId == doc.id || renamingDocumentId == doc.id,
+                                    menuExpanded = menuOpenForId == doc.id,
+                                    onMenuExpandedChange = { expanded -> menuOpenForId = if (expanded) doc.id else null },
+                                    selectionMode = selectionMode,
+                                    selected = doc.id in selectedDocIds,
+                                    onClick = {
+                                        if (selectionMode) toggleSelection(doc.id) else openDocument(doc)
+                                    },
+                                    onLongClick = {
+                                        if (selectionMode) toggleSelection(doc.id) else startSelection(doc.id)
+                                    },
+                                    onRename = {
+                                        renameText = doc.name.orEmpty()
+                                        docPendingRename = doc
+                                    },
+                                    onManageTags = {
+                                        docPendingTags = doc
+                                        selectedOrg?.let { ensureOrgTagsLoaded(it) }
+                                    },
+                                    onDelete = { docPendingDelete = doc },
+                                    onTagClick = { tag -> searchQuery = buildTagSearchQuery(tag.name) },
+                                )
+                            }
+
+                            val swipeEnabled = !selectionMode &&
+                                (swipeStartToEndAction != SwipeAction.NONE || swipeEndToStartAction != SwipeAction.NONE)
+                            if (!swipeEnabled) {
+                                rowContent()
+                            } else {
+                                val dismissState = rememberSwipeToDismissBoxState(
+                                    confirmValueChange = { value ->
+                                        val action = when (value) {
+                                            SwipeToDismissBoxValue.StartToEnd -> swipeStartToEndAction
+                                            SwipeToDismissBoxValue.EndToStart -> swipeEndToStartAction
+                                            SwipeToDismissBoxValue.Settled -> SwipeAction.NONE
                                         }
-                                    }
-                                },
-                                leadingContent = {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(40.dp)
-                                            .clip(RoundedCornerShape(6.dp))
-                                            .background(MaterialTheme.colorScheme.surfaceVariant),
-                                        contentAlignment = Alignment.Center,
-                                    ) {
-                                        if (openingDocumentId == doc.id) {
-                                            CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(20.dp))
-                                        } else {
-                                            DocumentThumbnail(
-                                                doc = doc,
-                                                organizationId = orgId,
-                                                loader = thumbnailLoader,
-                                            )
-                                        }
-                                    }
-                                },
-                                trailingContent = {
-                                    if (deletingDocumentId == doc.id || renamingDocumentId == doc.id) {
-                                        CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(20.dp))
-                                    } else {
-                                        Box {
-                                            IconButton(onClick = { menuOpenForId = doc.id }) {
-                                                Icon(
-                                                    Icons.Default.MoreVert,
-                                                    contentDescription = stringResource(R.string.action_more),
-                                                )
-                                            }
-                                            DropdownMenu(
-                                                expanded = menuOpenForId == doc.id,
-                                                onDismissRequest = { menuOpenForId = null },
-                                            ) {
-                                                DropdownMenuItem(
-                                                    text = { Text(stringResource(R.string.action_rename)) },
-                                                    leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null) },
-                                                    onClick = {
-                                                        menuOpenForId = null
-                                                        renameText = doc.name.orEmpty()
-                                                        docPendingRename = doc
-                                                    },
-                                                )
-                                                DropdownMenuItem(
-                                                    text = { Text(stringResource(R.string.action_manage_tags)) },
-                                                    leadingIcon = { Icon(Icons.Default.Sell, contentDescription = null) },
-                                                    onClick = {
-                                                        menuOpenForId = null
-                                                        docPendingTags = doc
-                                                        selectedOrg?.let { ensureOrgTagsLoaded(it) }
-                                                    },
-                                                )
-                                                DropdownMenuItem(
-                                                    text = { Text(stringResource(R.string.action_delete)) },
-                                                    leadingIcon = { Icon(Icons.Default.Delete, contentDescription = null) },
-                                                    onClick = {
-                                                        menuOpenForId = null
-                                                        docPendingDelete = doc
-                                                    },
-                                                )
-                                            }
-                                        }
-                                    }
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable(enabled = openingDocumentId == null) { openDocument(doc) },
-                            )
+                                        performSwipeAction(action, doc)
+                                        // Nie wirklich "dismissen" — die Aktion öffnet nur den
+                                        // passenden Dialog, das Listenelement bleibt bestehen.
+                                        false
+                                    },
+                                )
+                                SwipeToDismissBox(
+                                    state = dismissState,
+                                    enableDismissFromStartToEnd = swipeStartToEndAction != SwipeAction.NONE,
+                                    enableDismissFromEndToStart = swipeEndToStartAction != SwipeAction.NONE,
+                                    backgroundContent = {
+                                        SwipeActionBackground(
+                                            direction = dismissState.dismissDirection,
+                                            startAction = swipeStartToEndAction,
+                                            endAction = swipeEndToStartAction,
+                                        )
+                                    },
+                                ) {
+                                    rowContent()
+                                }
+                            }
                         }
                     }
                 }
@@ -620,6 +732,246 @@ fun DocumentsScreen(
                 }
             },
         )
+    }
+
+    if (bulkDeleteDialogOpen) {
+        AlertDialog(
+            onDismissRequest = { bulkDeleteDialogOpen = false },
+            title = { Text(stringResource(R.string.documents_bulk_delete_title, selectedDocIds.size)) },
+            text = { Text(stringResource(R.string.documents_bulk_delete_message)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        bulkDeleteDialogOpen = false
+                        bulkDelete()
+                    },
+                ) {
+                    Text(stringResource(R.string.action_delete))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { bulkDeleteDialogOpen = false }) {
+                    Text(stringResource(R.string.action_cancel))
+                }
+            },
+        )
+    }
+
+    if (bulkTagsDialogOpen) {
+        val bulkTargets = documents.filter { it.id in selectedDocIds }
+        AlertDialog(
+            onDismissRequest = { bulkTagsDialogOpen = false },
+            title = { Text(stringResource(R.string.documents_bulk_tags_title, selectedDocIds.size)) },
+            text = {
+                when {
+                    orgTagsLoading -> Box(
+                        modifier = Modifier.fillMaxWidth().padding(24.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                    orgTags.isEmpty() -> Text(stringResource(R.string.documents_manage_tags_empty))
+                    else -> Column(
+                        modifier = Modifier
+                            .heightIn(max = 320.dp)
+                            .verticalScroll(rememberScrollState()),
+                    ) {
+                        orgTags.forEach { tag ->
+                            val allHave = bulkTargets.isNotEmpty() && bulkTargets.all { it.tags.any { t -> t.id == tag.id } }
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable(enabled = togglingTagId != tag.id) { toggleBulkTag(tag, allHave) }
+                                    .padding(vertical = 4.dp),
+                            ) {
+                                Checkbox(
+                                    checked = allHave,
+                                    onCheckedChange = { toggleBulkTag(tag, allHave) },
+                                    enabled = togglingTagId != tag.id,
+                                )
+                                Box(
+                                    modifier = Modifier
+                                        .size(14.dp)
+                                        .clip(CircleShape)
+                                        .background(parseHexColor(tag.color))
+                                        .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape),
+                                )
+                                Text(tag.name, modifier = Modifier.padding(start = 8.dp).weight(1f))
+                                if (togglingTagId == tag.id) {
+                                    CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(18.dp))
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { bulkTagsDialogOpen = false }) {
+                    Text(stringResource(R.string.action_done))
+                }
+            },
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@Composable
+private fun DocumentRow(
+    doc: DocumentDto,
+    organizationId: String,
+    thumbnailLoader: DocumentThumbnailLoader,
+    showOpeningIndicator: Boolean,
+    clickEnabled: Boolean,
+    isBusy: Boolean,
+    menuExpanded: Boolean,
+    onMenuExpandedChange: (Boolean) -> Unit,
+    selectionMode: Boolean,
+    selected: Boolean,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
+    onRename: () -> Unit,
+    onManageTags: () -> Unit,
+    onDelete: () -> Unit,
+    onTagClick: (TagDto) -> Unit,
+) {
+    ListItem(
+        headlineContent = { Text(doc.name ?: doc.id) },
+        supportingContent = {
+            Column {
+                Text("${formatDate(doc.createdAt)} · ${formatSize(doc.originalSize)}")
+                if (doc.tags.isNotEmpty()) {
+                    Row(
+                        modifier = Modifier
+                            .horizontalScroll(rememberScrollState())
+                            .padding(top = 4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        doc.tags.forEach { tag ->
+                            TagChip(tag = tag, onClick = { onTagClick(tag) })
+                        }
+                    }
+                }
+            }
+        },
+        leadingContent = {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                contentAlignment = Alignment.Center,
+            ) {
+                if (showOpeningIndicator) {
+                    CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(20.dp))
+                } else {
+                    DocumentThumbnail(doc = doc, organizationId = organizationId, loader = thumbnailLoader)
+                }
+                if (selectionMode) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(2.dp)
+                            .size(18.dp)
+                            .clip(CircleShape)
+                            .background(
+                                if (selected) MaterialTheme.colorScheme.primary else Color.Black.copy(alpha = 0.35f),
+                            )
+                            .border(1.dp, Color.White, CircleShape),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        if (selected) {
+                            Icon(
+                                Icons.Default.Check,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(12.dp),
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        trailingContent = {
+            if (isBusy) {
+                CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(20.dp))
+            } else if (!selectionMode) {
+                Box {
+                    IconButton(onClick = { onMenuExpandedChange(true) }) {
+                        Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.action_more))
+                    }
+                    DropdownMenu(
+                        expanded = menuExpanded,
+                        onDismissRequest = { onMenuExpandedChange(false) },
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.action_rename)) },
+                            leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null) },
+                            onClick = {
+                                onMenuExpandedChange(false)
+                                onRename()
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.action_manage_tags)) },
+                            leadingIcon = { Icon(Icons.Default.Sell, contentDescription = null) },
+                            onClick = {
+                                onMenuExpandedChange(false)
+                                onManageTags()
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.action_delete)) },
+                            leadingIcon = { Icon(Icons.Default.Delete, contentDescription = null) },
+                            onClick = {
+                                onMenuExpandedChange(false)
+                                onDelete()
+                            },
+                        )
+                    }
+                }
+            }
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+            )
+            .combinedClickable(enabled = clickEnabled, onClick = onClick, onLongClick = onLongClick),
+    )
+}
+
+@Composable
+private fun RowScope.SwipeActionBackground(
+    direction: SwipeToDismissBoxValue,
+    startAction: SwipeAction,
+    endAction: SwipeAction,
+) {
+    val action = when (direction) {
+        SwipeToDismissBoxValue.StartToEnd -> startAction
+        SwipeToDismissBoxValue.EndToStart -> endAction
+        SwipeToDismissBoxValue.Settled -> SwipeAction.NONE
+    }
+    val alignment = if (direction == SwipeToDismissBoxValue.StartToEnd) Alignment.CenterStart else Alignment.CenterEnd
+    val tint = when (action) {
+        SwipeAction.DELETE -> MaterialTheme.colorScheme.error
+        SwipeAction.RENAME, SwipeAction.EDIT_TAGS -> MaterialTheme.colorScheme.primary
+        SwipeAction.NONE -> MaterialTheme.colorScheme.surfaceVariant
+    }
+    val icon = when (action) {
+        SwipeAction.DELETE -> Icons.Default.Delete
+        SwipeAction.RENAME -> Icons.Default.Edit
+        SwipeAction.EDIT_TAGS -> Icons.Default.Sell
+        SwipeAction.NONE -> null
+    }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(tint.copy(alpha = 0.15f))
+            .padding(horizontal = 24.dp),
+        contentAlignment = alignment,
+    ) {
+        icon?.let { Icon(it, contentDescription = null, tint = tint) }
     }
 }
 

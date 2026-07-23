@@ -48,8 +48,20 @@ object ShareIntentHandler {
             if (pages.isEmpty()) null else PendingUpload.Images(pages)
         } else {
             val uri = uris.first()
-            val mimeType = mimeTypes.first().ifBlank { "application/octet-stream" }
+            val rawMimeType = mimeTypes.first().ifBlank { "application/octet-stream" }
             val displayName = queryDisplayName(context, uri)
+            // Manche Apps deklarieren PDFs als generisches application/octet-stream
+            // (z. B. wenn ihr FileProvider keinen expliziten Typ zuordnet) — verlässt
+            // sich der Dateiname eindeutig auf .pdf, korrigieren wir den Typ, damit
+            // Upload-Content-Type und PDF-Texterkennung (Smart Insights) trotzdem
+            // greifen.
+            val mimeType = if (rawMimeType == "application/octet-stream" &&
+                displayName?.endsWith(".pdf", ignoreCase = true) == true
+            ) {
+                "application/pdf"
+            } else {
+                rawMimeType
+            }
             val file = runCatching { copyToCache(context, uri, mimeType, displayName) }.getOrNull()
                 ?: return null
             PendingUpload.ReadyDocument(

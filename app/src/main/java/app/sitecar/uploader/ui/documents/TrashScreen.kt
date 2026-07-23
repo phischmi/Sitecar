@@ -56,13 +56,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import app.sitecar.uploader.R
+import app.sitecar.uploader.data.ApiException
 import app.sitecar.uploader.data.DocumentDto
 import app.sitecar.uploader.data.DocumentThumbnailLoader
 import app.sitecar.uploader.data.Organization
 import app.sitecar.uploader.data.SettingsStore
 import app.sitecar.uploader.data.SitecarApiClient
-import app.sitecar.uploader.ui.util.ApiErrorMessages
 import app.sitecar.uploader.ui.util.friendlyErrorMessage
+import app.sitecar.uploader.ui.util.rememberApiErrorMessages
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -96,14 +97,21 @@ fun TrashScreen(
     var docPendingPermanentDelete by remember { mutableStateOf<DocumentDto?>(null) }
     var emptyTrashDialogOpen by remember { mutableStateOf(false) }
     var emptyingTrash by remember { mutableStateOf(false) }
-    val apiErrorMessages = ApiErrorMessages(
-        unauthorized = stringResource(R.string.error_unauthorized),
-        notFound = stringResource(R.string.error_not_found),
-        server = stringResource(R.string.error_server),
-        noConnection = stringResource(R.string.error_no_connection),
-        timeout = stringResource(R.string.error_timeout),
-        unknown = stringResource(R.string.error_unknown),
-    )
+    val apiErrorMessages = rememberApiErrorMessages()
+    val trashActionUnsupportedMessage = stringResource(R.string.error_trash_action_unsupported)
+
+    // Papra's server currently rejects every API key (any permissions) for restore,
+    // permanent delete, and empty trash — its auth middleware requires an explicit
+    // apiKeyPermissions list to accept API-key auth at all, and these three routes
+    // don't declare one, so requireAuthentication() always denies API keys here
+    // regardless of scope. Not fixable client-side; surface that instead of the
+    // misleading "check your API key" message a plain 401 would otherwise show.
+    fun trashActionErrorMessage(error: Throwable): String =
+        if (error is ApiException && error.status.value == 401) {
+            trashActionUnsupportedMessage
+        } else {
+            friendlyErrorMessage(error, apiErrorMessages)
+        }
 
     suspend fun fetchDeleted(org: Organization) {
         loading = true
@@ -134,7 +142,7 @@ fun TrashScreen(
         scope.launch {
             client.restoreDocument(organizationId = org.id, documentId = doc.id)
                 .onSuccess { documents = documents.filterNot { it.id == doc.id } }
-                .onFailure { errorMessage = friendlyErrorMessage(it, apiErrorMessages) }
+                .onFailure { errorMessage = trashActionErrorMessage(it) }
             restoringDocumentId = null
         }
     }
@@ -145,7 +153,7 @@ fun TrashScreen(
         scope.launch {
             client.deleteTrashDocument(organizationId = org.id, documentId = doc.id)
                 .onSuccess { documents = documents.filterNot { it.id == doc.id } }
-                .onFailure { errorMessage = friendlyErrorMessage(it, apiErrorMessages) }
+                .onFailure { errorMessage = trashActionErrorMessage(it) }
             deletingDocumentId = null
         }
     }
@@ -156,7 +164,7 @@ fun TrashScreen(
         scope.launch {
             client.emptyTrash(organizationId = org.id)
                 .onSuccess { documents = emptyList() }
-                .onFailure { errorMessage = friendlyErrorMessage(it, apiErrorMessages) }
+                .onFailure { errorMessage = trashActionErrorMessage(it) }
             emptyingTrash = false
         }
     }

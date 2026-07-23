@@ -51,15 +51,11 @@ object GenAiInsightsEngine : SmartInsightsEngine {
             ?: return DocumentInsights.EMPTY
 
         val documentDate = result.documentDate?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
-        val deadlineDate = result.deadlineDate?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
-        val deadline = deadlineDate?.let {
-            Deadline(it, result.deadlineLabel?.trim()?.takeIf { label -> label.isNotBlank() } ?: "Frist")
-        }
 
         return DocumentInsights(
             suggestedTagNames = result.tags.map { it.trim() }.filter { it.isNotBlank() }.distinct(),
             documentDate = documentDate,
-            deadline = deadline,
+            senderName = result.senderName?.trim()?.take(60)?.takeIf { it.isNotBlank() },
         )
     }
 
@@ -77,11 +73,11 @@ object GenAiInsightsEngine : SmartInsightsEngine {
             Schlage zusätzlich bis zu 2 weitere, kurze, prägnante Tag-Namen vor (ein bis zwei Wörter,
             gleiche Sprache wie das Dokument), falls sinnvoll.
             Erkenne das Datum des Dokuments selbst (z. B. Rechnungs-, Ausstellungs- oder Vertragsdatum;
-            NICHT das heutige Datum) sowie eine etwaige Frist (z. B. Kündigungsfrist, Garantie-Ablauf,
-            Zahlungsziel) mit kurzer Bezeichnung.
+            NICHT das heutige Datum) sowie den Absender (z. B. Firmenname im Briefkopf oder ein
+            "Von:"/"Absender:"-Label).
             Antworte AUSSCHLIESSLICH mit einem einzigen kompakten JSON-Objekt ohne jede weitere
             Erklärung, exakt in diesem Format (Datumsformat JJJJ-MM-TT, null falls unbekannt):
-            {"tags": ["Tag1"], "documentDate": "2024-03-01", "deadlineDate": null, "deadlineLabel": null}
+            {"tags": ["Tag1"], "documentDate": "2024-03-01", "senderName": null}
 
             Dokumenttext:
             ${'"'}${'"'}${'"'}
@@ -94,8 +90,7 @@ object GenAiInsightsEngine : SmartInsightsEngine {
     private data class Result(
         val tags: List<String> = emptyList(),
         val documentDate: String? = null,
-        val deadlineDate: String? = null,
-        val deadlineLabel: String? = null,
+        val senderName: String? = null,
     )
 
     private val JSON_OBJECT = Regex("""\{[\s\S]*\}""")

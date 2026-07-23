@@ -2,7 +2,7 @@
   <img src="docs/logo.svg" width="96" height="96" alt="Sitecar Logo">
 </p>
 
-# Sitecar (Android)
+# Sitecar for Papra
 
 Schlanke native Android-App zum Aufnehmen und Hochladen von Dokumenten an eine
 selbst gehostete [Papra](https://github.com/papra-hq/papra)-Instanz — ein
@@ -11,6 +11,12 @@ eigenständiger Begleiter ("Sidecar") für Papra, vormals PapraCam.
 - Inoffiziell, nicht von papra-hq
 - Anbindung via API-Key (kein OAuth/Login)
 - Kotlin + Jetpack Compose, ML Kit Document Scanner, Ktor
+
+"Sitecar for Papra" ist der volle Name (z. B. für den Play-Store-Eintrag);
+auf dem Gerät selbst (Launcher-Icon, Kürzel, App-Info) bleibt es bewusst
+kurz **Sitecar** — `R.string.app_name`/`android:label` sind unverändert
+"Sitecar". Der volle Store-Titel wird in der Play Console gepflegt (Store-
+Eintrag → App-Name), nicht im Code.
 
 ## Features
 
@@ -42,19 +48,37 @@ eigenständiger Begleiter ("Sidecar") für Papra, vormals PapraCam.
   (`POST`/`DELETE .../documents/:documentId/tags`). Zugewiesene Tags werden
   als farbige Chips in der Liste angezeigt, Tippen auf einen Chip filtert
   ebenfalls danach.
-- "Teilen an Sitecar": Bilder und PDFs aus anderen Apps (Mail-Anhänge,
-  Galerie, Chat) lassen sich per Android-Share-Sheet direkt an Sitecar
-  senden und durchlaufen denselben Upload-Screen wie ein Kamera-Scan.
-  Geteilte Bilder werden wie mehrseitige Scans behandelt (zu einem PDF
-  zusammengeführt, optional mit OCR); ein geteiltes PDF wird unverändert
-  hochgeladen. Bei mehreren geteilten Dateien zählt nur die erste.
+- Mehrfachauswahl: langes Drücken auf ein Dokument aktiviert den
+  Auswahlmodus (weitere Dokumente per Tippen dazu-/abwählen), die Titelleiste
+  wechselt zu "N ausgewählt" mit Aktionen zum gemeinsamen Löschen oder
+  Tags-Bearbeiten. Wischgesten sind während der Auswahl deaktiviert, System-
+  Zurück verlässt den Auswahlmodus statt den Bildschirm zu verlassen.
+- "Teilen an Sitecar" (Opt-in, standardmäßig aus — Einstellungen → "Teilen
+  an Sitecar"): Bilder und PDFs aus anderen Apps (Mail-Anhänge, Galerie,
+  Chat, Rechnungs-/Anbieter-Apps) lassen sich per Android-Share-Sheet direkt
+  an Sitecar senden und durchlaufen denselben Upload-Screen wie ein
+  Kamera-Scan. Geteilte Bilder werden wie mehrseitige Scans behandelt (zu
+  einem PDF zusammengeführt, optional mit OCR); ein geteiltes PDF wird
+  unverändert hochgeladen. Bei mehreren geteilten Dateien zählt nur die
+  erste. Erkannte MIME-Typen: `image/*`, `application/pdf` sowie
+  `application/octet-stream` (manche Apps deklarieren PDFs darüber, z. B.
+  wenn ihr FileProvider keinen expliziten Typ zuordnet — Sitecar korrigiert
+  den Typ dann anhand der `.pdf`-Dateiendung). Taucht Sitecar in einer
+  bestimmten App trotz aktiviertem Opt-in nicht im Share-Sheet auf, teilt
+  diese App vermutlich über einen anderen Mechanismus als Androids
+  Standard-`ACTION_SEND` (z. B. einen eigenen "Exportieren"-Button, der
+  direkt ins Dateisystem speichert) — das kann keine Ziel-App abfangen.
+  Technisch per activity-alias umgesetzt (`.ShareReceiver`), damit sich die
+  Sichtbarkeit zur Laufzeit umschalten lässt, ohne dass Sitecar sonst
+  irgendwo im Share-Sheet auftaucht.
 - Intelligente Vorschläge beim Hochladen (regelbasiert, komplett on-device,
   abschaltbar in den Einstellungen): erkennt Tags aus einem kleinen
-  Schlüsselwort-Vokabular und schlägt bereits in der Organisation vorhandene
-  Tags vor; erkennt das Dokumentdatum (z. B. Rechnungsdatum) als Alternative
-  zum Scan-Datum im Dateinamen; erkennt Fristen (z. B. Kündigungsfrist,
-  Garantie-Ablauf) und bietet nach dem Upload eine lokale Erinnerung an
-  (Android-Notification via WorkManager, kein Server-/Kalenderzugriff).
+  Schlüsselwort-Vokabular. Existiert der erkannte Tag bereits in der
+  Organisation, ist er vorausgewählt; existiert er noch nicht, wird er nur
+  als Vorschlag angezeigt und erst beim manuellen Auswählen tatsächlich
+  angelegt. Erkennt außerdem das Dokumentdatum (z. B. Rechnungsdatum) und
+  den Absender (Briefkopf-Firmenname oder ein "Von:"/"Absender:"-Label) als
+  Alternative zum Scan-Datum bzw. zur Organisation im Dateinamen.
 - Optional: KI auf dem Gerät (Gemini Nano via Android AICore / ML Kit GenAI
   Prompt API, in den Einstellungen separat aktivierbar) ergänzt die
   regelbasierten Vorschläge um echtes Sprachverständnis statt eines festen
@@ -72,25 +96,44 @@ eigenständiger Begleiter ("Sidecar") für Papra, vormals PapraCam.
 - Darstellung wählbar: Hell / Dunkel / System.
 - Schnellzugriff-Shortcut "Scannen" per Long-Press auf das App-Icon.
 - Anpassbares Dateinamen-Format für Scans (Platzhalter `{date}` `{time}`
-  `{org}` `{counter}`).
+  `{org}` `{sender}` `{counter}`), mit In-App-Hilfe (Info-Icon neben dem Feld
+  in den Einstellungen) zur Erklärung der Platzhalter.
+- Konfigurierbare Wischgesten in der Dokumentenliste (links/rechts getrennt
+  einstellbar in den Einstellungen): Löschen, Umbenennen oder Tags
+  bearbeiten. Löst nie direkt die Aktion aus, sondern öffnet den jeweiligen
+  Dialog wie im "..."-Kontextmenü — kein versehentliches Löschen durch
+  Wischen. Standard: rechts wischen → Tags, links wischen → Löschen.
 - _(Derzeit deaktiviert — die App wird zunächst vollständig kostenfrei
   ausgeliefert, siehe [Bezahlfunktion](#bezahlfunktion-vorerst-deaktiviert).)_
   Freiwilliger "Sitecar unterstützen"-Hinweis (einmalig 0,99 €, Play Billing),
   erscheint nach dem 5. erfolgreichen Upload, danach alle 10 weiteren — oder
   jederzeit manuell in den Einstellungen. Rein kosmetischer Dank: schaltet
-  drei weitere Akzentfarben frei (Smaragd/Bernstein/Rosé statt nur Indigo),
-  inklusive passend eingefärbtem App-Icon-Hintergrund. Kein bestehendes
+  vier weitere Akzentfarben frei (Smaragd/Bernstein/Rosé/Papra statt nur
+  Indigo). "Papra" reproduziert bewusst Papras eigenes Original-Farbschema
+  (Orange im Hellmodus, Neon-Lime/-Gelb im Dunkelmodus) statt der für Indigo
+  gewählten Abkehr davon. Jeder Akzent-Kreis in den Einstellungen zeigt
+  Hell- und Dunkelmodus-Farbe diagonal geteilt in einem Kreis (oben links /
+  unten rechts), unabhängig vom aktuell aktiven App-Theme. Jede Akzentfarbe
+  hat ein eigenfarbenes App-Icon (activity-alias); beim Icon wird bewusst
+  immer die (dunklere, kontrastreichere) Hellmodus-Akzentfarbe verwendet
+  (z. B. Papras Orange statt des helleren Neon-Lime). Kein bestehendes
   Feature wird Nicht-Unterstützern weggenommen oder vorenthalten.
 
 ## Bezahlfunktion (vorerst deaktiviert)
 
 Die freiwillige Unterstützer-Bezahlfunktion ist über den zentralen Schalter
 `Features.SUPPORTER_ENABLED` (in `app/src/main/java/app/sitecar/uploader/Features.kt`)
-**abgeschaltet** (`false`). Solange sie aus ist:
+**abgeschaltet** (`false`). Akzentfarben-Auswahl und Unterstützer-Bereich in
+den Einstellungen sind davon unabhängig über `Features.SUPPORTER_PREVIEW_ENABLED`
+(aktuell `true`) zum Testen/Vorschauen freigeschaltet: alle fünf Farben sind
+ohne Sperre wählbar, und der Unterstützer-Bereich zeigt den "bereits
+Unterstützer"-Zustand (Badge) statt einer Kauf-CTA, da ohne echte
+Bezahlfunktion kein In-App-Produkt zum Kaufen existiert. Sobald
+`SUPPORTER_ENABLED` wieder aktiviert wird, greifen an beiden Stellen
+automatisch wieder die echte Unterstützer-Sperre bzw. der echte Kauf-Flow,
+ganz ohne weitere Code-Änderung. Solange die Bezahlfunktion aus ist:
 
 - kein In-App-Kauf, kein Spenden-Dialog, keine Kauf-Aufforderung nach Uploads;
-- der Akzentfarben- und Unterstützer-Bereich in den Einstellungen ist
-  ausgeblendet (nur das Standard-Indigo ist aktiv);
 - die App baut keine Play-Billing-Verbindung auf und deklariert im finalen
   Manifest **keine** `com.android.vending.BILLING`-Permission (per
   `tools:node="remove"` entfernt).
@@ -149,17 +192,44 @@ gradle wrapper
 ./gradlew installDebug   # auf verbundenes Gerät installieren
 ```
 
+### Debug-APK per GitHub Action
+
+Unter **Actions → Build APK → Run workflow** lässt sich manuell ein Build der
+aktuellsten Version des jeweiligen Branches anstoßen. Nach Abschluss steht die
+APK als Artifact (`sitecar-<version>-debug-<sha>`) zum Download bereit. Lokal
+installieren:
+
+```sh
+adb install sitecar-*.apk
+```
+
 ## API-Key in Papra anlegen
 
 Im Papra-Web-UI unter **Settings → API Keys** einen Key mit der Berechtigung
 `documents:create` (und idealerweise `organizations:read` für die Org-Liste)
 erzeugen. Der Key beginnt mit `ppapi_`.
 
+**Papierkorb-Aktionen (Wiederherstellen, endgültig löschen, Papierkorb
+leeren) funktionieren aktuell mit keinem API-Key** — das ist kein
+Scope-/Berechtigungsproblem des eigenen Keys, sondern ein serverseitiger Bug
+in Papra selbst: Die drei zugehörigen Routen (`POST .../restore`,
+`DELETE .../documents/trash/:documentId`, `DELETE .../documents/trash`)
+registrieren ihre `requireAuthentication()`-Middleware ohne
+`apiKeyPermissions`-Angabe. In `isAuthenticationValid()`
+(`auth.models.ts`) führt das im API-Key-Zweig zu `if (!requiredApiKeyPermissions)
+return false` — API-Key-Auth wird für diese drei Routen also unabhängig von
+den Scopes des Keys grundsätzlich abgelehnt (nur eine eingeloggte
+Browser-Session kommt durch). Sitecar zeigt dafür einen eigenen Hinweistext
+statt der irreführenden "API-Key prüfen"-Meldung; als Workaround bleibt
+vorerst nur die Papra-Weboberfläche für diese drei Aktionen.
+
 ## Hinweise
 
 - `usesCleartextTraffic="true"` ist gesetzt, damit auch HTTP-Self-Hosted-Instanzen
   funktionieren. Für reine HTTPS-Setups später per `networkSecurityConfig` einengen.
-- API-Key und Server-URL liegen in `EncryptedSharedPreferences` (AES-256, Android Keystore).
+- API-Key und Server-URL liegen in `EncryptedSharedPreferences` (AES-256, Android
+  Keystore) und werden nie geloggt; das API-Key-Feld ist zusätzlich als
+  Passwortfeld maskiert.
 - Min-SDK 26 (Android 8), Target-SDK 35.
 - Der ML Kit Document Scanner lädt sein Modell beim ersten Start on-demand
   über Google Play Services nach (einmalig ~ein paar MB). Setzt Play Services voraus.
@@ -174,7 +244,7 @@ erzeugen. Der Key beginnt mit `ppapi_`.
   Meldung erklärt das. Der Modell-Download ist geräteweit und einmalig (wird
   ggf. auch von anderen Apps mitgenutzt, die dieselbe ML-Kit-GenAI-API
   verwenden).
-- Die Akzentfarben-Icons werden über vier `activity-alias`-Einträge im Manifest
+- Die Akzentfarben-Icons werden über fünf `activity-alias`-Einträge im Manifest
   realisiert (eine pro Farbe, nur eine ist jeweils `enabled`); `LauncherIcon.apply()`
   schaltet zur Laufzeit um. Je nach Launcher kann die Aktualisierung des
   Home-Screen-Icons ein bis zwei Sekunden dauern — normales Verhalten dieser

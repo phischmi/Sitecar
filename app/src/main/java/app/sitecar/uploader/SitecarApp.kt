@@ -8,6 +8,7 @@ import app.sitecar.uploader.data.PdfBuilder
 import app.sitecar.uploader.data.SettingsStore
 import app.sitecar.uploader.data.duplicates.RecentUploadsStore
 import app.sitecar.uploader.icon.LauncherIcon
+import app.sitecar.uploader.share.ShareReceiver
 import app.sitecar.uploader.shortcuts.AppShortcuts
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 
@@ -48,5 +49,6 @@ class SitecarApp : Application() {
         }
         AppShortcuts.register(applicationContext)
         LauncherIcon.apply(applicationContext, settingsStore.accentColor)
+        ShareReceiver.setEnabled(applicationContext, settingsStore.shareIntentEnabled)
     }
 }
