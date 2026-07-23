@@ -71,6 +71,7 @@ import app.sitecar.uploader.data.SettingsStore
 import app.sitecar.uploader.data.SwipeAction
 import app.sitecar.uploader.data.ThemeMode
 import app.sitecar.uploader.icon.LauncherIcon
+import app.sitecar.uploader.share.ShareReceiver
 import app.sitecar.uploader.ui.support.SupportDialog
 import app.sitecar.uploader.ui.theme.accentPrimaryColor
 import app.sitecar.uploader.ui.util.ApiErrorMessages
@@ -95,6 +96,7 @@ fun SettingsScreen(
     var orgCount by remember { mutableStateOf<Int?>(null) }
     var themeMode by remember { mutableStateOf(store.themeMode) }
     var ocrEnabled by remember { mutableStateOf(store.onDeviceOcrEnabled) }
+    var shareIntentEnabled by remember { mutableStateOf(store.shareIntentEnabled) }
     var smartInsightsEnabled by remember { mutableStateOf(store.smartInsightsEnabled) }
     var filenameTemplate by remember { mutableStateOf(store.filenameTemplate) }
     var showFilenameHelp by remember { mutableStateOf(false) }
@@ -186,6 +188,33 @@ fun SettingsScreen(
                     onCheckedChange = {
                         ocrEnabled = it
                         store.onDeviceOcrEnabled = it
+                    },
+                )
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            Text(
+                text = stringResource(R.string.settings_share_intent_title),
+                style = MaterialTheme.typography.labelLarge,
+            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(
+                    text = stringResource(R.string.settings_share_intent_subtitle),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f),
+                )
+                Spacer(Modifier.width(12.dp))
+                Switch(
+                    checked = shareIntentEnabled,
+                    onCheckedChange = {
+                        shareIntentEnabled = it
+                        store.shareIntentEnabled = it
+                        ShareReceiver.setEnabled(context, it)
                     },
                 )
             }

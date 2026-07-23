@@ -20,6 +20,9 @@
     <string name="settings_ocr_title">Texterkennung auf dem Gerät (OCR)</string>
     <string name="settings_ocr_subtitle">Bettet vor dem Upload einen durchsuchbaren Textlayer ins PDF ein. Deaktivieren, wenn dein Papra-Server bereits OCR durchführt (z. B. Mistral OCR).</string>
 
+    <string name="settings_share_intent_title">Teilen an Sitecar</string>
+    <string name="settings_share_intent_subtitle">Erlaubt anderen Apps, Bilder und PDFs direkt per Android-Share-Sheet an Sitecar zu senden.</string>
+
     <string name="settings_smart_insights_title">Intelligente Vorschläge</string>
     <string name="settings_smart_insights_subtitle">Schlägt Tags, das Dokumentdatum und erkannte Fristen aus dem gescannten Text vor — komplett on-device, regelbasiert.</string>
 

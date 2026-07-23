@@ -52,12 +52,24 @@ Eintrag → App-Name), nicht im Code.
   wechselt zu "N ausgewählt" mit Aktionen zum gemeinsamen Löschen oder
   Tags-Bearbeiten. Wischgesten sind während der Auswahl deaktiviert, System-
   Zurück verlässt den Auswahlmodus statt den Bildschirm zu verlassen.
-- "Teilen an Sitecar": Bilder und PDFs aus anderen Apps (Mail-Anhänge,
-  Galerie, Chat) lassen sich per Android-Share-Sheet direkt an Sitecar
-  senden und durchlaufen denselben Upload-Screen wie ein Kamera-Scan.
-  Geteilte Bilder werden wie mehrseitige Scans behandelt (zu einem PDF
-  zusammengeführt, optional mit OCR); ein geteiltes PDF wird unverändert
-  hochgeladen. Bei mehreren geteilten Dateien zählt nur die erste.
+- "Teilen an Sitecar" (Opt-in, standardmäßig aus — Einstellungen → "Teilen
+  an Sitecar"): Bilder und PDFs aus anderen Apps (Mail-Anhänge, Galerie,
+  Chat, Rechnungs-/Anbieter-Apps) lassen sich per Android-Share-Sheet direkt
+  an Sitecar senden und durchlaufen denselben Upload-Screen wie ein
+  Kamera-Scan. Geteilte Bilder werden wie mehrseitige Scans behandelt (zu
+  einem PDF zusammengeführt, optional mit OCR); ein geteiltes PDF wird
+  unverändert hochgeladen. Bei mehreren geteilten Dateien zählt nur die
+  erste. Erkannte MIME-Typen: `image/*`, `application/pdf` sowie
+  `application/octet-stream` (manche Apps deklarieren PDFs darüber, z. B.
+  wenn ihr FileProvider keinen expliziten Typ zuordnet — Sitecar korrigiert
+  den Typ dann anhand der `.pdf`-Dateiendung). Taucht Sitecar in einer
+  bestimmten App trotz aktiviertem Opt-in nicht im Share-Sheet auf, teilt
+  diese App vermutlich über einen anderen Mechanismus als Androids
+  Standard-`ACTION_SEND` (z. B. einen eigenen "Exportieren"-Button, der
+  direkt ins Dateisystem speichert) — das kann keine Ziel-App abfangen.
+  Technisch per activity-alias umgesetzt (`.ShareReceiver`), damit sich die
+  Sichtbarkeit zur Laufzeit umschalten lässt, ohne dass Sitecar sonst
+  irgendwo im Share-Sheet auftaucht.
 - Intelligente Vorschläge beim Hochladen (regelbasiert, komplett on-device,
   abschaltbar in den Einstellungen): erkennt Tags aus einem kleinen
   Schlüsselwort-Vokabular und schlägt bereits in der Organisation vorhandene

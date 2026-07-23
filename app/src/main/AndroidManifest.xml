@@ -33,28 +33,44 @@
             android:name=".MainActivity"
             android:exported="true"
             android:launchMode="singleTask"
-            android:theme="@style/Theme.Sitecar">
+            android:theme="@style/Theme.Sitecar" />
 
-            <!--
-              "Teilen an Sitecar": empfängt Bilder und PDFs aus anderen Apps
-              (z. B. Mail-Anhänge, Galerie-Fotos, Chat-Bilder) und schickt sie
-              in denselben Upload-Screen wie ein Kamera-Scan. Bewusst auf
-              image/* und application/pdf beschränkt, damit die App im
-              Share-Sheet nicht für beliebige Inhalte auftaucht.
-            -->
+        <!--
+          "Teilen an Sitecar": empfängt Bilder und PDFs aus anderen Apps
+          (z. B. Mail-Anhänge, Galerie-Fotos, Chat-Bilder) und schickt sie in
+          denselben Upload-Screen wie ein Kamera-Scan. Bewusst auf image/*,
+          application/pdf und application/octet-stream (manche Apps deklarieren
+          PDFs darüber, z. B. wenn ihr FileProvider keinen expliziten Typ
+          zuordnet) beschränkt, damit die App im Share-Sheet nicht für beliebige
+          Inhalte auftaucht.
+
+          Opt-in: eigener activity-alias statt Intent-Filter direkt auf
+          .MainActivity, damit sich die Sichtbarkeit im Share-Sheet zur
+          Laufzeit per PackageManager.setComponentEnabledSetting() an-/abschalten
+          lässt (siehe ShareReceiver.kt, SettingsStore.shareIntentEnabled) —
+          Standard ist deaktiviert.
+        -->
+        <activity-alias
+            android:name=".ShareReceiver"
+            android:targetActivity=".MainActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="image/*" />
                 <data android:mimeType="application/pdf" />
+                <data android:mimeType="application/octet-stream" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SEND_MULTIPLE" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="image/*" />
                 <data android:mimeType="application/pdf" />
+                <data android:mimeType="application/octet-stream" />
             </intent-filter>
-        </activity>
+        </activity-alias>
 
         <!--
           Launcher-Icon-Varianten (eine pro Akzentfarbe, siehe LauncherIcon.kt).

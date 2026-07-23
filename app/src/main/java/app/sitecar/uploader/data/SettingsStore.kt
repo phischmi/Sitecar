@@ -63,6 +63,16 @@ class SettingsStore(context: Context) {
         get() = prefs.getBoolean(KEY_SMART_INSIGHTS, true)
         set(value) = prefs.edit().putBoolean(KEY_SMART_INSIGHTS, value).apply()
 
+    /**
+     * Opt-in: Sitecar als Ziel im Android-Share-Sheet anderer Apps anbieten
+     * ("Teilen an Sitecar"). Standard `false` — die Sichtbarkeit im
+     * Share-Sheet ist ein sichtbarer Zustand für andere Apps, daher bewusst
+     * nicht automatisch aktiv (siehe ShareReceiver.setEnabled).
+     */
+    var shareIntentEnabled: Boolean
+        get() = prefs.getBoolean(KEY_SHARE_INTENT, false)
+        set(value) = prefs.edit().putBoolean(KEY_SHARE_INTENT, value).apply()
+
     /** Lebenszeit-Zähler erfolgreicher Uploads, steuert den Spenden-Hinweis. */
     var uploadCount: Int
         get() = prefs.getInt(KEY_UPLOAD_COUNT, 0)
@@ -162,6 +172,7 @@ class SettingsStore(context: Context) {
         private const val KEY_THEME_MODE = "theme_mode"
         private const val KEY_ON_DEVICE_OCR = "on_device_ocr_enabled"
         private const val KEY_SMART_INSIGHTS = "smart_insights_enabled"
+        private const val KEY_SHARE_INTENT = "share_intent_enabled"
         private const val KEY_UPLOAD_COUNT = "upload_count"
         private const val KEY_IS_SUPPORTER = "is_supporter"
         private const val KEY_FILENAME_TEMPLATE = "filename_template"
