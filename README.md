@@ -141,6 +141,17 @@ gradle wrapper
 ./gradlew installDebug   # auf verbundenes Gerät installieren
 ```
 
+### Debug-APK per GitHub Action
+
+Unter **Actions → Build APK → Run workflow** lässt sich manuell ein Build der
+aktuellsten Version des jeweiligen Branches anstoßen. Nach Abschluss steht die
+APK als Artifact (`sitecar-<version>-debug-<sha>`) zum Download bereit. Lokal
+installieren:
+
+```sh
+adb install sitecar-*.apk
+```
+
 ## API-Key in Papra anlegen
 
 Im Papra-Web-UI unter **Settings → API Keys** einen Key mit der Berechtigung

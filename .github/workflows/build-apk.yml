@@ -1,0 +1,36 @@
+name: Build APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build debug APK
+        run: ./gradlew assembleDebug
+
+      - name: Determine version
+        id: version
+        run: |
+          VERSION_NAME=$(grep -m1 'versionName = ' app/build.gradle.kts | sed -E 's/.*versionName = "([^"]+)".*/\1/')
+          echo "name=${VERSION_NAME}-debug-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: sitecar-${{ steps.version.outputs.name }}
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
