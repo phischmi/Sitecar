@@ -6,6 +6,7 @@ import app.sitecar.uploader.data.PendingUpload
 import app.sitecar.uploader.data.SitecarApiClient
 import app.sitecar.uploader.data.PdfBuilder
 import app.sitecar.uploader.data.SettingsStore
+import app.sitecar.uploader.data.duplicates.RecentUploadsStore
 import app.sitecar.uploader.icon.LauncherIcon
 import app.sitecar.uploader.shortcuts.AppShortcuts
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
@@ -18,6 +19,8 @@ class SitecarApp : Application() {
     lateinit var pdfBuilder: PdfBuilder
         private set
     lateinit var billingManager: BillingManager
+        private set
+    lateinit var recentUploadsStore: RecentUploadsStore
         private set
 
     /**
@@ -38,6 +41,7 @@ class SitecarApp : Application() {
         settingsStore = SettingsStore(applicationContext)
         apiClient = SitecarApiClient(settingsStore)
         pdfBuilder = PdfBuilder(applicationContext)
+        recentUploadsStore = RecentUploadsStore(applicationContext)
         billingManager = BillingManager(applicationContext, settingsStore)
         if (Features.SUPPORTER_ENABLED) {
             billingManager.startConnection()

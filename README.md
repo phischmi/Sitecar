@@ -54,6 +54,11 @@ eigenständiger Begleiter ("Sidecar") für Papra, vormals PapraCam.
   zum Scan-Datum im Dateinamen; erkennt Fristen (z. B. Kündigungsfrist,
   Garantie-Ablauf) und bietet nach dem Upload eine lokale Erinnerung an
   (Android-Notification via WorkManager, kein Server-/Kalenderzugriff).
+- Duplikat-Warnung: vergleicht einen Perceptual-Hash der ersten Seite mit den
+  letzten Uploads derselben Organisation (rein lokal, 14 Tage Gedächtnis,
+  kein Download bestehender Dokumente) und warnt unaufdringlich, falls ein
+  ähnliches Dokument kürzlich schon hochgeladen wurde — blockiert den Upload
+  nicht, ist nur ein Hinweis.
 - Pull-to-refresh zum Aktualisieren der Dokumentenliste.
 - Darstellung wählbar: Hell / Dunkel / System.
 - Schnellzugriff-Shortcut "Scannen" per Long-Press auf das App-Icon.

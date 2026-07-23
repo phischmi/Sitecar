@@ -75,6 +75,9 @@ import app.sitecar.uploader.data.SitecarApiClient
 import app.sitecar.uploader.data.PdfBuilder
 import app.sitecar.uploader.data.SettingsStore
 import app.sitecar.uploader.data.TagDto
+import app.sitecar.uploader.data.duplicates.PerceptualHash
+import app.sitecar.uploader.data.duplicates.RecentUpload
+import app.sitecar.uploader.data.duplicates.RecentUploadsStore
 import app.sitecar.uploader.data.insights.Deadline
 import app.sitecar.uploader.data.insights.DocumentInsights
 import app.sitecar.uploader.data.insights.RuleBasedInsightsEngine
@@ -86,6 +89,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.time.Instant
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -96,6 +101,7 @@ fun UploadScreen(
     pdfBuilder: PdfBuilder,
     store: SettingsStore,
     billing: BillingManager,
+    recentUploads: RecentUploadsStore,
     onDone: () -> Unit,
     onBack: () -> Unit,
     onOpenSettings: () -> Unit,
@@ -158,6 +164,20 @@ fun UploadScreen(
                 else -> null
             }
         }
+    }
+
+    var imageHash by remember { mutableStateOf<Long?>(null) }
+    var duplicateWarning by remember { mutableStateOf<RecentUpload?>(null) }
+
+    LaunchedEffect(previewBitmap) {
+        val bitmap = previewBitmap ?: return@LaunchedEffect
+        imageHash = withContext(Dispatchers.Default) { PerceptualHash.compute(bitmap) }
+    }
+
+    LaunchedEffect(imageHash, selectedOrg) {
+        val hash = imageHash ?: return@LaunchedEffect
+        val org = selectedOrg ?: return@LaunchedEffect
+        duplicateWarning = withContext(Dispatchers.Default) { recentUploads.findSimilar(org.id, hash) }
     }
 
     LaunchedEffect(Unit) {
@@ -439,6 +459,21 @@ fun UploadScreen(
                 }
             }
 
+            duplicateWarning?.let { duplicate ->
+                val uploadedDate = Instant.ofEpochMilli(duplicate.uploadedAtEpochMillis)
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate()
+                Text(
+                    text = stringResource(
+                        R.string.upload_duplicate_warning,
+                        duplicate.fileName,
+                        uploadedDate.format(DISPLAY_DATE_FORMATTER),
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+
             errorMessage?.let {
                 Text(
                     text = stringResource(R.string.upload_failed, it),
@@ -490,6 +525,17 @@ fun UploadScreen(
                                     runCatching { client.addTagToDocument(org.id, uploadedDoc.id, tagId) }
                                 }
                             }
+                        }
+
+                        imageHash?.let { hash ->
+                            recentUploads.record(
+                                RecentUpload(
+                                    organizationId = org.id,
+                                    hash = hash,
+                                    fileName = finalName,
+                                    uploadedAtEpochMillis = System.currentTimeMillis(),
+                                ),
+                            )
                         }
 
                         store.uploadCount += 1

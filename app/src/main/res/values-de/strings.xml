@@ -68,6 +68,7 @@
     <string name="upload_deadline_dialog_message">%1$s am %2$s. Lokale Erinnerung setzen?</string>
     <string name="upload_deadline_dialog_confirm">Erinnerung setzen</string>
     <string name="upload_deadline_dialog_dismiss">Nein danke</string>
+    <string name="upload_duplicate_warning">Ähnlich zu \"%1$s\", hochgeladen am %2$s.</string>
 
     <string name="reminder_channel_name">Dokument-Fristen</string>
     <string name="reminder_default_title">Frist-Erinnerung</string>

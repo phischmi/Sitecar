@@ -68,6 +68,7 @@
     <string name="upload_deadline_dialog_message">%1$s on %2$s. Set a local reminder?</string>
     <string name="upload_deadline_dialog_confirm">Set reminder</string>
     <string name="upload_deadline_dialog_dismiss">No thanks</string>
+    <string name="upload_duplicate_warning">Looks similar to \"%1$s\", uploaded on %2$s.</string>
 
     <string name="reminder_channel_name">Document deadlines</string>
     <string name="reminder_default_title">Deadline reminder</string>
