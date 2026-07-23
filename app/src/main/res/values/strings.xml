@@ -26,6 +26,11 @@
     <string name="settings_smart_insights_title">Smart suggestions</string>
     <string name="settings_smart_insights_subtitle">Suggests tags, the document\'s own date, and the detected sender from the scanned text — all on-device, rule-based.</string>
 
+    <string name="settings_on_device_ai_title">On-device AI (Gemini Nano)</string>
+    <string name="settings_on_device_ai_subtitle">Improves smart suggestions using Gemini Nano via Android AICore — fully on-device, no data leaves the phone. Requires a compatible device and a one-time model download; falls back to the rule-based suggestions above if unavailable.</string>
+    <string name="settings_on_device_ai_unavailable">This device does not support Gemini Nano. Smart suggestions keep using the rule-based analysis.</string>
+    <string name="settings_on_device_ai_download_failed">Model download failed. Please check your connection and try again.</string>
+
     <string name="settings_filename_template_title">Filename format</string>
     <string name="settings_filename_template_hint">Scan-{date}-{time} — placeholders: {date} {time} {org} {sender} {counter}</string>
     <string name="settings_filename_template_help">Placeholder help</string>

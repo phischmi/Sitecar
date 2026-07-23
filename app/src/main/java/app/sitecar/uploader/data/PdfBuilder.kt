@@ -31,7 +31,7 @@ class PdfBuilder(private val context: Context) {
     /**
      * Erkennt den Text aller Seiten per on-device OCR, unabhängig davon, ob der
      * unsichtbare Textlayer im PDF aktiviert ist — für lokale Analysen (Tag-/Datums-
-     * /Fristen-Vorschläge), die auch ohne PDF-Textlayer funktionieren sollen.
+     * /Absender-Vorschläge), die auch ohne PDF-Textlayer funktionieren sollen.
      */
     suspend fun recognizeText(imageFiles: List<File>): String = withContext(Dispatchers.IO) {
         // joinToString's transform lambda isn't inline, so it can't call a suspend

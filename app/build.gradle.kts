@@ -104,6 +104,7 @@ dependencies {
 
     implementation(libs.mlkit.document.scanner)
     implementation(libs.mlkit.text.recognition)
+    implementation(libs.mlkit.genai.prompt)
     implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.pdfbox.android)
     implementation(libs.billing.ktx)

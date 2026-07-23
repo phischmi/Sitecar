@@ -64,6 +64,15 @@ class SettingsStore(context: Context) {
         set(value) = prefs.edit().putBoolean(KEY_SMART_INSIGHTS, value).apply()
 
     /**
+     * Ergänzt die regelbasierten Vorschläge um on-device KI (Gemini Nano via Android
+     * AICore / ML Kit GenAI Prompt API). Standardmäßig aus, da ein einmaliger,
+     * geräteweiter Modell-Download nötig ist und nicht jedes Gerät Gemini Nano unterstützt.
+     */
+    var onDeviceAiEnabled: Boolean
+        get() = prefs.getBoolean(KEY_ON_DEVICE_AI, false)
+        set(value) = prefs.edit().putBoolean(KEY_ON_DEVICE_AI, value).apply()
+
+    /**
      * Opt-in: Sitecar als Ziel im Android-Share-Sheet anderer Apps anbieten
      * ("Teilen an Sitecar"). Standard `false` — die Sichtbarkeit im
      * Share-Sheet ist ein sichtbarer Zustand für andere Apps, daher bewusst
@@ -137,6 +146,7 @@ class SettingsStore(context: Context) {
         private const val KEY_THEME_MODE = "theme_mode"
         private const val KEY_ON_DEVICE_OCR = "on_device_ocr_enabled"
         private const val KEY_SMART_INSIGHTS = "smart_insights_enabled"
+        private const val KEY_ON_DEVICE_AI = "on_device_ai_enabled"
         private const val KEY_SHARE_INTENT = "share_intent_enabled"
         private const val KEY_UPLOAD_COUNT = "upload_count"
         private const val KEY_IS_SUPPORTER = "is_supporter"

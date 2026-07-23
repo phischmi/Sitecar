@@ -70,6 +70,7 @@ import app.sitecar.uploader.data.duplicates.PerceptualHash
 import app.sitecar.uploader.data.duplicates.RecentUpload
 import app.sitecar.uploader.data.duplicates.RecentUploadsStore
 import app.sitecar.uploader.data.insights.DocumentInsights
+import app.sitecar.uploader.data.insights.HybridInsightsEngine
 import app.sitecar.uploader.data.insights.RuleBasedInsightsEngine
 import app.sitecar.uploader.ui.support.SupportDialog
 import app.sitecar.uploader.ui.util.friendlyErrorMessage
@@ -172,7 +173,7 @@ fun UploadScreen(
         }
     }
 
-    LaunchedEffect(documentFile) {
+    LaunchedEffect(documentFile, orgTags) {
         val doc = documentFile ?: return@LaunchedEffect
         if (!store.smartInsightsEnabled) return@LaunchedEffect
         val text = when (pendingUpload) {
@@ -184,7 +185,8 @@ fun UploadScreen(
             is PendingUpload.ReadyDocument ->
                 if (pendingUpload.mimeType == "application/pdf") PdfTextExtractor.extractText(doc) else ""
         }
-        insights = RuleBasedInsightsEngine.analyze(text)
+        val engine = if (store.onDeviceAiEnabled) HybridInsightsEngine else RuleBasedInsightsEngine
+        insights = engine.analyze(text, orgTags.map { it.name })
     }
 
     LaunchedEffect(insights, orgTags) {

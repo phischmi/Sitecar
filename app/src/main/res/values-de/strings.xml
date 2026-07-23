@@ -26,6 +26,11 @@
     <string name="settings_smart_insights_title">Intelligente Vorschläge</string>
     <string name="settings_smart_insights_subtitle">Schlägt Tags, das Dokumentdatum und den erkannten Absender aus dem gescannten Text vor — komplett on-device, regelbasiert.</string>
 
+    <string name="settings_on_device_ai_title">KI auf dem Gerät (Gemini Nano)</string>
+    <string name="settings_on_device_ai_subtitle">Verbessert die intelligenten Vorschläge mit Gemini Nano über Android AICore — komplett on-device, es verlassen keine Daten das Gerät. Benötigt ein kompatibles Gerät und einen einmaligen Modell-Download; ohne Verfügbarkeit greifen weiterhin die regelbasierten Vorschläge oben.</string>
+    <string name="settings_on_device_ai_unavailable">Dieses Gerät unterstützt Gemini Nano nicht. Die intelligenten Vorschläge nutzen weiterhin die regelbasierte Analyse.</string>
+    <string name="settings_on_device_ai_download_failed">Modell-Download fehlgeschlagen. Bitte Verbindung prüfen und erneut versuchen.</string>
+
     <string name="settings_filename_template_title">Dateinamen-Format</string>
     <string name="settings_filename_template_hint">Scan-{date}-{time} — Platzhalter: {date} {time} {org} {sender} {counter}</string>
     <string name="settings_filename_template_help">Platzhalter-Hilfe</string>
