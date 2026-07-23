@@ -142,6 +142,7 @@
     <string name="error_unknown">Unbekannter Fehler</string>
     <string name="error_unauthorized">Anmeldung fehlgeschlagen — API-Key prüfen.</string>
     <string name="error_forbidden">Dein API-Key hat keine Berechtigung für diese Aktion — prüfe seine Scopes in Papra (Einstellungen → API-Keys).</string>
+    <string name="error_trash_action_unsupported">Papras Server lehnt für Wiederherstellen, endgültiges Löschen und Papierkorb leeren aktuell jeden API-Key ab (ein Fehler in Papra selbst, nicht an deinem Key) — nutze dafür vorerst die Papra-Weboberfläche.</string>
     <string name="error_not_found">Server nicht gefunden — Server-URL prüfen.</string>
     <string name="error_server">Serverfehler — bitte später erneut versuchen.</string>
     <string name="error_no_connection">Server nicht erreichbar.</string>

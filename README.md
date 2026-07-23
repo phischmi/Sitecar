@@ -200,13 +200,19 @@ Im Papra-Web-UI unter **Settings → API Keys** einen Key mit der Berechtigung
 `documents:create` (und idealerweise `organizations:read` für die Org-Liste)
 erzeugen. Der Key beginnt mit `ppapi_`.
 
-Für Papierkorb-Aktionen (Wiederherstellen, endgültig löschen, Papierkorb
-leeren) sowie Tag-/Umbenennen-Aktionen können weitergehende Berechtigungen
-nötig sein als nur `documents:create` — Papra beantwortet fehlende Scopes
-mit HTTP 403, was Sitecar als "Keine Berechtigung für diese Aktion" anzeigt
-(zu unterscheiden von HTTP 401 "Anmeldung fehlgeschlagen" bei einem
-ungültigen Key). Führt eine Aktion zu dieser Meldung, dem Key in Papra
-probeweise die entsprechenden zusätzlichen Dokument-Berechtigungen geben.
+**Papierkorb-Aktionen (Wiederherstellen, endgültig löschen, Papierkorb
+leeren) funktionieren aktuell mit keinem API-Key** — das ist kein
+Scope-/Berechtigungsproblem des eigenen Keys, sondern ein serverseitiger Bug
+in Papra selbst: Die drei zugehörigen Routen (`POST .../restore`,
+`DELETE .../documents/trash/:documentId`, `DELETE .../documents/trash`)
+registrieren ihre `requireAuthentication()`-Middleware ohne
+`apiKeyPermissions`-Angabe. In `isAuthenticationValid()`
+(`auth.models.ts`) führt das im API-Key-Zweig zu `if (!requiredApiKeyPermissions)
+return false` — API-Key-Auth wird für diese drei Routen also unabhängig von
+den Scopes des Keys grundsätzlich abgelehnt (nur eine eingeloggte
+Browser-Session kommt durch). Sitecar zeigt dafür einen eigenen Hinweistext
+statt der irreführenden "API-Key prüfen"-Meldung; als Workaround bleibt
+vorerst nur die Papra-Weboberfläche für diese drei Aktionen.
 
 ## Hinweise
 
