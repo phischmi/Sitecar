@@ -12,9 +12,14 @@ enum class ThemeMode {
     LIGHT, DARK, SYSTEM
 }
 
-/** INDIGO ist der kostenlose Standard, die übrigen sind Unterstützer-Akzente. */
+/**
+ * INDIGO ist der kostenlose Standard, die übrigen sind Unterstützer-Akzente.
+ * PAPRA reproduziert bewusst Papras eigenes Original-Farbschema (Orange im
+ * Hellmodus, Neon-Lime/-Gelb im Dunkelmodus) statt der von INDIGO bewusst
+ * gewählten Abkehr davon (siehe Theme.kt).
+ */
 enum class AccentColor {
-    INDIGO, EMERALD, AMBER, ROSE
+    INDIGO, EMERALD, AMBER, ROSE, PAPRA
 }
 
 /** Aktion, die eine Wischgeste in der Dokumentenliste auslöst. */

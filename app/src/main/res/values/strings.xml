@@ -37,6 +37,7 @@
     <string name="settings_swipe_action_none">Off</string>
 
     <string name="settings_accent_title">Accent color</string>
+    <string name="settings_accent_subtitle">Each circle shows the light-mode color (top-left) and dark-mode color (bottom-right).</string>
     <string name="settings_accent_locked_hint">Unlock more colors with a one-time donation.</string>
 
     <string name="settings_support_title">Support</string>

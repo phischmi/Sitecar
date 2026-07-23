@@ -1,5 +1,6 @@
 package app.sitecar.uploader.ui.settings
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -55,7 +56,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
@@ -275,7 +276,11 @@ fun SettingsScreen(
                     text = stringResource(R.string.settings_accent_title),
                     style = MaterialTheme.typography.labelLarge,
                 )
-                val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
+                Text(
+                    text = stringResource(R.string.settings_accent_subtitle),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     modifier = Modifier.fillMaxWidth(),
@@ -285,39 +290,20 @@ fun SettingsScreen(
                         // Testen frei nutzbar; sobald sie aktiviert wird, greift
                         // automatisch wieder die echte Unterstützer-Sperre.
                         val unlocked = accent == AccentColor.INDIGO || isSupporter || !Features.SUPPORTER_ENABLED
-                        val swatchColor = accentPrimaryColor(accent, isDarkTheme)
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape)
-                                .background(swatchColor)
-                                .then(
-                                    if (accentColor == accent) {
-                                        Modifier.border(3.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
-                                    } else {
-                                        Modifier
-                                    },
-                                )
-                                .clickable {
-                                    if (unlocked) {
-                                        accentColor = accent
-                                        store.accentColor = accent
-                                        LauncherIcon.apply(context, accent)
-                                    } else {
-                                        showSupportDialog = true
-                                    }
-                                },
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            if (!unlocked) {
-                                Icon(
-                                    Icons.Default.Lock,
-                                    contentDescription = null,
-                                    tint = Color.White,
-                                    modifier = Modifier.size(16.dp),
-                                )
-                            }
-                        }
+                        AccentSwatch(
+                            accent = accent,
+                            selected = accentColor == accent,
+                            unlocked = unlocked,
+                            onClick = {
+                                if (unlocked) {
+                                    accentColor = accent
+                                    store.accentColor = accent
+                                    LauncherIcon.apply(context, accent)
+                                } else {
+                                    showSupportDialog = true
+                                }
+                            },
+                        )
                     }
                 }
                 if (!isSupporter && Features.SUPPORTER_ENABLED) {
@@ -480,6 +466,68 @@ private fun FilenamePlaceholderRow(placeholder: String, description: String) {
             modifier = Modifier.width(84.dp),
         )
         Text(text = description, style = MaterialTheme.typography.bodyMedium)
+    }
+}
+
+/**
+ * Zeigt eine Akzentfarbe als Kreis, diagonal geteilt in Hell- und
+ * Dunkelmodus-Farbe (oben-links = Hell, unten-rechts = Dunkel) — so ist auf
+ * einen Blick sichtbar, wie der Akzent in beiden Darstellungen aussieht,
+ * unabhängig vom aktuell aktiven App-Theme.
+ */
+@Composable
+private fun AccentSwatch(
+    accent: AccentColor,
+    selected: Boolean,
+    unlocked: Boolean,
+    onClick: () -> Unit,
+) {
+    val lightColor = accentPrimaryColor(accent, darkTheme = false)
+    val darkColor = accentPrimaryColor(accent, darkTheme = true)
+    Box(
+        modifier = Modifier
+            .size(40.dp)
+            .clip(CircleShape)
+            .then(
+                if (selected) {
+                    Modifier.border(3.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
+                } else {
+                    Modifier
+                },
+            )
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Canvas(modifier = Modifier.matchParentSize()) {
+            val w = size.width
+            val h = size.height
+            drawPath(
+                path = Path().apply {
+                    moveTo(0f, 0f)
+                    lineTo(w, 0f)
+                    lineTo(0f, h)
+                    close()
+                },
+                color = lightColor,
+            )
+            drawPath(
+                path = Path().apply {
+                    moveTo(w, 0f)
+                    lineTo(w, h)
+                    lineTo(0f, h)
+                    close()
+                },
+                color = darkColor,
+            )
+        }
+        if (!unlocked) {
+            Icon(
+                Icons.Default.Lock,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(16.dp),
+            )
+        }
     }
 }
 

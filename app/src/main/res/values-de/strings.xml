@@ -37,6 +37,7 @@
     <string name="settings_swipe_action_none">Aus</string>
 
     <string name="settings_accent_title">Akzentfarbe</string>
+    <string name="settings_accent_subtitle">Jeder Kreis zeigt die Hellmodus-Farbe (oben links) und die Dunkelmodus-Farbe (unten rechts).</string>
     <string name="settings_accent_locked_hint">Weitere Farben mit einer einmaligen Spende freischalten.</string>
 
     <string name="settings_support_title">Unterstützung</string>

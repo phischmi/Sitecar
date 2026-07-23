@@ -46,6 +46,13 @@ private val lightPrimaryTokens: Map<AccentColor, PrimaryTokens> = mapOf(
         primaryContainer = Color(0xFFFCE0EE),
         onPrimaryContainer = Color(0xFF4A0826),
     ),
+    // Papras eigenes Orange (Hellmodus), siehe Kommentar oben.
+    AccentColor.PAPRA to PrimaryTokens(
+        primary = Color(0xFFC2410C),
+        onPrimary = Color(0xFFFFFFFF),
+        primaryContainer = Color(0xFFFFE0CC),
+        onPrimaryContainer = Color(0xFF431407),
+    ),
 )
 
 private val darkPrimaryTokens: Map<AccentColor, PrimaryTokens> = mapOf(
@@ -72,6 +79,15 @@ private val darkPrimaryTokens: Map<AccentColor, PrimaryTokens> = mapOf(
         onPrimary = Color(0xFF4A0826),
         primaryContainer = Color(0xFF7A1245),
         onPrimaryContainer = Color(0xFFFCE0EE),
+    ),
+    // Papras eigenes Neon-Lime/-Gelb (Dunkelmodus), siehe Kommentar oben —
+    // bewusst neonig-knallig, im Gegensatz zu den sonst eher gedeckten
+    // Pastelltönen der übrigen Akzentfarben im Dunkelmodus.
+    AccentColor.PAPRA to PrimaryTokens(
+        primary = Color(0xFFC6FF00),
+        onPrimary = Color(0xFF1A2E05),
+        primaryContainer = Color(0xFF3D4B0A),
+        onPrimaryContainer = Color(0xFFECFCCB),
     ),
 )
 

@@ -75,9 +75,16 @@ eigenständiger Begleiter ("Sidecar") für Papra, vormals PapraCam.
   Freiwilliger "Sitecar unterstützen"-Hinweis (einmalig 0,99 €, Play Billing),
   erscheint nach dem 5. erfolgreichen Upload, danach alle 10 weiteren — oder
   jederzeit manuell in den Einstellungen. Rein kosmetischer Dank: schaltet
-  drei weitere Akzentfarben frei (Smaragd/Bernstein/Rosé statt nur Indigo),
-  inklusive passend eingefärbtem App-Icon-Hintergrund. Kein bestehendes
-  Feature wird Nicht-Unterstützern weggenommen oder vorenthalten.
+  vier weitere Akzentfarben frei (Smaragd/Bernstein/Rosé/Papra statt nur
+  Indigo). "Papra" reproduziert bewusst Papras eigenes Original-Farbschema
+  (Orange im Hellmodus, Neon-Lime/-Gelb im Dunkelmodus) statt der für Indigo
+  gewählten Abkehr davon. Jeder Akzent-Kreis in den Einstellungen zeigt
+  Hell- und Dunkelmodus-Farbe diagonal geteilt in einem Kreis (oben links /
+  unten rechts), unabhängig vom aktuell aktiven App-Theme. Nur Indigo/
+  Smaragd/Bernstein/Rosé haben ein eigenfarbenes App-Icon (activity-alias);
+  Papra nutzt bis auf Weiteres das Indigo-Icon, da noch keine eigene
+  Icon-Grafik existiert. Kein bestehendes Feature wird Nicht-Unterstützern
+  weggenommen oder vorenthalten.
 
 ## Bezahlfunktion (vorerst deaktiviert)
 

@@ -18,26 +18,29 @@ object LauncherIcon {
     // android:name-Angaben im Manifest aufgelöst werden.
     private const val MANIFEST_PACKAGE = "app.sitecar.uploader"
 
+    // Nur Akzentfarben mit eigener activity-alias/Icon-Ressource im Manifest.
+    // PAPRA hat (noch) keine eigene Icon-Variante und fällt daher unten auf
+    // Indigo zurück, statt hier eine nicht existierende Alias-Komponente
+    // anzusprechen (würde crashen) oder alle Aliase zu deaktivieren (App-Icon
+    // würde aus dem Launcher verschwinden).
+    private val ICON_ALIASES: Map<AccentColor, String> = mapOf(
+        AccentColor.INDIGO to "LauncherIndigo",
+        AccentColor.EMERALD to "LauncherEmerald",
+        AccentColor.AMBER to "LauncherAmber",
+        AccentColor.ROSE to "LauncherRose",
+    )
+
     fun apply(context: Context, accentColor: AccentColor) {
         val pm = context.packageManager
-        AccentColor.entries.forEach { candidate ->
-            val alias = ComponentName(context.packageName, aliasClassName(candidate))
-            val state = if (candidate == accentColor) {
+        val targetSuffix = ICON_ALIASES[accentColor] ?: ICON_ALIASES.getValue(AccentColor.INDIGO)
+        ICON_ALIASES.forEach { (_, suffix) ->
+            val alias = ComponentName(context.packageName, "$MANIFEST_PACKAGE.$suffix")
+            val state = if (suffix == targetSuffix) {
                 PackageManager.COMPONENT_ENABLED_STATE_ENABLED
             } else {
                 PackageManager.COMPONENT_ENABLED_STATE_DISABLED
             }
             pm.setComponentEnabledSetting(alias, state, PackageManager.DONT_KILL_APP)
         }
-    }
-
-    private fun aliasClassName(accentColor: AccentColor): String {
-        val suffix = when (accentColor) {
-            AccentColor.INDIGO -> "LauncherIndigo"
-            AccentColor.EMERALD -> "LauncherEmerald"
-            AccentColor.AMBER -> "LauncherAmber"
-            AccentColor.ROSE -> "LauncherRose"
-        }
-        return "$MANIFEST_PACKAGE.$suffix"
     }
 }
