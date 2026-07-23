@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -48,12 +49,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -76,6 +81,7 @@ import app.sitecar.uploader.data.DocumentThumbnailLoader
 import app.sitecar.uploader.data.Organization
 import app.sitecar.uploader.data.SitecarApiClient
 import app.sitecar.uploader.data.SettingsStore
+import app.sitecar.uploader.data.SwipeAction
 import app.sitecar.uploader.data.TagDto
 import app.sitecar.uploader.ui.util.ApiErrorMessages
 import app.sitecar.uploader.ui.util.friendlyErrorMessage
@@ -126,6 +132,8 @@ fun DocumentsScreen(
     var orgTags by remember { mutableStateOf<List<TagDto>>(emptyList()) }
     var orgTagsLoading by remember { mutableStateOf(false) }
     var togglingTagId by remember { mutableStateOf<String?>(null) }
+    val swipeStartToEndAction by store.swipeStartToEndActionFlow.collectAsState(initial = store.swipeStartToEndAction)
+    val swipeEndToStartAction by store.swipeEndToStartActionFlow.collectAsState(initial = store.swipeEndToStartAction)
     val apiErrorMessages = ApiErrorMessages(
         unauthorized = stringResource(R.string.error_unauthorized),
         notFound = stringResource(R.string.error_not_found),
@@ -204,6 +212,24 @@ fun DocumentsScreen(
                 .onSuccess { orgTags = it }
                 .onFailure { errorMessage = friendlyErrorMessage(it, apiErrorMessages) }
             orgTagsLoading = false
+        }
+    }
+
+    // Wischgesten lösen dieselben Aktionen aus wie das "..."-Kontextmenü — nie
+    // direkt destruktiv, sondern öffnen den jeweiligen Bestätigungs-/Bearbeiten-
+    // Dialog, damit ein versehentliches Wischen kein Dokument sofort löscht.
+    fun performSwipeAction(action: SwipeAction, doc: DocumentDto) {
+        when (action) {
+            SwipeAction.DELETE -> docPendingDelete = doc
+            SwipeAction.RENAME -> {
+                renameText = doc.name.orEmpty()
+                docPendingRename = doc
+            }
+            SwipeAction.EDIT_TAGS -> {
+                docPendingTags = doc
+                selectedOrg?.let { ensureOrgTagsLoaded(it) }
+            }
+            SwipeAction.NONE -> {}
         }
     }
 
@@ -412,96 +438,61 @@ fun DocumentsScreen(
                     ) {
                         val orgId = selectedOrg?.id.orEmpty()
                         items(documents, key = { it.id }) { doc ->
-                            ListItem(
-                                headlineContent = { Text(doc.name ?: doc.id) },
-                                supportingContent = {
-                                    Column {
-                                        Text("${formatDate(doc.createdAt)} · ${formatSize(doc.originalSize)}")
-                                        if (doc.tags.isNotEmpty()) {
-                                            Row(
-                                                modifier = Modifier
-                                                    .horizontalScroll(rememberScrollState())
-                                                    .padding(top = 4.dp),
-                                                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                            ) {
-                                                doc.tags.forEach { tag ->
-                                                    TagChip(
-                                                        tag = tag,
-                                                        onClick = { searchQuery = buildTagSearchQuery(tag.name) },
-                                                    )
-                                                }
-                                            }
+                            val rowContent: @Composable () -> Unit = {
+                                DocumentRow(
+                                    doc = doc,
+                                    organizationId = orgId,
+                                    thumbnailLoader = thumbnailLoader,
+                                    showOpeningIndicator = openingDocumentId == doc.id,
+                                    clickEnabled = openingDocumentId == null,
+                                    isBusy = deletingDocumentId == doc.id || renamingDocumentId == doc.id,
+                                    menuExpanded = menuOpenForId == doc.id,
+                                    onMenuExpandedChange = { expanded -> menuOpenForId = if (expanded) doc.id else null },
+                                    onOpen = { openDocument(doc) },
+                                    onRename = {
+                                        renameText = doc.name.orEmpty()
+                                        docPendingRename = doc
+                                    },
+                                    onManageTags = {
+                                        docPendingTags = doc
+                                        selectedOrg?.let { ensureOrgTagsLoaded(it) }
+                                    },
+                                    onDelete = { docPendingDelete = doc },
+                                    onTagClick = { tag -> searchQuery = buildTagSearchQuery(tag.name) },
+                                )
+                            }
+
+                            if (swipeStartToEndAction == SwipeAction.NONE && swipeEndToStartAction == SwipeAction.NONE) {
+                                rowContent()
+                            } else {
+                                val dismissState = rememberSwipeToDismissBoxState(
+                                    confirmValueChange = { value ->
+                                        val action = when (value) {
+                                            SwipeToDismissBoxValue.StartToEnd -> swipeStartToEndAction
+                                            SwipeToDismissBoxValue.EndToStart -> swipeEndToStartAction
+                                            SwipeToDismissBoxValue.Settled -> SwipeAction.NONE
                                         }
-                                    }
-                                },
-                                leadingContent = {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(40.dp)
-                                            .clip(RoundedCornerShape(6.dp))
-                                            .background(MaterialTheme.colorScheme.surfaceVariant),
-                                        contentAlignment = Alignment.Center,
-                                    ) {
-                                        if (openingDocumentId == doc.id) {
-                                            CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(20.dp))
-                                        } else {
-                                            DocumentThumbnail(
-                                                doc = doc,
-                                                organizationId = orgId,
-                                                loader = thumbnailLoader,
-                                            )
-                                        }
-                                    }
-                                },
-                                trailingContent = {
-                                    if (deletingDocumentId == doc.id || renamingDocumentId == doc.id) {
-                                        CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(20.dp))
-                                    } else {
-                                        Box {
-                                            IconButton(onClick = { menuOpenForId = doc.id }) {
-                                                Icon(
-                                                    Icons.Default.MoreVert,
-                                                    contentDescription = stringResource(R.string.action_more),
-                                                )
-                                            }
-                                            DropdownMenu(
-                                                expanded = menuOpenForId == doc.id,
-                                                onDismissRequest = { menuOpenForId = null },
-                                            ) {
-                                                DropdownMenuItem(
-                                                    text = { Text(stringResource(R.string.action_rename)) },
-                                                    leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null) },
-                                                    onClick = {
-                                                        menuOpenForId = null
-                                                        renameText = doc.name.orEmpty()
-                                                        docPendingRename = doc
-                                                    },
-                                                )
-                                                DropdownMenuItem(
-                                                    text = { Text(stringResource(R.string.action_manage_tags)) },
-                                                    leadingIcon = { Icon(Icons.Default.Sell, contentDescription = null) },
-                                                    onClick = {
-                                                        menuOpenForId = null
-                                                        docPendingTags = doc
-                                                        selectedOrg?.let { ensureOrgTagsLoaded(it) }
-                                                    },
-                                                )
-                                                DropdownMenuItem(
-                                                    text = { Text(stringResource(R.string.action_delete)) },
-                                                    leadingIcon = { Icon(Icons.Default.Delete, contentDescription = null) },
-                                                    onClick = {
-                                                        menuOpenForId = null
-                                                        docPendingDelete = doc
-                                                    },
-                                                )
-                                            }
-                                        }
-                                    }
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable(enabled = openingDocumentId == null) { openDocument(doc) },
-                            )
+                                        performSwipeAction(action, doc)
+                                        // Nie wirklich "dismissen" — die Aktion öffnet nur den
+                                        // passenden Dialog, das Listenelement bleibt bestehen.
+                                        false
+                                    },
+                                )
+                                SwipeToDismissBox(
+                                    state = dismissState,
+                                    enableDismissFromStartToEnd = swipeStartToEndAction != SwipeAction.NONE,
+                                    enableDismissFromEndToStart = swipeEndToStartAction != SwipeAction.NONE,
+                                    backgroundContent = {
+                                        SwipeActionBackground(
+                                            direction = dismissState.dismissDirection,
+                                            startAction = swipeStartToEndAction,
+                                            endAction = swipeEndToStartAction,
+                                        )
+                                    },
+                                ) {
+                                    rowContent()
+                                }
+                            }
                         }
                     }
                 }
@@ -620,6 +611,138 @@ fun DocumentsScreen(
                 }
             },
         )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DocumentRow(
+    doc: DocumentDto,
+    organizationId: String,
+    thumbnailLoader: DocumentThumbnailLoader,
+    showOpeningIndicator: Boolean,
+    clickEnabled: Boolean,
+    isBusy: Boolean,
+    menuExpanded: Boolean,
+    onMenuExpandedChange: (Boolean) -> Unit,
+    onOpen: () -> Unit,
+    onRename: () -> Unit,
+    onManageTags: () -> Unit,
+    onDelete: () -> Unit,
+    onTagClick: (TagDto) -> Unit,
+) {
+    ListItem(
+        headlineContent = { Text(doc.name ?: doc.id) },
+        supportingContent = {
+            Column {
+                Text("${formatDate(doc.createdAt)} · ${formatSize(doc.originalSize)}")
+                if (doc.tags.isNotEmpty()) {
+                    Row(
+                        modifier = Modifier
+                            .horizontalScroll(rememberScrollState())
+                            .padding(top = 4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        doc.tags.forEach { tag ->
+                            TagChip(tag = tag, onClick = { onTagClick(tag) })
+                        }
+                    }
+                }
+            }
+        },
+        leadingContent = {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                contentAlignment = Alignment.Center,
+            ) {
+                if (showOpeningIndicator) {
+                    CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(20.dp))
+                } else {
+                    DocumentThumbnail(doc = doc, organizationId = organizationId, loader = thumbnailLoader)
+                }
+            }
+        },
+        trailingContent = {
+            if (isBusy) {
+                CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(20.dp))
+            } else {
+                Box {
+                    IconButton(onClick = { onMenuExpandedChange(true) }) {
+                        Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.action_more))
+                    }
+                    DropdownMenu(
+                        expanded = menuExpanded,
+                        onDismissRequest = { onMenuExpandedChange(false) },
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.action_rename)) },
+                            leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null) },
+                            onClick = {
+                                onMenuExpandedChange(false)
+                                onRename()
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.action_manage_tags)) },
+                            leadingIcon = { Icon(Icons.Default.Sell, contentDescription = null) },
+                            onClick = {
+                                onMenuExpandedChange(false)
+                                onManageTags()
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.action_delete)) },
+                            leadingIcon = { Icon(Icons.Default.Delete, contentDescription = null) },
+                            onClick = {
+                                onMenuExpandedChange(false)
+                                onDelete()
+                            },
+                        )
+                    }
+                }
+            }
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface)
+            .clickable(enabled = clickEnabled, onClick = onOpen),
+    )
+}
+
+@Composable
+private fun RowScope.SwipeActionBackground(
+    direction: SwipeToDismissBoxValue,
+    startAction: SwipeAction,
+    endAction: SwipeAction,
+) {
+    val action = when (direction) {
+        SwipeToDismissBoxValue.StartToEnd -> startAction
+        SwipeToDismissBoxValue.EndToStart -> endAction
+        SwipeToDismissBoxValue.Settled -> SwipeAction.NONE
+    }
+    val alignment = if (direction == SwipeToDismissBoxValue.StartToEnd) Alignment.CenterStart else Alignment.CenterEnd
+    val tint = when (action) {
+        SwipeAction.DELETE -> MaterialTheme.colorScheme.error
+        SwipeAction.RENAME, SwipeAction.EDIT_TAGS -> MaterialTheme.colorScheme.primary
+        SwipeAction.NONE -> MaterialTheme.colorScheme.surfaceVariant
+    }
+    val icon = when (action) {
+        SwipeAction.DELETE -> Icons.Default.Delete
+        SwipeAction.RENAME -> Icons.Default.Edit
+        SwipeAction.EDIT_TAGS -> Icons.Default.Sell
+        SwipeAction.NONE -> null
+    }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(tint.copy(alpha = 0.15f))
+            .padding(horizontal = 24.dp),
+        contentAlignment = alignment,
+    ) {
+        icon?.let { Icon(it, contentDescription = null, tint = tint) }
     }
 }
 

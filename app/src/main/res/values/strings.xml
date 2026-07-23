@@ -25,8 +25,19 @@
 
     <string name="settings_filename_template_title">Filename format</string>
     <string name="settings_filename_template_hint">Scan-{date}-{time} — placeholders: {date} {time} {org} {counter}</string>
+    <string name="settings_filename_template_help">Placeholder help</string>
+    <string name="settings_filename_placeholder_date">Scan date (yyyyMMdd)</string>
+    <string name="settings_filename_placeholder_time">Scan time (HHmmss)</string>
+    <string name="settings_filename_placeholder_org">Target organization name</string>
+    <string name="settings_filename_placeholder_counter">Upload counter, 3 digits (e.g. 007)</string>
+
+    <string name="settings_swipe_title">Swipe gestures</string>
+    <string name="settings_swipe_start_to_end">Swipe right</string>
+    <string name="settings_swipe_end_to_start">Swipe left</string>
+    <string name="settings_swipe_action_none">Off</string>
 
     <string name="settings_accent_title">Accent color</string>
+    <string name="settings_accent_subtitle">Each circle shows the light-mode color (top-left) and dark-mode color (bottom-right).</string>
     <string name="settings_accent_locked_hint">Unlock more colors with a one-time donation.</string>
 
     <string name="settings_support_title">Support</string>
