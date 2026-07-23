@@ -34,11 +34,11 @@ class PdfBuilder(private val context: Context) {
      * /Fristen-Vorschläge), die auch ohne PDF-Textlayer funktionieren sollen.
      */
     suspend fun recognizeText(imageFiles: List<File>): String = withContext(Dispatchers.IO) {
-        imageFiles.joinToString("\n") { imageFile ->
+        imageFiles.map { imageFile ->
             runCatching {
                 recognizer.process(InputImage.fromFilePath(context, Uri.fromFile(imageFile))).await().text
             }.getOrDefault("")
-        }
+        }.joinToString("\n")
     }
 
     suspend fun build(

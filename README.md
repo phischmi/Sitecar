@@ -55,6 +55,14 @@ eigenständiger Begleiter ("Sidecar") für Papra, vormals PapraCam.
   zum Scan-Datum im Dateinamen; erkennt Fristen (z. B. Kündigungsfrist,
   Garantie-Ablauf) und bietet nach dem Upload eine lokale Erinnerung an
   (Android-Notification via WorkManager, kein Server-/Kalenderzugriff).
+- Optional: KI auf dem Gerät (Gemini Nano via Android AICore / ML Kit GenAI
+  Prompt API, in den Einstellungen separat aktivierbar) ergänzt die
+  regelbasierten Vorschläge um echtes Sprachverständnis statt eines festen
+  Schlüsselwort-Vokabulars — läuft komplett on-device, es verlassen keine
+  Daten das Gerät, nur der einmalige geräteweite Modell-Download braucht
+  Netzwerk. Benötigt ein Gemini-Nano-kompatibles Gerät; ist die KI nicht
+  verfügbar, fehlgeschlagen oder zu langsam (Timeout), greifen automatisch
+  weiterhin die regelbasierten Vorschläge.
 - Duplikat-Warnung: vergleicht einen Perceptual-Hash der ersten Seite mit den
   letzten Uploads derselben Organisation (rein lokal, 14 Tage Gedächtnis,
   kein Download bestehender Dokumente) und warnt unaufdringlich, falls ein
@@ -159,6 +167,13 @@ erzeugen. Der Key beginnt mit `ppapi_`.
   separate Activity in Play Services und fordert seine Permissions selbst an.
 - Texterkennung (OCR) auf dem Gerät lässt sich in den Einstellungen abschalten,
   falls die Papra-Instanz bereits serverseitig OCR durchführt (z. B. Mistral OCR).
+- Die optionale on-device KI (Gemini Nano) läuft über Android AICore und die
+  `com.google.mlkit:genai-prompt`-Bibliothek (aktuell Beta). Unterstützte Geräte
+  siehe [ML-Kit-GenAI-Übersicht](https://developers.google.com/ml-kit/genai#device-support);
+  ohne Unterstützung bleibt der Schalter in den Einstellungen inaktiv und eine
+  Meldung erklärt das. Der Modell-Download ist geräteweit und einmalig (wird
+  ggf. auch von anderen Apps mitgenutzt, die dieselbe ML-Kit-GenAI-API
+  verwenden).
 - Die Akzentfarben-Icons werden über vier `activity-alias`-Einträge im Manifest
   realisiert (eine pro Farbe, nur eine ist jeweils `enabled`); `LauncherIcon.apply()`
   schaltet zur Laufzeit um. Je nach Launcher kann die Aktualisierung des

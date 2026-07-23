@@ -10,7 +10,7 @@ import java.time.LocalDate
  */
 object RuleBasedInsightsEngine : SmartInsightsEngine {
 
-    override fun analyze(text: String): DocumentInsights {
+    override suspend fun analyze(text: String, existingTagNames: List<String>): DocumentInsights {
         if (text.isBlank()) return DocumentInsights.EMPTY
 
         val dates = findDates(text)

@@ -13,6 +13,7 @@ datastore = "1.1.1"
 securityCrypto = "1.1.0-alpha06"
 mlkitDocumentScanner = "16.0.0-beta1"
 mlkitTextRecognition = "16.0.1"
+mlkitGenaiPrompt = "1.0.0-beta4"
 coroutinesPlayServices = "1.9.0"
 pdfboxAndroid = "2.0.27.0"
 billing = "7.1.1"
@@ -36,6 +37,7 @@ androidx-navigation-compose = { group = "androidx.navigation", name = "navigatio
 
 mlkit-document-scanner = { group = "com.google.android.gms", name = "play-services-mlkit-document-scanner", version.ref = "mlkitDocumentScanner" }
 mlkit-text-recognition = { group = "com.google.mlkit", name = "text-recognition", version.ref = "mlkitTextRecognition" }
+mlkit-genai-prompt = { group = "com.google.mlkit", name = "genai-prompt", version.ref = "mlkitGenaiPrompt" }
 kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "coroutinesPlayServices" }
 pdfbox-android = { group = "com.tom-roush", name = "pdfbox-android", version.ref = "pdfboxAndroid" }
 billing-ktx = { group = "com.android.billingclient", name = "billing-ktx", version.ref = "billing" }

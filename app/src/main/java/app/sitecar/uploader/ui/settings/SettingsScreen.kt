@@ -59,12 +59,15 @@ import app.sitecar.uploader.data.BillingManager
 import app.sitecar.uploader.data.SitecarApiClient
 import app.sitecar.uploader.data.SettingsStore
 import app.sitecar.uploader.data.ThemeMode
+import app.sitecar.uploader.data.insights.GenAiInsightsEngine
 import app.sitecar.uploader.icon.LauncherIcon
 import app.sitecar.uploader.ui.support.SupportDialog
 import app.sitecar.uploader.ui.theme.accentPrimaryColor
 import app.sitecar.uploader.ui.util.ApiErrorMessages
 import app.sitecar.uploader.ui.util.friendlyErrorMessage
 import androidx.compose.ui.res.stringResource
+import com.google.mlkit.genai.common.DownloadStatus
+import com.google.mlkit.genai.common.FeatureStatus
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -85,6 +88,9 @@ fun SettingsScreen(
     var themeMode by remember { mutableStateOf(store.themeMode) }
     var ocrEnabled by remember { mutableStateOf(store.onDeviceOcrEnabled) }
     var smartInsightsEnabled by remember { mutableStateOf(store.smartInsightsEnabled) }
+    var onDeviceAiEnabled by remember { mutableStateOf(store.onDeviceAiEnabled) }
+    var onDeviceAiDownloading by remember { mutableStateOf(false) }
+    var onDeviceAiError by remember { mutableStateOf<String?>(null) }
     var filenameTemplate by remember { mutableStateOf(store.filenameTemplate) }
     var accentColor by remember { mutableStateOf(store.accentColor) }
     var showSupportDialog by remember { mutableStateOf(false) }
@@ -93,6 +99,8 @@ fun SettingsScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val missingFieldsMessage = stringResource(R.string.settings_error_missing_fields)
+    val onDeviceAiUnavailableMessage = stringResource(R.string.settings_on_device_ai_unavailable)
+    val onDeviceAiDownloadFailedMessage = stringResource(R.string.settings_on_device_ai_download_failed)
     val apiErrorMessages = ApiErrorMessages(
         unauthorized = stringResource(R.string.error_unauthorized),
         notFound = stringResource(R.string.error_not_found),
@@ -198,6 +206,78 @@ fun SettingsScreen(
                         smartInsightsEnabled = it
                         store.smartInsightsEnabled = it
                     },
+                )
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            Text(
+                text = stringResource(R.string.settings_on_device_ai_title),
+                style = MaterialTheme.typography.labelLarge,
+            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(
+                    text = stringResource(R.string.settings_on_device_ai_subtitle),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f),
+                )
+                Spacer(Modifier.width(12.dp))
+                if (onDeviceAiDownloading) {
+                    CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(24.dp))
+                } else {
+                    Switch(
+                        checked = onDeviceAiEnabled,
+                        enabled = smartInsightsEnabled,
+                        onCheckedChange = { checked ->
+                            if (!checked) {
+                                onDeviceAiEnabled = false
+                                store.onDeviceAiEnabled = false
+                                onDeviceAiError = null
+                            } else {
+                                onDeviceAiError = null
+                                scope.launch {
+                                    val status = runCatching { GenAiInsightsEngine.checkStatus() }.getOrNull()
+                                    when (status) {
+                                        FeatureStatus.AVAILABLE -> {
+                                            onDeviceAiEnabled = true
+                                            store.onDeviceAiEnabled = true
+                                        }
+                                        FeatureStatus.DOWNLOADABLE, FeatureStatus.DOWNLOADING -> {
+                                            onDeviceAiDownloading = true
+                                            val failed = runCatching {
+                                                var hasFailed = false
+                                                GenAiInsightsEngine.download().collect { downloadStatus ->
+                                                    if (downloadStatus is DownloadStatus.DownloadFailed) {
+                                                        hasFailed = true
+                                                    }
+                                                }
+                                                hasFailed
+                                            }.getOrDefault(true)
+                                            onDeviceAiDownloading = false
+                                            if (failed) {
+                                                onDeviceAiError = onDeviceAiDownloadFailedMessage
+                                            } else {
+                                                onDeviceAiEnabled = true
+                                                store.onDeviceAiEnabled = true
+                                            }
+                                        }
+                                        else -> onDeviceAiError = onDeviceAiUnavailableMessage
+                                    }
+                                }
+                            }
+                        },
+                    )
+                }
+            }
+            onDeviceAiError?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
                 )
             }
 
