@@ -200,7 +200,11 @@ probeweise die entsprechenden zusätzlichen Dokument-Berechtigungen geben.
 
 - `usesCleartextTraffic="true"` ist gesetzt, damit auch HTTP-Self-Hosted-Instanzen
   funktionieren. Für reine HTTPS-Setups später per `networkSecurityConfig` einengen.
-- API-Key und Server-URL liegen in `EncryptedSharedPreferences` (AES-256, Android Keystore).
+- API-Key und Server-URL liegen in `EncryptedSharedPreferences` (AES-256, Android
+  Keystore) und werden nie geloggt. Der Einstellungen-Bildschirm setzt
+  `FLAG_SECURE`, solange er sichtbar ist — blockiert Screenshots/Bildschirm-
+  aufnahmen und blendet den Inhalt im "Letzte Apps"-Vorschaubild aus (siehe
+  `SecureScreen()`); das API-Key-Feld ist zusätzlich als Passwortfeld maskiert.
 - Min-SDK 26 (Android 8), Target-SDK 35.
 - Der ML Kit Document Scanner lädt sein Modell beim ersten Start on-demand
   über Google Play Services nach (einmalig ~ein paar MB). Setzt Play Services voraus.
@@ -208,7 +212,7 @@ probeweise die entsprechenden zusätzlichen Dokument-Berechtigungen geben.
   separate Activity in Play Services und fordert seine Permissions selbst an.
 - Texterkennung (OCR) auf dem Gerät lässt sich in den Einstellungen abschalten,
   falls die Papra-Instanz bereits serverseitig OCR durchführt (z. B. Mistral OCR).
-- Die Akzentfarben-Icons werden über vier `activity-alias`-Einträge im Manifest
+- Die Akzentfarben-Icons werden über fünf `activity-alias`-Einträge im Manifest
   realisiert (eine pro Farbe, nur eine ist jeweils `enabled`); `LauncherIcon.apply()`
   schaltet zur Laufzeit um. Je nach Launcher kann die Aktualisierung des
   Home-Screen-Icons ein bis zwei Sekunden dauern — normales Verhalten dieser

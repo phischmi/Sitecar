@@ -75,6 +75,7 @@ import app.sitecar.uploader.share.ShareReceiver
 import app.sitecar.uploader.ui.support.SupportDialog
 import app.sitecar.uploader.ui.theme.accentPrimaryColor
 import app.sitecar.uploader.ui.util.ApiErrorMessages
+import app.sitecar.uploader.ui.util.SecureScreen
 import app.sitecar.uploader.ui.util.friendlyErrorMessage
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.launch
@@ -88,6 +89,8 @@ fun SettingsScreen(
     onSaved: () -> Unit,
     onBack: () -> Unit,
 ) {
+    SecureScreen()
+
     var serverUrl by remember { mutableStateOf(store.serverUrl) }
     var apiKey by remember { mutableStateOf(store.apiKey) }
     var status by remember { mutableStateOf<String?>(null) }
