@@ -107,63 +107,28 @@ class SettingsStore(context: Context) {
             ?: SwipeAction.DELETE
         set(value) = prefs.edit().putString(KEY_SWIPE_END_TO_START, value.name).apply()
 
-    val isConfigured: Flow<Boolean> = callbackFlow {
-        val send = { trySend(serverUrl.isNotBlank() && apiKey.isNotBlank()) }
-        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ -> send() }
-        prefs.registerOnSharedPreferenceChangeListener(listener)
-        send()
-        awaitClose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
-    }
-
-    val themeModeFlow: Flow<ThemeMode> = callbackFlow {
-        val send = { trySend(themeMode) }
+    /**
+     * Flow, der bei jeder Änderung von [watchedKey] (oder bei jeder beliebigen
+     * Änderung, falls `null`) den aktuellen Wert per [read] neu ausliest.
+     */
+    private fun <T> prefFlow(watchedKey: String?, read: () -> T): Flow<T> = callbackFlow {
+        val send = { trySend(read()) }
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-            if (key == KEY_THEME_MODE) send()
+            if (watchedKey == null || key == watchedKey) send()
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
         send()
         awaitClose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
     }
 
-    val isSupporterFlow: Flow<Boolean> = callbackFlow {
-        val send = { trySend(isSupporter) }
-        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-            if (key == KEY_IS_SUPPORTER) send()
-        }
-        prefs.registerOnSharedPreferenceChangeListener(listener)
-        send()
-        awaitClose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+    val isConfigured: Flow<Boolean> = prefFlow(watchedKey = null) {
+        serverUrl.isNotBlank() && apiKey.isNotBlank()
     }
-
-    val accentColorFlow: Flow<AccentColor> = callbackFlow {
-        val send = { trySend(accentColor) }
-        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-            if (key == KEY_ACCENT_COLOR) send()
-        }
-        prefs.registerOnSharedPreferenceChangeListener(listener)
-        send()
-        awaitClose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
-    }
-
-    val swipeStartToEndActionFlow: Flow<SwipeAction> = callbackFlow {
-        val send = { trySend(swipeStartToEndAction) }
-        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-            if (key == KEY_SWIPE_START_TO_END) send()
-        }
-        prefs.registerOnSharedPreferenceChangeListener(listener)
-        send()
-        awaitClose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
-    }
-
-    val swipeEndToStartActionFlow: Flow<SwipeAction> = callbackFlow {
-        val send = { trySend(swipeEndToStartAction) }
-        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-            if (key == KEY_SWIPE_END_TO_START) send()
-        }
-        prefs.registerOnSharedPreferenceChangeListener(listener)
-        send()
-        awaitClose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
-    }
+    val themeModeFlow: Flow<ThemeMode> = prefFlow(KEY_THEME_MODE) { themeMode }
+    val isSupporterFlow: Flow<Boolean> = prefFlow(KEY_IS_SUPPORTER) { isSupporter }
+    val accentColorFlow: Flow<AccentColor> = prefFlow(KEY_ACCENT_COLOR) { accentColor }
+    val swipeStartToEndActionFlow: Flow<SwipeAction> = prefFlow(KEY_SWIPE_START_TO_END) { swipeStartToEndAction }
+    val swipeEndToStartActionFlow: Flow<SwipeAction> = prefFlow(KEY_SWIPE_END_TO_START) { swipeEndToStartAction }
 
     companion object {
         private const val KEY_SERVER_URL = "server_url"

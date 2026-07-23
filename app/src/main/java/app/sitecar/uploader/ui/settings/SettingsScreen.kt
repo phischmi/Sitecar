@@ -74,8 +74,8 @@ import app.sitecar.uploader.icon.LauncherIcon
 import app.sitecar.uploader.share.ShareReceiver
 import app.sitecar.uploader.ui.support.SupportDialog
 import app.sitecar.uploader.ui.theme.accentPrimaryColor
-import app.sitecar.uploader.ui.util.ApiErrorMessages
 import app.sitecar.uploader.ui.util.friendlyErrorMessage
+import app.sitecar.uploader.ui.util.rememberApiErrorMessages
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.launch
 
@@ -109,15 +109,7 @@ fun SettingsScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val missingFieldsMessage = stringResource(R.string.settings_error_missing_fields)
-    val apiErrorMessages = ApiErrorMessages(
-        unauthorized = stringResource(R.string.error_unauthorized),
-        forbidden = stringResource(R.string.error_forbidden),
-        notFound = stringResource(R.string.error_not_found),
-        server = stringResource(R.string.error_server),
-        noConnection = stringResource(R.string.error_no_connection),
-        timeout = stringResource(R.string.error_timeout),
-        unknown = stringResource(R.string.error_unknown),
-    )
+    val apiErrorMessages = rememberApiErrorMessages()
 
     Scaffold(
         topBar = {

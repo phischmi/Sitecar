@@ -63,8 +63,8 @@ import app.sitecar.uploader.data.Organization
 import app.sitecar.uploader.data.SettingsStore
 import app.sitecar.uploader.data.SitecarApiClient
 import app.sitecar.uploader.data.TagDto
-import app.sitecar.uploader.ui.util.ApiErrorMessages
 import app.sitecar.uploader.ui.util.friendlyErrorMessage
+import app.sitecar.uploader.ui.util.rememberApiErrorMessages
 import kotlinx.coroutines.launch
 
 private val TAG_COLORS = listOf(
@@ -100,15 +100,7 @@ fun TagsScreen(
     var tagPendingDelete by remember { mutableStateOf<TagDto?>(null) }
     var deletingTagId by remember { mutableStateOf<String?>(null) }
 
-    val apiErrorMessages = ApiErrorMessages(
-        unauthorized = stringResource(R.string.error_unauthorized),
-        forbidden = stringResource(R.string.error_forbidden),
-        notFound = stringResource(R.string.error_not_found),
-        server = stringResource(R.string.error_server),
-        noConnection = stringResource(R.string.error_no_connection),
-        timeout = stringResource(R.string.error_timeout),
-        unknown = stringResource(R.string.error_unknown),
-    )
+    val apiErrorMessages = rememberApiErrorMessages()
 
     suspend fun fetchTags(org: Organization) {
         loading = true

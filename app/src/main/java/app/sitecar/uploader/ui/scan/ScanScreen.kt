@@ -17,7 +17,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DocumentScanner
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -158,7 +157,6 @@ fun ScanScreen(
                 onClick = startScan,
                 enabled = !launching,
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(),
             ) {
                 Text(stringResource(R.string.scan_start))
             }

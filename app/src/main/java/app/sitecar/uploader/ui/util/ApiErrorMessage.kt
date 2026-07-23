@@ -1,5 +1,8 @@
 package app.sitecar.uploader.ui.util
 
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import app.sitecar.uploader.R
 import app.sitecar.uploader.data.ApiException
 import java.net.ConnectException
 import java.net.SocketTimeoutException
@@ -19,6 +22,18 @@ data class ApiErrorMessages(
     val noConnection: String,
     val timeout: String,
     val unknown: String,
+)
+
+/** Löst die [ApiErrorMessages]-Texte im Composable-Kontext auf (siehe Klassendoc). */
+@Composable
+fun rememberApiErrorMessages(): ApiErrorMessages = ApiErrorMessages(
+    unauthorized = stringResource(R.string.error_unauthorized),
+    forbidden = stringResource(R.string.error_forbidden),
+    notFound = stringResource(R.string.error_not_found),
+    server = stringResource(R.string.error_server),
+    noConnection = stringResource(R.string.error_no_connection),
+    timeout = stringResource(R.string.error_timeout),
+    unknown = stringResource(R.string.error_unknown),
 )
 
 /** Übersetzt technische Exceptions in eine für Nutzer verständliche Meldung. */

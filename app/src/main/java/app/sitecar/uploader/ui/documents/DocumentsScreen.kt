@@ -88,8 +88,8 @@ import app.sitecar.uploader.data.SitecarApiClient
 import app.sitecar.uploader.data.SettingsStore
 import app.sitecar.uploader.data.SwipeAction
 import app.sitecar.uploader.data.TagDto
-import app.sitecar.uploader.ui.util.ApiErrorMessages
 import app.sitecar.uploader.ui.util.friendlyErrorMessage
+import app.sitecar.uploader.ui.util.rememberApiErrorMessages
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -144,15 +144,7 @@ fun DocumentsScreen(
     var bulkActionInProgress by remember { mutableStateOf(false) }
     val swipeStartToEndAction by store.swipeStartToEndActionFlow.collectAsState(initial = store.swipeStartToEndAction)
     val swipeEndToStartAction by store.swipeEndToStartActionFlow.collectAsState(initial = store.swipeEndToStartAction)
-    val apiErrorMessages = ApiErrorMessages(
-        unauthorized = stringResource(R.string.error_unauthorized),
-        forbidden = stringResource(R.string.error_forbidden),
-        notFound = stringResource(R.string.error_not_found),
-        server = stringResource(R.string.error_server),
-        noConnection = stringResource(R.string.error_no_connection),
-        timeout = stringResource(R.string.error_timeout),
-        unknown = stringResource(R.string.error_unknown),
-    )
+    val apiErrorMessages = rememberApiErrorMessages()
     val bulkDeletePartialFailureMessage = stringResource(R.string.documents_bulk_delete_partial_failure)
     val bulkTagsPartialFailureMessage = stringResource(R.string.documents_bulk_tags_partial_failure)
 

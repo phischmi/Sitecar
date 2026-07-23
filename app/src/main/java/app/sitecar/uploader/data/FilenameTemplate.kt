@@ -1,9 +1,8 @@
 package app.sitecar.uploader.data
 
-import java.text.SimpleDateFormat
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.Date
 import java.util.Locale
 
 /**
@@ -15,6 +14,7 @@ object FilenameTemplate {
     const val DEFAULT = "Scan-{date}-{time}"
 
     private val DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd", Locale.US)
+    private val TIME_FORMATTER = DateTimeFormatter.ofPattern("HHmmss", Locale.US)
 
     /**
      * [documentDate] überschreibt, falls gesetzt, nur den {date}-Platzhalter
@@ -28,9 +28,9 @@ object FilenameTemplate {
         counter: Int,
         documentDate: LocalDate? = null,
     ): String {
-        val now = Date()
-        val date = documentDate?.format(DATE_FORMATTER) ?: SimpleDateFormat("yyyyMMdd", Locale.US).format(now)
-        val time = SimpleDateFormat("HHmmss", Locale.US).format(now)
+        val now = LocalDateTime.now()
+        val date = (documentDate ?: now.toLocalDate()).format(DATE_FORMATTER)
+        val time = now.format(TIME_FORMATTER)
         val org = organizationName.orEmpty().filter { it.isLetterOrDigit() || it == '-' || it == '_' }
         return template
             .replace("{date}", date)

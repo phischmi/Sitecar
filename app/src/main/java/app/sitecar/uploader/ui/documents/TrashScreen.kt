@@ -61,8 +61,8 @@ import app.sitecar.uploader.data.DocumentThumbnailLoader
 import app.sitecar.uploader.data.Organization
 import app.sitecar.uploader.data.SettingsStore
 import app.sitecar.uploader.data.SitecarApiClient
-import app.sitecar.uploader.ui.util.ApiErrorMessages
 import app.sitecar.uploader.ui.util.friendlyErrorMessage
+import app.sitecar.uploader.ui.util.rememberApiErrorMessages
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -96,15 +96,7 @@ fun TrashScreen(
     var docPendingPermanentDelete by remember { mutableStateOf<DocumentDto?>(null) }
     var emptyTrashDialogOpen by remember { mutableStateOf(false) }
     var emptyingTrash by remember { mutableStateOf(false) }
-    val apiErrorMessages = ApiErrorMessages(
-        unauthorized = stringResource(R.string.error_unauthorized),
-        forbidden = stringResource(R.string.error_forbidden),
-        notFound = stringResource(R.string.error_not_found),
-        server = stringResource(R.string.error_server),
-        noConnection = stringResource(R.string.error_no_connection),
-        timeout = stringResource(R.string.error_timeout),
-        unknown = stringResource(R.string.error_unknown),
-    )
+    val apiErrorMessages = rememberApiErrorMessages()
 
     suspend fun fetchDeleted(org: Organization) {
         loading = true
