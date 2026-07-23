@@ -61,12 +61,47 @@
     <string name="nav_settings">Einstellungen</string>
     <string name="nav_scan">Scannen</string>
     <string name="nav_documents">Dokumente</string>
+    <string name="nav_tags">Tags</string>
+    <string name="nav_trash">Papierkorb</string>
 
     <string name="documents_title">Dokumente</string>
     <string name="documents_org">Organisation</string>
     <string name="documents_empty">Keine Dokumente gefunden.</string>
+    <string name="documents_search_hint">Dokumente durchsuchen…</string>
+    <string name="documents_search_empty">Keine Dokumente gefunden, die zur Suche passen.</string>
     <string name="documents_load_failed">Laden fehlgeschlagen: %1$s</string>
     <string name="documents_no_viewer">Keine App zum Anzeigen dieses Dateityps gefunden.</string>
+    <string name="documents_delete_title">Dokument löschen?</string>
+    <string name="documents_delete_message">„%1$s“ wird auf deinem Papra-Server in den Papierkorb verschoben.</string>
+    <string name="documents_rename_title">Dokument umbenennen</string>
+    <string name="documents_sort">Sortieren</string>
+    <string name="documents_sort_date_desc">Datum (neueste zuerst)</string>
+    <string name="documents_sort_date_asc">Datum (älteste zuerst)</string>
+    <string name="documents_sort_name_asc">Name (A–Z)</string>
+    <string name="documents_sort_name_desc">Name (Z–A)</string>
+    <string name="documents_manage_tags_title">Tags verwalten</string>
+    <string name="documents_manage_tags_empty">Diese Organisation hat noch keine Tags. Lege zuerst einen im Tags-Tab an.</string>
+
+    <string name="trash_title">Papierkorb</string>
+    <string name="trash_empty">Papierkorb ist leer.</string>
+    <string name="trash_restore">Wiederherstellen</string>
+    <string name="trash_delete_forever">Endgültig löschen</string>
+    <string name="trash_delete_forever_title">Endgültig löschen?</string>
+    <string name="trash_delete_forever_message">„%1$s“ wird endgültig gelöscht. Das kann nicht rückgängig gemacht werden.</string>
+    <string name="trash_empty_action">Papierkorb leeren</string>
+    <string name="trash_empty_confirm_title">Papierkorb leeren?</string>
+    <string name="trash_empty_confirm_message">Alle %1$d Dokument(e) werden endgültig gelöscht. Das kann nicht rückgängig gemacht werden.</string>
+
+    <string name="tags_title">Tags</string>
+    <string name="tags_empty">Noch keine Tags vorhanden.</string>
+    <string name="tags_create">Tag erstellen</string>
+    <string name="tags_create_title">Tag erstellen</string>
+    <string name="tags_name_label">Name</string>
+    <string name="tags_color_label">Farbe</string>
+    <string name="tags_description_label">Beschreibung (optional)</string>
+    <string name="tags_document_count">%1$d Dokument(e)</string>
+    <string name="tags_delete_title">Tag löschen?</string>
+    <string name="tags_delete_message">„%1$s“ wird von allen Dokumenten entfernt. Die Dokumente selbst bleiben unverändert.</string>
 
     <string name="error_unknown">Unbekannter Fehler</string>
     <string name="error_unauthorized">Anmeldung fehlgeschlagen — API-Key prüfen.</string>
@@ -76,5 +111,11 @@
     <string name="error_timeout">Zeitüberschreitung bei der Anfrage.</string>
 
     <string name="action_back">Zurück</string>
-    <string name="action_refresh">Aktualisieren</string>
+    <string name="action_delete">Löschen</string>
+    <string name="action_cancel">Abbrechen</string>
+    <string name="action_clear_search">Suche löschen</string>
+    <string name="action_more">Weitere Optionen</string>
+    <string name="action_rename">Umbenennen</string>
+    <string name="action_manage_tags">Tags</string>
+    <string name="action_done">Fertig</string>
 </resources>

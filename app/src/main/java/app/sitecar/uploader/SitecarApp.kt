@@ -24,6 +24,10 @@ class SitecarApp : Application() {
     @Volatile
     var currentScanPages: List<File> = emptyList()
 
+    /** In-Memory-Übergabe eines Tag-Filters vom Tags- zum Dokumente-Tab (z. B. "tag:Rechnung"). */
+    @Volatile
+    var pendingDocumentSearchQuery: String? = null
+
     override fun onCreate() {
         super.onCreate()
         PDFBoxResourceLoader.init(applicationContext)

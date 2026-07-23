@@ -1,8 +1,10 @@
 package app.sitecar.uploader.ui.nav
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.DocumentScanner
+import androidx.compose.material.icons.filled.Sell
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -22,6 +24,8 @@ fun AppBottomBar(nav: NavHostController) {
     val tabs = listOf(
         Triple(Route.Scan, Icons.Default.DocumentScanner, R.string.nav_scan),
         Triple(Route.Documents, Icons.Default.Description, R.string.nav_documents),
+        Triple(Route.Tags, Icons.Default.Sell, R.string.nav_tags),
+        Triple(Route.Trash, Icons.Default.Delete, R.string.nav_trash),
     )
 
     NavigationBar {

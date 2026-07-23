@@ -13,6 +13,8 @@ import androidx.navigation.compose.rememberNavController
 import app.sitecar.uploader.data.AccentColor
 import app.sitecar.uploader.data.ThemeMode
 import app.sitecar.uploader.ui.documents.DocumentsScreen
+import app.sitecar.uploader.ui.documents.TagsScreen
+import app.sitecar.uploader.ui.documents.TrashScreen
 import app.sitecar.uploader.ui.nav.AppBottomBar
 import app.sitecar.uploader.ui.nav.Route
 import app.sitecar.uploader.ui.scan.ScanScreen
@@ -74,6 +76,28 @@ class MainActivity : ComponentActivity() {
                         }
                         composable<Route.Documents> {
                             DocumentsScreen(
+                                client = app.apiClient,
+                                store = app.settingsStore,
+                                onOpenSettings = { nav.navigate(Route.Settings) },
+                                bottomBar = { AppBottomBar(nav) },
+                                initialSearchQuery = app.pendingDocumentSearchQuery,
+                                onConsumeInitialSearchQuery = { app.pendingDocumentSearchQuery = null },
+                            )
+                        }
+                        composable<Route.Tags> {
+                            TagsScreen(
+                                client = app.apiClient,
+                                store = app.settingsStore,
+                                onOpenSettings = { nav.navigate(Route.Settings) },
+                                onFilterByTag = { query ->
+                                    app.pendingDocumentSearchQuery = query
+                                    nav.navigate(Route.Documents)
+                                },
+                                bottomBar = { AppBottomBar(nav) },
+                            )
+                        }
+                        composable<Route.Trash> {
+                            TrashScreen(
                                 client = app.apiClient,
                                 store = app.settingsStore,
                                 onOpenSettings = { nav.navigate(Route.Settings) },

@@ -27,6 +27,21 @@ eigenständiger Begleiter ("Sidecar") für Papra, vormals PapraCam.
 - Vorhandene Dokumente einer Organisation ansehen (`GET /api/organizations/:organizationId/documents`),
   Tippen lädt die Datei herunter und öffnet sie im System-Viewer. Miniatur-Vorschau
   (erste PDF-Seite bzw. Bild) statt generischem Icon, lokal gerendert und gecacht.
+- Dokumente durchsuchen (serverseitige Volltextsuche über `searchQuery`) und
+  sortieren (Datum/Name, auf-/absteigend).
+- Dokument umbenennen (`PATCH .../documents/:documentId`), löschen
+  (`DELETE .../documents/:documentId`, wandert in Papras Papierkorb) und im
+  Papierkorb-Tab wiederherstellen oder einzeln bzw. komplett endgültig löschen
+  (`POST .../restore`, `DELETE .../documents/trash/:documentId`,
+  `DELETE .../documents/trash`).
+- Tags-Tab: Tags anlegen und löschen (`POST`/`DELETE .../tags`). Tippen auf
+  einen Tag springt in den Dokumente-Tab und filtert dort per Suchsyntax
+  `tag:Name` — derselbe Suchparser wie in der Papra-Weboberfläche.
+- Tags einem Dokument zuweisen/entfernen über das Kontextmenü im Dokumente-Tab
+  (`POST`/`DELETE .../documents/:documentId/tags`). Zugewiesene Tags werden
+  als farbige Chips in der Liste angezeigt, Tippen auf einen Chip filtert
+  ebenfalls danach.
+- Pull-to-refresh zum Aktualisieren der Dokumentenliste.
 - Darstellung wählbar: Hell / Dunkel / System.
 - Schnellzugriff-Shortcut "Scannen" per Long-Press auf das App-Icon.
 - Anpassbares Dateinamen-Format für Scans (Platzhalter `{date}` `{time}`

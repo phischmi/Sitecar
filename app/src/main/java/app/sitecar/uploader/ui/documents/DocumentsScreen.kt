@@ -4,22 +4,37 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
-import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Sell
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Sort
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -34,7 +49,9 @@ import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -53,13 +70,17 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import app.sitecar.uploader.R
 import app.sitecar.uploader.data.DocumentDto
+import app.sitecar.uploader.data.DocumentSortField
+import app.sitecar.uploader.data.DocumentSortOrder
 import app.sitecar.uploader.data.DocumentThumbnailLoader
 import app.sitecar.uploader.data.Organization
 import app.sitecar.uploader.data.SitecarApiClient
 import app.sitecar.uploader.data.SettingsStore
+import app.sitecar.uploader.data.TagDto
 import app.sitecar.uploader.ui.util.ApiErrorMessages
 import app.sitecar.uploader.ui.util.friendlyErrorMessage
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -74,6 +95,8 @@ fun DocumentsScreen(
     store: SettingsStore,
     onOpenSettings: () -> Unit,
     bottomBar: @Composable () -> Unit = {},
+    initialSearchQuery: String? = null,
+    onConsumeInitialSearchQuery: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -89,6 +112,20 @@ fun DocumentsScreen(
     var loading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var openingDocumentId by remember { mutableStateOf<String?>(null) }
+    var searchQuery by remember { mutableStateOf(initialSearchQuery.orEmpty()) }
+    var sortField by remember { mutableStateOf(DocumentSortField.CREATED_AT) }
+    var sortOrder by remember { mutableStateOf(DocumentSortOrder.DESC) }
+    var sortMenuOpen by remember { mutableStateOf(false) }
+    var menuOpenForId by remember { mutableStateOf<String?>(null) }
+    var docPendingDelete by remember { mutableStateOf<DocumentDto?>(null) }
+    var deletingDocumentId by remember { mutableStateOf<String?>(null) }
+    var docPendingRename by remember { mutableStateOf<DocumentDto?>(null) }
+    var renameText by remember { mutableStateOf("") }
+    var renamingDocumentId by remember { mutableStateOf<String?>(null) }
+    var docPendingTags by remember { mutableStateOf<DocumentDto?>(null) }
+    var orgTags by remember { mutableStateOf<List<TagDto>>(emptyList()) }
+    var orgTagsLoading by remember { mutableStateOf(false) }
+    var togglingTagId by remember { mutableStateOf<String?>(null) }
     val apiErrorMessages = ApiErrorMessages(
         unauthorized = stringResource(R.string.error_unauthorized),
         notFound = stringResource(R.string.error_not_found),
@@ -98,7 +135,24 @@ fun DocumentsScreen(
         unknown = stringResource(R.string.error_unknown),
     )
 
+    suspend fun fetchDocuments(org: Organization, query: String) {
+        loading = true
+        errorMessage = null
+        client.listDocuments(
+            organizationId = org.id,
+            searchQuery = query.takeIf { it.isNotBlank() },
+            sortField = sortField,
+            sortOrder = sortOrder,
+        )
+            .onSuccess { documents = it.documents }
+            .onFailure { errorMessage = friendlyErrorMessage(it, apiErrorMessages) }
+        loading = false
+    }
+
     LaunchedEffect(Unit) {
+        if (!initialSearchQuery.isNullOrBlank()) {
+            onConsumeInitialSearchQuery()
+        }
         client.listOrganizations()
             .onSuccess { list ->
                 orgs = list
@@ -107,14 +161,69 @@ fun DocumentsScreen(
             .onFailure { errorMessage = friendlyErrorMessage(it, apiErrorMessages) }
     }
 
-    LaunchedEffect(selectedOrg) {
+    LaunchedEffect(selectedOrg, sortField, sortOrder) {
         val org = selectedOrg ?: return@LaunchedEffect
-        loading = true
-        errorMessage = null
-        client.listDocuments(organizationId = org.id)
-            .onSuccess { documents = it.documents }
-            .onFailure { errorMessage = friendlyErrorMessage(it, apiErrorMessages) }
-        loading = false
+        fetchDocuments(org, searchQuery)
+    }
+
+    LaunchedEffect(searchQuery) {
+        val org = selectedOrg ?: return@LaunchedEffect
+        delay(350)
+        fetchDocuments(org, searchQuery)
+    }
+
+    fun deleteDocument(doc: DocumentDto) {
+        val org = selectedOrg ?: return
+        deletingDocumentId = doc.id
+        scope.launch {
+            client.deleteDocument(organizationId = org.id, documentId = doc.id)
+                .onSuccess { documents = documents.filterNot { it.id == doc.id } }
+                .onFailure { errorMessage = friendlyErrorMessage(it, apiErrorMessages) }
+            deletingDocumentId = null
+        }
+    }
+
+    fun renameDocument(doc: DocumentDto, newName: String) {
+        val org = selectedOrg ?: return
+        val trimmed = newName.trim()
+        if (trimmed.isEmpty() || trimmed == doc.name) return
+        renamingDocumentId = doc.id
+        scope.launch {
+            client.updateDocumentName(organizationId = org.id, documentId = doc.id, name = trimmed)
+                .onSuccess { updated -> documents = documents.map { if (it.id == doc.id) updated else it } }
+                .onFailure { errorMessage = friendlyErrorMessage(it, apiErrorMessages) }
+            renamingDocumentId = null
+        }
+    }
+
+    fun ensureOrgTagsLoaded(org: Organization) {
+        if (orgTags.isNotEmpty() || orgTagsLoading) return
+        orgTagsLoading = true
+        scope.launch {
+            client.listTags(organizationId = org.id)
+                .onSuccess { orgTags = it }
+                .onFailure { errorMessage = friendlyErrorMessage(it, apiErrorMessages) }
+            orgTagsLoading = false
+        }
+    }
+
+    fun toggleTag(doc: DocumentDto, tag: TagDto) {
+        val org = selectedOrg ?: return
+        val isAssigned = doc.tags.any { it.id == tag.id }
+        togglingTagId = tag.id
+        scope.launch {
+            val result = if (isAssigned) {
+                client.removeTagFromDocument(organizationId = org.id, documentId = doc.id, tagId = tag.id)
+            } else {
+                client.addTagToDocument(organizationId = org.id, documentId = doc.id, tagId = tag.id)
+            }
+            result.onSuccess {
+                val updatedTags = if (isAssigned) doc.tags.filterNot { it.id == tag.id } else doc.tags + tag
+                documents = documents.map { if (it.id == doc.id) it.copy(tags = updatedTags) else it }
+                docPendingTags = docPendingTags?.takeIf { it.id == doc.id }?.copy(tags = updatedTags) ?: docPendingTags
+            }.onFailure { errorMessage = friendlyErrorMessage(it, apiErrorMessages) }
+            togglingTagId = null
+        }
     }
 
     fun openDocument(doc: DocumentDto) {
@@ -155,24 +264,47 @@ fun DocumentsScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.documents_title)) },
                 actions = {
-                    IconButton(
-                        onClick = {
-                            val org = selectedOrg
-                            if (org != null) {
-                                scope.launch {
-                                    loading = true
-                                    client.listDocuments(organizationId = org.id)
-                                        .onSuccess { documents = it.documents }
-                                        .onFailure { errorMessage = friendlyErrorMessage(it, apiErrorMessages) }
-                                    loading = false
-                                }
-                            }
-                        },
-                    ) {
-                        Icon(
-                            Icons.Default.Refresh,
-                            contentDescription = stringResource(R.string.action_refresh),
-                        )
+                    Box {
+                        IconButton(onClick = { sortMenuOpen = true }) {
+                            Icon(Icons.Default.Sort, contentDescription = stringResource(R.string.documents_sort))
+                        }
+                        DropdownMenu(
+                            expanded = sortMenuOpen,
+                            onDismissRequest = { sortMenuOpen = false },
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.documents_sort_date_desc)) },
+                                onClick = {
+                                    sortField = DocumentSortField.CREATED_AT
+                                    sortOrder = DocumentSortOrder.DESC
+                                    sortMenuOpen = false
+                                },
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.documents_sort_date_asc)) },
+                                onClick = {
+                                    sortField = DocumentSortField.CREATED_AT
+                                    sortOrder = DocumentSortOrder.ASC
+                                    sortMenuOpen = false
+                                },
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.documents_sort_name_asc)) },
+                                onClick = {
+                                    sortField = DocumentSortField.NAME
+                                    sortOrder = DocumentSortOrder.ASC
+                                    sortMenuOpen = false
+                                },
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.documents_sort_name_desc)) },
+                                onClick = {
+                                    sortField = DocumentSortField.NAME
+                                    sortOrder = DocumentSortOrder.DESC
+                                    sortMenuOpen = false
+                                },
+                            )
+                        }
                     }
                     IconButton(onClick = onOpenSettings) {
                         Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.nav_settings))
@@ -217,67 +349,297 @@ fun DocumentsScreen(
                 }
             }
 
-            when {
-                loading -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
-                errorMessage != null -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(
-                        text = stringResource(R.string.documents_load_failed, errorMessage.orEmpty()),
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.padding(horizontal = 24.dp),
-                    )
-                }
-                documents.isEmpty() -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(
-                        text = stringResource(R.string.documents_empty),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                else -> LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(2.dp),
-                ) {
-                    val orgId = selectedOrg?.id.orEmpty()
-                    items(documents, key = { it.id }) { doc ->
-                        ListItem(
-                            headlineContent = { Text(doc.name ?: doc.id) },
-                            supportingContent = {
-                                Text("${formatDate(doc.createdAt)} · ${formatSize(doc.originalSize)}")
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                placeholder = { Text(stringResource(R.string.documents_search_hint)) },
+                singleLine = true,
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { searchQuery = "" }) {
+                            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.action_clear_search))
+                        }
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .padding(bottom = 8.dp),
+            )
+
+            PullToRefreshBox(
+                isRefreshing = loading,
+                onRefresh = {
+                    val org = selectedOrg
+                    if (org != null) {
+                        scope.launch { fetchDocuments(org, searchQuery) }
+                    }
+                },
+                modifier = Modifier.fillMaxWidth().weight(1f),
+            ) {
+                when {
+                    errorMessage != null -> Box(
+                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = stringResource(R.string.documents_load_failed, errorMessage.orEmpty()),
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.padding(horizontal = 24.dp),
+                        )
+                    }
+                    documents.isEmpty() && !loading -> Box(
+                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = if (searchQuery.isNotBlank()) {
+                                stringResource(R.string.documents_search_empty)
+                            } else {
+                                stringResource(R.string.documents_empty)
                             },
-                            leadingContent = {
-                                Box(
-                                    modifier = Modifier
-                                        .size(40.dp)
-                                        .clip(RoundedCornerShape(6.dp))
-                                        .background(MaterialTheme.colorScheme.surfaceVariant),
-                                    contentAlignment = Alignment.Center,
-                                ) {
-                                    if (openingDocumentId == doc.id) {
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    documents.isEmpty() -> Box(
+                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+                    )
+                    else -> LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(2.dp),
+                    ) {
+                        val orgId = selectedOrg?.id.orEmpty()
+                        items(documents, key = { it.id }) { doc ->
+                            ListItem(
+                                headlineContent = { Text(doc.name ?: doc.id) },
+                                supportingContent = {
+                                    Column {
+                                        Text("${formatDate(doc.createdAt)} · ${formatSize(doc.originalSize)}")
+                                        if (doc.tags.isNotEmpty()) {
+                                            Row(
+                                                modifier = Modifier
+                                                    .horizontalScroll(rememberScrollState())
+                                                    .padding(top = 4.dp),
+                                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                            ) {
+                                                doc.tags.forEach { tag ->
+                                                    TagChip(
+                                                        tag = tag,
+                                                        onClick = { searchQuery = buildTagSearchQuery(tag.name) },
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                leadingContent = {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(40.dp)
+                                            .clip(RoundedCornerShape(6.dp))
+                                            .background(MaterialTheme.colorScheme.surfaceVariant),
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        if (openingDocumentId == doc.id) {
+                                            CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(20.dp))
+                                        } else {
+                                            DocumentThumbnail(
+                                                doc = doc,
+                                                organizationId = orgId,
+                                                loader = thumbnailLoader,
+                                            )
+                                        }
+                                    }
+                                },
+                                trailingContent = {
+                                    if (deletingDocumentId == doc.id || renamingDocumentId == doc.id) {
                                         CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(20.dp))
                                     } else {
-                                        DocumentThumbnail(
-                                            doc = doc,
-                                            organizationId = orgId,
-                                            loader = thumbnailLoader,
-                                        )
+                                        Box {
+                                            IconButton(onClick = { menuOpenForId = doc.id }) {
+                                                Icon(
+                                                    Icons.Default.MoreVert,
+                                                    contentDescription = stringResource(R.string.action_more),
+                                                )
+                                            }
+                                            DropdownMenu(
+                                                expanded = menuOpenForId == doc.id,
+                                                onDismissRequest = { menuOpenForId = null },
+                                            ) {
+                                                DropdownMenuItem(
+                                                    text = { Text(stringResource(R.string.action_rename)) },
+                                                    leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null) },
+                                                    onClick = {
+                                                        menuOpenForId = null
+                                                        renameText = doc.name.orEmpty()
+                                                        docPendingRename = doc
+                                                    },
+                                                )
+                                                DropdownMenuItem(
+                                                    text = { Text(stringResource(R.string.action_manage_tags)) },
+                                                    leadingIcon = { Icon(Icons.Default.Sell, contentDescription = null) },
+                                                    onClick = {
+                                                        menuOpenForId = null
+                                                        docPendingTags = doc
+                                                        selectedOrg?.let { ensureOrgTagsLoaded(it) }
+                                                    },
+                                                )
+                                                DropdownMenuItem(
+                                                    text = { Text(stringResource(R.string.action_delete)) },
+                                                    leadingIcon = { Icon(Icons.Default.Delete, contentDescription = null) },
+                                                    onClick = {
+                                                        menuOpenForId = null
+                                                        docPendingDelete = doc
+                                                    },
+                                                )
+                                            }
+                                        }
                                     }
-                                }
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable(enabled = openingDocumentId == null) { openDocument(doc) },
-                        )
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable(enabled = openingDocumentId == null) { openDocument(doc) },
+                            )
+                        }
                     }
                 }
             }
         }
     }
+
+    val deleteTarget = docPendingDelete
+    if (deleteTarget != null) {
+        AlertDialog(
+            onDismissRequest = { docPendingDelete = null },
+            title = { Text(stringResource(R.string.documents_delete_title)) },
+            text = { Text(stringResource(R.string.documents_delete_message, deleteTarget.name ?: deleteTarget.id)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        deleteDocument(deleteTarget)
+                        docPendingDelete = null
+                    },
+                ) {
+                    Text(stringResource(R.string.action_delete))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { docPendingDelete = null }) {
+                    Text(stringResource(R.string.action_cancel))
+                }
+            },
+        )
+    }
+
+    val renameTarget = docPendingRename
+    if (renameTarget != null) {
+        AlertDialog(
+            onDismissRequest = { docPendingRename = null },
+            title = { Text(stringResource(R.string.documents_rename_title)) },
+            text = {
+                OutlinedTextField(
+                    value = renameText,
+                    onValueChange = { renameText = it },
+                    singleLine = true,
+                    label = { Text(stringResource(R.string.upload_filename)) },
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    enabled = renameText.isNotBlank(),
+                    onClick = {
+                        renameDocument(renameTarget, renameText)
+                        docPendingRename = null
+                    },
+                ) {
+                    Text(stringResource(R.string.settings_save))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { docPendingRename = null }) {
+                    Text(stringResource(R.string.action_cancel))
+                }
+            },
+        )
+    }
+
+    val tagsTarget = docPendingTags
+    if (tagsTarget != null) {
+        AlertDialog(
+            onDismissRequest = { docPendingTags = null },
+            title = { Text(stringResource(R.string.documents_manage_tags_title)) },
+            text = {
+                when {
+                    orgTagsLoading -> Box(
+                        modifier = Modifier.fillMaxWidth().padding(24.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                    orgTags.isEmpty() -> Text(stringResource(R.string.documents_manage_tags_empty))
+                    else -> Column(
+                        modifier = Modifier
+                            .heightIn(max = 320.dp)
+                            .verticalScroll(rememberScrollState()),
+                    ) {
+                        orgTags.forEach { tag ->
+                            val checked = tagsTarget.tags.any { it.id == tag.id }
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable(enabled = togglingTagId != tag.id) { toggleTag(tagsTarget, tag) }
+                                    .padding(vertical = 4.dp),
+                            ) {
+                                Checkbox(
+                                    checked = checked,
+                                    onCheckedChange = { toggleTag(tagsTarget, tag) },
+                                    enabled = togglingTagId != tag.id,
+                                )
+                                Box(
+                                    modifier = Modifier
+                                        .size(14.dp)
+                                        .clip(CircleShape)
+                                        .background(parseHexColor(tag.color))
+                                        .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape),
+                                )
+                                Text(tag.name, modifier = Modifier.padding(start = 8.dp).weight(1f))
+                                if (togglingTagId == tag.id) {
+                                    CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(18.dp))
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { docPendingTags = null }) {
+                    Text(stringResource(R.string.action_done))
+                }
+            },
+        )
+    }
 }
 
 @Composable
-private fun DocumentThumbnail(
+private fun TagChip(tag: TagDto, onClick: () -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .clip(RoundedCornerShape(50))
+            .background(parseHexColor(tag.color).copy(alpha = 0.25f))
+            .border(1.dp, parseHexColor(tag.color), RoundedCornerShape(50))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 8.dp, vertical = 2.dp),
+    ) {
+        Text(tag.name, style = MaterialTheme.typography.labelSmall)
+    }
+}
+
+@Composable
+internal fun DocumentThumbnail(
     doc: DocumentDto,
     organizationId: String,
     loader: DocumentThumbnailLoader,
@@ -302,7 +664,7 @@ private fun DocumentThumbnail(
     }
 }
 
-private fun formatSize(bytes: Long): String {
+internal fun formatSize(bytes: Long): String {
     if (bytes <= 0) return "0 B"
     val units = arrayOf("B", "KB", "MB", "GB")
     var size = bytes.toDouble()
@@ -314,7 +676,7 @@ private fun formatSize(bytes: Long): String {
     return if (unitIndex == 0) "${size.toInt()} ${units[unitIndex]}" else "%.1f %s".format(size, units[unitIndex])
 }
 
-private fun formatDate(iso: String?): String {
+internal fun formatDate(iso: String?): String {
     if (iso.isNullOrBlank()) return ""
     return runCatching {
         DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
