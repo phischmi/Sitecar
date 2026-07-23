@@ -121,6 +121,8 @@ fun UploadScreen(
     var insights by remember { mutableStateOf(DocumentInsights.EMPTY) }
     var orgTags by remember { mutableStateOf<List<TagDto>>(emptyList()) }
     var selectedTagIds by remember { mutableStateOf<Set<String>>(emptySet()) }
+    /** Vorgeschlagene Tags, die es in der Organisation noch nicht gibt — per Name, nicht vorausgewählt. */
+    var selectedNewTagNames by remember { mutableStateOf<Set<String>>(emptySet()) }
 
     val scope = rememberCoroutineScope()
     val previewBitmap = remember(pendingUpload) {
@@ -417,10 +419,16 @@ fun UploadScreen(
                 )
             }
 
-            val suggestedTags = orgTags.filter { tag ->
-                insights.suggestedTagNames.any { it.equals(tag.name, ignoreCase = true) }
+            // Jeder erkannte Tag-Name wird angezeigt, auch wenn er in der Organisation noch
+            // nicht existiert. Bereits vorhandene Tags sind vorausgewählt (siehe LaunchedEffect
+            // oben); noch nicht existierende sind nur ein Vorschlag und werden erst beim
+            // manuellen Auswählen tatsächlich angelegt (siehe Upload-Button unten).
+            val suggestedTagOptions = insights.suggestedTagNames.map { name ->
+                orgTags.firstOrNull { it.name.equals(name, ignoreCase = true) }
+                    ?.let { SuggestedTagOption.Existing(it) }
+                    ?: SuggestedTagOption.New(name)
             }
-            if (suggestedTags.isNotEmpty()) {
+            if (suggestedTagOptions.isNotEmpty()) {
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(
                         text = stringResource(R.string.upload_suggested_tags),
@@ -431,17 +439,32 @@ fun UploadScreen(
                         modifier = Modifier.horizontalScroll(rememberScrollState()),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        suggestedTags.forEach { tag ->
+                        suggestedTagOptions.forEach { option ->
+                            val selected = when (option) {
+                                is SuggestedTagOption.Existing -> option.tag.id in selectedTagIds
+                                is SuggestedTagOption.New -> option.name in selectedNewTagNames
+                            }
                             FilterChip(
-                                selected = tag.id in selectedTagIds,
+                                selected = selected,
                                 onClick = {
-                                    selectedTagIds = if (tag.id in selectedTagIds) {
-                                        selectedTagIds - tag.id
-                                    } else {
-                                        selectedTagIds + tag.id
+                                    when (option) {
+                                        is SuggestedTagOption.Existing -> {
+                                            selectedTagIds = if (selected) {
+                                                selectedTagIds - option.tag.id
+                                            } else {
+                                                selectedTagIds + option.tag.id
+                                            }
+                                        }
+                                        is SuggestedTagOption.New -> {
+                                            selectedNewTagNames = if (selected) {
+                                                selectedNewTagNames - option.name
+                                            } else {
+                                                selectedNewTagNames + option.name
+                                            }
+                                        }
                                     }
                                 },
-                                label = { Text(tag.name) },
+                                label = { Text(option.name) },
                             )
                         }
                     }
@@ -506,10 +529,18 @@ fun UploadScreen(
                         doc.delete()
                         (pendingUpload as? PendingUpload.Images)?.pages?.forEach { it.delete() }
 
-                        if (selectedTagIds.isNotEmpty()) {
+                        if (selectedTagIds.isNotEmpty() || selectedNewTagNames.isNotEmpty()) {
                             withContext(Dispatchers.IO) {
                                 selectedTagIds.forEach { tagId ->
                                     runCatching { client.addTagToDocument(org.id, uploadedDoc.id, tagId) }
+                                }
+                                // Manuell ausgewählte, noch nicht existierende Vorschläge werden
+                                // jetzt erst angelegt — nicht schon bei der bloßen Anzeige des Chips.
+                                selectedNewTagNames.forEach { name ->
+                                    client.createTag(organizationId = org.id, name = name, color = NEW_TAG_COLOR)
+                                        .onSuccess { newTag ->
+                                            runCatching { client.addTagToDocument(org.id, uploadedDoc.id, newTag.id) }
+                                        }
                                 }
                             }
                         }
@@ -603,3 +634,17 @@ private fun ensureExtension(name: String, mimeType: String): String {
     if (name.contains('.')) return name
     return "$name.${extensionForMimeType(mimeType)}"
 }
+
+/** Ein vorgeschlagener Tag: entweder schon in der Organisation vorhanden oder (noch) nicht. */
+private sealed interface SuggestedTagOption {
+    val name: String
+
+    data class Existing(val tag: TagDto) : SuggestedTagOption {
+        override val name get() = tag.name
+    }
+
+    data class New(override val name: String) : SuggestedTagOption
+}
+
+/** Default-Farbe für automatisch angelegte Smart-Suggestion-Tags — gleicher Wert wie TagsScreens Standard-Swatch. */
+private const val NEW_TAG_COLOR = "#D8FF75"
