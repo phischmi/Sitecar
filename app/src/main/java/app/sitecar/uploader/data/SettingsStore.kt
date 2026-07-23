@@ -48,6 +48,11 @@ class SettingsStore(context: Context) {
         get() = prefs.getBoolean(KEY_ON_DEVICE_OCR, true)
         set(value) = prefs.edit().putBoolean(KEY_ON_DEVICE_OCR, value).apply()
 
+    /** Tag-/Datums-/Fristen-Vorschläge aus dem OCR-Text beim Hochladen (regelbasiert, on-device). */
+    var smartInsightsEnabled: Boolean
+        get() = prefs.getBoolean(KEY_SMART_INSIGHTS, true)
+        set(value) = prefs.edit().putBoolean(KEY_SMART_INSIGHTS, value).apply()
+
     /** Lebenszeit-Zähler erfolgreicher Uploads, steuert den Spenden-Hinweis. */
     var uploadCount: Int
         get() = prefs.getInt(KEY_UPLOAD_COUNT, 0)
@@ -114,6 +119,7 @@ class SettingsStore(context: Context) {
         private const val KEY_DEFAULT_ORG = "default_org"
         private const val KEY_THEME_MODE = "theme_mode"
         private const val KEY_ON_DEVICE_OCR = "on_device_ocr_enabled"
+        private const val KEY_SMART_INSIGHTS = "smart_insights_enabled"
         private const val KEY_UPLOAD_COUNT = "upload_count"
         private const val KEY_IS_SUPPORTER = "is_supporter"
         private const val KEY_FILENAME_TEMPLATE = "filename_template"

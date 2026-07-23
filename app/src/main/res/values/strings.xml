@@ -20,6 +20,9 @@
     <string name="settings_ocr_title">On-device text recognition (OCR)</string>
     <string name="settings_ocr_subtitle">Embeds a searchable text layer into the PDF before upload. Turn off if your Papra server already runs OCR (e.g. Mistral OCR).</string>
 
+    <string name="settings_smart_insights_title">Smart suggestions</string>
+    <string name="settings_smart_insights_subtitle">Suggests tags, the document\'s own date, and detected deadlines from the scanned text — all on-device, rule-based.</string>
+
     <string name="settings_filename_template_title">Filename format</string>
     <string name="settings_filename_template_hint">Scan-{date}-{time} — placeholders: {date} {time} {org} {counter}</string>
 
@@ -59,6 +62,15 @@
     <string name="upload_pdf_progress_no_ocr">Creating PDF – page %1$d of %2$d</string>
     <string name="upload_pdf_build_failed">Couldn\'t create PDF</string>
     <string name="upload_shared_multiple_ignored">Only the first of %1$d shared files is used.</string>
+    <string name="upload_suggested_tags">Suggested tags</string>
+    <string name="upload_use_document_date">Use document date: %1$s</string>
+    <string name="upload_deadline_dialog_title">Deadline detected</string>
+    <string name="upload_deadline_dialog_message">%1$s on %2$s. Set a local reminder?</string>
+    <string name="upload_deadline_dialog_confirm">Set reminder</string>
+    <string name="upload_deadline_dialog_dismiss">No thanks</string>
+
+    <string name="reminder_channel_name">Document deadlines</string>
+    <string name="reminder_default_title">Deadline reminder</string>
 
     <string name="nav_settings">Settings</string>
     <string name="nav_scan">Scan</string>

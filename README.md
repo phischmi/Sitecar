@@ -47,6 +47,13 @@ eigenständiger Begleiter ("Sidecar") für Papra, vormals PapraCam.
   Geteilte Bilder werden wie mehrseitige Scans behandelt (zu einem PDF
   zusammengeführt, optional mit OCR); ein geteiltes PDF wird unverändert
   hochgeladen. Bei mehreren geteilten Dateien zählt nur die erste.
+- Intelligente Vorschläge beim Hochladen (regelbasiert, komplett on-device,
+  abschaltbar in den Einstellungen): erkennt Tags aus einem kleinen
+  Schlüsselwort-Vokabular und schlägt bereits in der Organisation vorhandene
+  Tags vor; erkennt das Dokumentdatum (z. B. Rechnungsdatum) als Alternative
+  zum Scan-Datum im Dateinamen; erkennt Fristen (z. B. Kündigungsfrist,
+  Garantie-Ablauf) und bietet nach dem Upload eine lokale Erinnerung an
+  (Android-Notification via WorkManager, kein Server-/Kalenderzugriff).
 - Pull-to-refresh zum Aktualisieren der Dokumentenliste.
 - Darstellung wählbar: Hell / Dunkel / System.
 - Schnellzugriff-Shortcut "Scannen" per Long-Press auf das App-Icon.
