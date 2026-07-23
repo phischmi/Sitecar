@@ -19,8 +19,8 @@ object LauncherIcon {
     private const val MANIFEST_PACKAGE = "app.sitecar.uploader"
 
     // Nur Akzentfarben mit eigener activity-alias/Icon-Ressource im Manifest.
-    // PAPRA hat (noch) keine eigene Icon-Variante und fällt daher unten auf
-    // Indigo zurück, statt hier eine nicht existierende Alias-Komponente
+    // Fehlt einer zukünftigen Akzentfarbe die Icon-Variante, fällt apply()
+    // unten auf Indigo zurück, statt eine nicht existierende Alias-Komponente
     // anzusprechen (würde crashen) oder alle Aliase zu deaktivieren (App-Icon
     // würde aus dem Launcher verschwinden).
     private val ICON_ALIASES: Map<AccentColor, String> = mapOf(
@@ -28,6 +28,7 @@ object LauncherIcon {
         AccentColor.EMERALD to "LauncherEmerald",
         AccentColor.AMBER to "LauncherAmber",
         AccentColor.ROSE to "LauncherRose",
+        AccentColor.PAPRA to "LauncherPapra",
     )
 
     fun apply(context: Context, accentColor: AccentColor) {

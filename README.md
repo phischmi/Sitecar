@@ -80,10 +80,10 @@ eigenständiger Begleiter ("Sidecar") für Papra, vormals PapraCam.
   (Orange im Hellmodus, Neon-Lime/-Gelb im Dunkelmodus) statt der für Indigo
   gewählten Abkehr davon. Jeder Akzent-Kreis in den Einstellungen zeigt
   Hell- und Dunkelmodus-Farbe diagonal geteilt in einem Kreis (oben links /
-  unten rechts), unabhängig vom aktuell aktiven App-Theme. Nur Indigo/
-  Smaragd/Bernstein/Rosé haben ein eigenfarbenes App-Icon (activity-alias);
-  Papra nutzt bis auf Weiteres das Indigo-Icon, da noch keine eigene
-  Icon-Grafik existiert. Kein bestehendes Feature wird Nicht-Unterstützern
+  unten rechts), unabhängig vom aktuell aktiven App-Theme. Jede Akzentfarbe
+  hat ein eigenfarbenes App-Icon (activity-alias); beim Icon wird bewusst
+  immer die Dunkelmodus-Akzentfarbe verwendet (z. B. Papras Neon-Lime statt
+  des helleren Orange). Kein bestehendes Feature wird Nicht-Unterstützern
   weggenommen oder vorenthalten.
 
 ## Bezahlfunktion (vorerst deaktiviert)
