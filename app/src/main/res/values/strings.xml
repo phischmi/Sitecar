@@ -142,6 +142,7 @@
     <string name="error_unknown">Unknown error</string>
     <string name="error_unauthorized">Authentication failed — check your API key.</string>
     <string name="error_forbidden">Your API key doesn\'t have permission for this action — check its scopes in Papra (Settings → API Keys).</string>
+    <string name="error_trash_action_unsupported">Papra\'s server currently rejects every API key for restore, permanent delete, and empty trash (a bug in Papra itself, not your key) — use the Papra web interface for these actions instead.</string>
     <string name="error_not_found">Server not found — check the server URL.</string>
     <string name="error_server">Server error — please try again later.</string>
     <string name="error_no_connection">Couldn\'t reach the server.</string>
