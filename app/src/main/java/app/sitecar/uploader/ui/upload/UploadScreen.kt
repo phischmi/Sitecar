@@ -12,7 +12,6 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -121,6 +120,7 @@ fun UploadScreen(
     val pdfBuildFailedMessage = stringResource(R.string.upload_pdf_build_failed)
     val apiErrorMessages = ApiErrorMessages(
         unauthorized = stringResource(R.string.error_unauthorized),
+        forbidden = stringResource(R.string.error_forbidden),
         notFound = stringResource(R.string.error_not_found),
         server = stringResource(R.string.error_server),
         noConnection = stringResource(R.string.error_no_connection),
@@ -480,8 +480,6 @@ fun UploadScreen(
                     color = MaterialTheme.colorScheme.error,
                 )
             }
-
-            Spacer(Modifier.height(4.dp))
 
             Button(
                 onClick = onClick@{

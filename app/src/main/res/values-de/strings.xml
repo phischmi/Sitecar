@@ -40,8 +40,8 @@
     <string name="settings_accent_subtitle">Jeder Kreis zeigt die Hellmodus-Farbe (oben links) und die Dunkelmodus-Farbe (unten rechts).</string>
     <string name="settings_accent_locked_hint">Weitere Farben mit einer einmaligen Spende freischalten.</string>
 
-    <string name="settings_support_title">Unterstützung</string>
-    <string name="settings_support_badge">✓ Du unterstützt Sitecar — danke!</string>
+    <string name="settings_support_title">Unterstützung 🏆</string>
+    <string name="settings_support_badge">Du unterstützt Sitecar — danke! ❤️</string>
     <string name="settings_support_cta">Sitecar unterstützen</string>
 
     <string name="support_dialog_title">Gefällt dir Sitecar?</string>
@@ -106,6 +106,12 @@
     <string name="documents_sort_name_asc">Name (A–Z)</string>
     <string name="documents_sort_name_desc">Name (Z–A)</string>
     <string name="documents_manage_tags_title">Tags verwalten</string>
+    <string name="documents_selected_count">%1$d ausgewählt</string>
+    <string name="documents_bulk_delete_title">%1$d Dokumente löschen?</string>
+    <string name="documents_bulk_delete_message">Sie werden auf deinem Papra-Server in den Papierkorb verschoben.</string>
+    <string name="documents_bulk_delete_partial_failure">Einige Dokumente konnten nicht gelöscht werden.</string>
+    <string name="documents_bulk_tags_title">Tags für %1$d Dokumente bearbeiten</string>
+    <string name="documents_bulk_tags_partial_failure">Einige Tags konnten nicht bei allen Dokumenten aktualisiert werden.</string>
     <string name="documents_manage_tags_empty">Diese Organisation hat noch keine Tags. Lege zuerst einen im Tags-Tab an.</string>
 
     <string name="trash_title">Papierkorb</string>
@@ -131,6 +137,7 @@
 
     <string name="error_unknown">Unbekannter Fehler</string>
     <string name="error_unauthorized">Anmeldung fehlgeschlagen — API-Key prüfen.</string>
+    <string name="error_forbidden">Dein API-Key hat keine Berechtigung für diese Aktion — prüfe seine Scopes in Papra (Einstellungen → API-Keys).</string>
     <string name="error_not_found">Server nicht gefunden — Server-URL prüfen.</string>
     <string name="error_server">Serverfehler — bitte später erneut versuchen.</string>
     <string name="error_no_connection">Server nicht erreichbar.</string>

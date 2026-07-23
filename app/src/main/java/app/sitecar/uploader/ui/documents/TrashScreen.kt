@@ -98,6 +98,7 @@ fun TrashScreen(
     var emptyingTrash by remember { mutableStateOf(false) }
     val apiErrorMessages = ApiErrorMessages(
         unauthorized = stringResource(R.string.error_unauthorized),
+        forbidden = stringResource(R.string.error_forbidden),
         notFound = stringResource(R.string.error_not_found),
         server = stringResource(R.string.error_server),
         noConnection = stringResource(R.string.error_no_connection),

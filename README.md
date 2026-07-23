@@ -2,7 +2,7 @@
   <img src="docs/logo.svg" width="96" height="96" alt="Sitecar Logo">
 </p>
 
-# Sitecar (Android)
+# Sitecar for Papra
 
 Schlanke native Android-App zum Aufnehmen und Hochladen von Dokumenten an eine
 selbst gehostete [Papra](https://github.com/papra-hq/papra)-Instanz — ein
@@ -11,6 +11,12 @@ eigenständiger Begleiter ("Sidecar") für Papra, vormals PapraCam.
 - Inoffiziell, nicht von papra-hq
 - Anbindung via API-Key (kein OAuth/Login)
 - Kotlin + Jetpack Compose, ML Kit Document Scanner, Ktor
+
+"Sitecar for Papra" ist der volle Name (z. B. für den Play-Store-Eintrag);
+auf dem Gerät selbst (Launcher-Icon, Kürzel, App-Info) bleibt es bewusst
+kurz **Sitecar** — `R.string.app_name`/`android:label` sind unverändert
+"Sitecar". Der volle Store-Titel wird in der Play Console gepflegt (Store-
+Eintrag → App-Name), nicht im Code.
 
 ## Features
 
@@ -41,6 +47,11 @@ eigenständiger Begleiter ("Sidecar") für Papra, vormals PapraCam.
   (`POST`/`DELETE .../documents/:documentId/tags`). Zugewiesene Tags werden
   als farbige Chips in der Liste angezeigt, Tippen auf einen Chip filtert
   ebenfalls danach.
+- Mehrfachauswahl: langes Drücken auf ein Dokument aktiviert den
+  Auswahlmodus (weitere Dokumente per Tippen dazu-/abwählen), die Titelleiste
+  wechselt zu "N ausgewählt" mit Aktionen zum gemeinsamen Löschen oder
+  Tags-Bearbeiten. Wischgesten sind während der Auswahl deaktiviert, System-
+  Zurück verlässt den Auswahlmodus statt den Bildschirm zu verlassen.
 - "Teilen an Sitecar": Bilder und PDFs aus anderen Apps (Mail-Anhänge,
   Galerie, Chat) lassen sich per Android-Share-Sheet direkt an Sitecar
   senden und durchlaufen denselben Upload-Screen wie ein Kamera-Scan.
@@ -164,6 +175,14 @@ gradle wrapper
 Im Papra-Web-UI unter **Settings → API Keys** einen Key mit der Berechtigung
 `documents:create` (und idealerweise `organizations:read` für die Org-Liste)
 erzeugen. Der Key beginnt mit `ppapi_`.
+
+Für Papierkorb-Aktionen (Wiederherstellen, endgültig löschen, Papierkorb
+leeren) sowie Tag-/Umbenennen-Aktionen können weitergehende Berechtigungen
+nötig sein als nur `documents:create` — Papra beantwortet fehlende Scopes
+mit HTTP 403, was Sitecar als "Keine Berechtigung für diese Aktion" anzeigt
+(zu unterscheiden von HTTP 401 "Anmeldung fehlgeschlagen" bei einem
+ungültigen Key). Führt eine Aktion zu dieser Meldung, dem Key in Papra
+probeweise die entsprechenden zusätzlichen Dokument-Berechtigungen geben.
 
 ## Hinweise
 

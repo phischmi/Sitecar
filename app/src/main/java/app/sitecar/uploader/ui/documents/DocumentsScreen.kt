@@ -2,10 +2,13 @@ package app.sitecar.uploader.ui.documents
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,6 +28,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
@@ -67,6 +71,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -132,16 +137,29 @@ fun DocumentsScreen(
     var orgTags by remember { mutableStateOf<List<TagDto>>(emptyList()) }
     var orgTagsLoading by remember { mutableStateOf(false) }
     var togglingTagId by remember { mutableStateOf<String?>(null) }
+    var selectionMode by remember { mutableStateOf(false) }
+    var selectedDocIds by remember { mutableStateOf<Set<String>>(emptySet()) }
+    var bulkTagsDialogOpen by remember { mutableStateOf(false) }
+    var bulkDeleteDialogOpen by remember { mutableStateOf(false) }
+    var bulkActionInProgress by remember { mutableStateOf(false) }
     val swipeStartToEndAction by store.swipeStartToEndActionFlow.collectAsState(initial = store.swipeStartToEndAction)
     val swipeEndToStartAction by store.swipeEndToStartActionFlow.collectAsState(initial = store.swipeEndToStartAction)
     val apiErrorMessages = ApiErrorMessages(
         unauthorized = stringResource(R.string.error_unauthorized),
+        forbidden = stringResource(R.string.error_forbidden),
         notFound = stringResource(R.string.error_not_found),
         server = stringResource(R.string.error_server),
         noConnection = stringResource(R.string.error_no_connection),
         timeout = stringResource(R.string.error_timeout),
         unknown = stringResource(R.string.error_unknown),
     )
+    val bulkDeletePartialFailureMessage = stringResource(R.string.documents_bulk_delete_partial_failure)
+    val bulkTagsPartialFailureMessage = stringResource(R.string.documents_bulk_tags_partial_failure)
+
+    BackHandler(enabled = selectionMode) {
+        selectionMode = false
+        selectedDocIds = emptySet()
+    }
 
     suspend fun fetchDocuments(org: Organization, query: String) {
         loading = true
@@ -212,6 +230,77 @@ fun DocumentsScreen(
                 .onSuccess { orgTags = it }
                 .onFailure { errorMessage = friendlyErrorMessage(it, apiErrorMessages) }
             orgTagsLoading = false
+        }
+    }
+
+    fun clearSelection() {
+        selectionMode = false
+        selectedDocIds = emptySet()
+    }
+
+    fun startSelection(id: String) {
+        selectionMode = true
+        selectedDocIds = setOf(id)
+        menuOpenForId = null
+    }
+
+    fun toggleSelection(id: String) {
+        selectedDocIds = if (id in selectedDocIds) selectedDocIds - id else selectedDocIds + id
+        if (selectedDocIds.isEmpty()) selectionMode = false
+    }
+
+    fun bulkDelete() {
+        val org = selectedOrg ?: return
+        val ids = selectedDocIds
+        bulkActionInProgress = true
+        scope.launch {
+            val succeeded = mutableSetOf<String>()
+            ids.forEach { id ->
+                client.deleteDocument(organizationId = org.id, documentId = id).onSuccess { succeeded += id }
+            }
+            documents = documents.filterNot { it.id in succeeded }
+            bulkActionInProgress = false
+            if (succeeded.size < ids.size) {
+                errorMessage = bulkDeletePartialFailureMessage
+            }
+            clearSelection()
+        }
+    }
+
+    // Setzt/entfernt einen Tag bei allen ausgewählten Dokumenten: "checked" bedeutet
+    // "haben ihn schon alle" — ein Klick schaltet dann für alle in die jeweils andere
+    // Richtung, Dokumente, die den Zieltag schon/noch nicht hatten, bleiben unberührt.
+    fun toggleBulkTag(tag: TagDto, currentlyAllHave: Boolean) {
+        val org = selectedOrg ?: return
+        val targets = documents.filter { it.id in selectedDocIds }
+        togglingTagId = tag.id
+        scope.launch {
+            var anyFailure = false
+            targets.forEach { doc ->
+                val hasTag = doc.tags.any { it.id == tag.id }
+                val result = when {
+                    currentlyAllHave && hasTag ->
+                        client.removeTagFromDocument(organizationId = org.id, documentId = doc.id, tagId = tag.id)
+                    !currentlyAllHave && !hasTag ->
+                        client.addTagToDocument(organizationId = org.id, documentId = doc.id, tagId = tag.id)
+                    else -> Result.success(Unit)
+                }
+                if (result.isFailure) anyFailure = true
+            }
+            documents = documents.map { doc ->
+                if (doc.id in selectedDocIds) {
+                    val updatedTags = if (currentlyAllHave) {
+                        doc.tags.filterNot { it.id == tag.id }
+                    } else {
+                        (doc.tags + tag).distinctBy { it.id }
+                    }
+                    doc.copy(tags = updatedTags)
+                } else {
+                    doc
+                }
+            }
+            if (anyFailure) errorMessage = bulkTagsPartialFailureMessage
+            togglingTagId = null
         }
     }
 
@@ -287,56 +376,87 @@ fun DocumentsScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.documents_title)) },
-                actions = {
-                    Box {
-                        IconButton(onClick = { sortMenuOpen = true }) {
-                            Icon(Icons.Default.Sort, contentDescription = stringResource(R.string.documents_sort))
+            if (selectionMode) {
+                TopAppBar(
+                    title = { Text(stringResource(R.string.documents_selected_count, selectedDocIds.size)) },
+                    navigationIcon = {
+                        IconButton(onClick = { clearSelection() }) {
+                            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.action_cancel))
                         }
-                        DropdownMenu(
-                            expanded = sortMenuOpen,
-                            onDismissRequest = { sortMenuOpen = false },
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.documents_sort_date_desc)) },
-                                onClick = {
-                                    sortField = DocumentSortField.CREATED_AT
-                                    sortOrder = DocumentSortOrder.DESC
-                                    sortMenuOpen = false
-                                },
+                    },
+                    actions = {
+                        if (bulkActionInProgress) {
+                            CircularProgressIndicator(
+                                strokeWidth = 2.dp,
+                                modifier = Modifier.size(20.dp).padding(horizontal = 12.dp),
                             )
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.documents_sort_date_asc)) },
+                        } else {
+                            IconButton(
                                 onClick = {
-                                    sortField = DocumentSortField.CREATED_AT
-                                    sortOrder = DocumentSortOrder.ASC
-                                    sortMenuOpen = false
+                                    bulkTagsDialogOpen = true
+                                    selectedOrg?.let { ensureOrgTagsLoaded(it) }
                                 },
-                            )
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.documents_sort_name_asc)) },
-                                onClick = {
-                                    sortField = DocumentSortField.NAME
-                                    sortOrder = DocumentSortOrder.ASC
-                                    sortMenuOpen = false
-                                },
-                            )
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.documents_sort_name_desc)) },
-                                onClick = {
-                                    sortField = DocumentSortField.NAME
-                                    sortOrder = DocumentSortOrder.DESC
-                                    sortMenuOpen = false
-                                },
-                            )
+                            ) {
+                                Icon(Icons.Default.Sell, contentDescription = stringResource(R.string.action_manage_tags))
+                            }
+                            IconButton(onClick = { bulkDeleteDialogOpen = true }) {
+                                Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.action_delete))
+                            }
                         }
-                    }
-                    IconButton(onClick = onOpenSettings) {
-                        Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.nav_settings))
-                    }
-                },
-            )
+                    },
+                )
+            } else {
+                TopAppBar(
+                    title = { Text(stringResource(R.string.documents_title)) },
+                    actions = {
+                        Box {
+                            IconButton(onClick = { sortMenuOpen = true }) {
+                                Icon(Icons.Default.Sort, contentDescription = stringResource(R.string.documents_sort))
+                            }
+                            DropdownMenu(
+                                expanded = sortMenuOpen,
+                                onDismissRequest = { sortMenuOpen = false },
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.documents_sort_date_desc)) },
+                                    onClick = {
+                                        sortField = DocumentSortField.CREATED_AT
+                                        sortOrder = DocumentSortOrder.DESC
+                                        sortMenuOpen = false
+                                    },
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.documents_sort_date_asc)) },
+                                    onClick = {
+                                        sortField = DocumentSortField.CREATED_AT
+                                        sortOrder = DocumentSortOrder.ASC
+                                        sortMenuOpen = false
+                                    },
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.documents_sort_name_asc)) },
+                                    onClick = {
+                                        sortField = DocumentSortField.NAME
+                                        sortOrder = DocumentSortOrder.ASC
+                                        sortMenuOpen = false
+                                    },
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.documents_sort_name_desc)) },
+                                    onClick = {
+                                        sortField = DocumentSortField.NAME
+                                        sortOrder = DocumentSortOrder.DESC
+                                        sortMenuOpen = false
+                                    },
+                                )
+                            }
+                        }
+                        IconButton(onClick = onOpenSettings) {
+                            Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.nav_settings))
+                        }
+                    },
+                )
+            }
         },
         bottomBar = bottomBar,
     ) { inner ->
@@ -448,7 +568,14 @@ fun DocumentsScreen(
                                     isBusy = deletingDocumentId == doc.id || renamingDocumentId == doc.id,
                                     menuExpanded = menuOpenForId == doc.id,
                                     onMenuExpandedChange = { expanded -> menuOpenForId = if (expanded) doc.id else null },
-                                    onOpen = { openDocument(doc) },
+                                    selectionMode = selectionMode,
+                                    selected = doc.id in selectedDocIds,
+                                    onClick = {
+                                        if (selectionMode) toggleSelection(doc.id) else openDocument(doc)
+                                    },
+                                    onLongClick = {
+                                        if (selectionMode) toggleSelection(doc.id) else startSelection(doc.id)
+                                    },
                                     onRename = {
                                         renameText = doc.name.orEmpty()
                                         docPendingRename = doc
@@ -462,7 +589,9 @@ fun DocumentsScreen(
                                 )
                             }
 
-                            if (swipeStartToEndAction == SwipeAction.NONE && swipeEndToStartAction == SwipeAction.NONE) {
+                            val swipeEnabled = !selectionMode &&
+                                (swipeStartToEndAction != SwipeAction.NONE || swipeEndToStartAction != SwipeAction.NONE)
+                            if (!swipeEnabled) {
                                 rowContent()
                             } else {
                                 val dismissState = rememberSwipeToDismissBoxState(
@@ -612,9 +741,89 @@ fun DocumentsScreen(
             },
         )
     }
+
+    if (bulkDeleteDialogOpen) {
+        AlertDialog(
+            onDismissRequest = { bulkDeleteDialogOpen = false },
+            title = { Text(stringResource(R.string.documents_bulk_delete_title, selectedDocIds.size)) },
+            text = { Text(stringResource(R.string.documents_bulk_delete_message)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        bulkDeleteDialogOpen = false
+                        bulkDelete()
+                    },
+                ) {
+                    Text(stringResource(R.string.action_delete))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { bulkDeleteDialogOpen = false }) {
+                    Text(stringResource(R.string.action_cancel))
+                }
+            },
+        )
+    }
+
+    if (bulkTagsDialogOpen) {
+        val bulkTargets = documents.filter { it.id in selectedDocIds }
+        AlertDialog(
+            onDismissRequest = { bulkTagsDialogOpen = false },
+            title = { Text(stringResource(R.string.documents_bulk_tags_title, selectedDocIds.size)) },
+            text = {
+                when {
+                    orgTagsLoading -> Box(
+                        modifier = Modifier.fillMaxWidth().padding(24.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                    orgTags.isEmpty() -> Text(stringResource(R.string.documents_manage_tags_empty))
+                    else -> Column(
+                        modifier = Modifier
+                            .heightIn(max = 320.dp)
+                            .verticalScroll(rememberScrollState()),
+                    ) {
+                        orgTags.forEach { tag ->
+                            val allHave = bulkTargets.isNotEmpty() && bulkTargets.all { it.tags.any { t -> t.id == tag.id } }
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable(enabled = togglingTagId != tag.id) { toggleBulkTag(tag, allHave) }
+                                    .padding(vertical = 4.dp),
+                            ) {
+                                Checkbox(
+                                    checked = allHave,
+                                    onCheckedChange = { toggleBulkTag(tag, allHave) },
+                                    enabled = togglingTagId != tag.id,
+                                )
+                                Box(
+                                    modifier = Modifier
+                                        .size(14.dp)
+                                        .clip(CircleShape)
+                                        .background(parseHexColor(tag.color))
+                                        .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape),
+                                )
+                                Text(tag.name, modifier = Modifier.padding(start = 8.dp).weight(1f))
+                                if (togglingTagId == tag.id) {
+                                    CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(18.dp))
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { bulkTagsDialogOpen = false }) {
+                    Text(stringResource(R.string.action_done))
+                }
+            },
+        )
+    }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 private fun DocumentRow(
     doc: DocumentDto,
@@ -625,7 +834,10 @@ private fun DocumentRow(
     isBusy: Boolean,
     menuExpanded: Boolean,
     onMenuExpandedChange: (Boolean) -> Unit,
-    onOpen: () -> Unit,
+    selectionMode: Boolean,
+    selected: Boolean,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
     onRename: () -> Unit,
     onManageTags: () -> Unit,
     onDelete: () -> Unit,
@@ -663,12 +875,35 @@ private fun DocumentRow(
                 } else {
                     DocumentThumbnail(doc = doc, organizationId = organizationId, loader = thumbnailLoader)
                 }
+                if (selectionMode) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(2.dp)
+                            .size(18.dp)
+                            .clip(CircleShape)
+                            .background(
+                                if (selected) MaterialTheme.colorScheme.primary else Color.Black.copy(alpha = 0.35f),
+                            )
+                            .border(1.dp, Color.White, CircleShape),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        if (selected) {
+                            Icon(
+                                Icons.Default.Check,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(12.dp),
+                            )
+                        }
+                    }
+                }
             }
         },
         trailingContent = {
             if (isBusy) {
                 CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(20.dp))
-            } else {
+            } else if (!selectionMode) {
                 Box {
                     IconButton(onClick = { onMenuExpandedChange(true) }) {
                         Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.action_more))
@@ -707,8 +942,10 @@ private fun DocumentRow(
         },
         modifier = Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surface)
-            .clickable(enabled = clickEnabled, onClick = onOpen),
+            .background(
+                if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+            )
+            .combinedClickable(enabled = clickEnabled, onClick = onClick, onLongClick = onLongClick),
     )
 }
 

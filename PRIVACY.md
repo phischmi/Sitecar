@@ -1,4 +1,4 @@
-# Datenschutzerklärung – Sitecar
+# Datenschutzerklärung – Sitecar for Papra
 
 Stand: 2026-07-22
 

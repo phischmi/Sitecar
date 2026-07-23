@@ -13,6 +13,7 @@ import java.net.UnknownHostException
  */
 data class ApiErrorMessages(
     val unauthorized: String,
+    val forbidden: String,
     val notFound: String,
     val server: String,
     val noConnection: String,
@@ -29,7 +30,11 @@ fun friendlyErrorMessage(throwable: Throwable, messages: ApiErrorMessages): Stri
             is SocketTimeoutException -> messages.timeout
             else -> throwable.message ?: messages.unknown
         }
-        apiException.status.value == 401 || apiException.status.value == 403 -> messages.unauthorized
+        // 401 = Key selbst ungültig/fehlt; 403 = Key gültig, aber ohne die nötige
+        // Berechtigung (Scope) für diese Aktion — beides unter "API-Key prüfen" zu
+        // fassen ist irreführend, wenn der Key für andere Aktionen längst funktioniert.
+        apiException.status.value == 401 -> messages.unauthorized
+        apiException.status.value == 403 -> messages.forbidden
         apiException.status.value == 404 -> messages.notFound
         apiException.status.value in 500..599 -> messages.server
         else -> apiException.message ?: messages.unknown
