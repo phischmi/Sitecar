@@ -1,13 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Sitecar App-Icon (Indigo-Variante) für die README — entspricht ic_launcher.xml /
-     ic_launcher_background.xml / ic_launcher_foreground.xml, als eigenständige SVG. -->
+     ic_launcher_background.xml / ic_launcher_foreground.xml, als eigenständige SVG.
+     Hintergrund ist die flache Dark-Mode-Akzentfarbe (kein Verlauf mehr), siehe
+     ic_launcher_background.xml und die "flat icon backgrounds"-Änderung. -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108" width="108" height="108">
   <defs>
-    <radialGradient id="bg" cx="38" cy="32" r="100" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#4C61EE"/>
-      <stop offset="50%" stop-color="#2A3FC7"/>
-      <stop offset="100%" stop-color="#141B4D"/>
-    </radialGradient>
     <linearGradient id="doc" x1="39" y1="36" x2="69" y2="72" gradientUnits="userSpaceOnUse">
       <stop offset="0%" stop-color="#FFFFFF"/>
       <stop offset="100%" stop-color="#DCE1FB"/>
@@ -19,7 +16,7 @@
     <clipPath id="circle"><circle cx="54" cy="54" r="54"/></clipPath>
   </defs>
   <g clip-path="url(#circle)">
-    <rect width="108" height="108" fill="url(#bg)"/>
+    <rect width="108" height="108" fill="#7A90FF"/>
     <g transform="translate(10.8 10.8) scale(0.8) rotate(8 54 54)">
       <g transform="translate(3 4)" fill="#000000" fill-opacity="0.4">
         <path d="M27,27 L43,27 L43,30 L30,30 L30,43 L27,43 Z
