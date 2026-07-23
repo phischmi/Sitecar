@@ -469,6 +469,7 @@ fun SettingsScreen(
                     FilenamePlaceholderRow("{date}", stringResource(R.string.settings_filename_placeholder_date))
                     FilenamePlaceholderRow("{time}", stringResource(R.string.settings_filename_placeholder_time))
                     FilenamePlaceholderRow("{org}", stringResource(R.string.settings_filename_placeholder_org))
+                    FilenamePlaceholderRow("{sender}", stringResource(R.string.settings_filename_placeholder_sender))
                     FilenamePlaceholderRow("{counter}", stringResource(R.string.settings_filename_placeholder_counter))
                 }
             },
