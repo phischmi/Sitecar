@@ -12,7 +12,6 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -83,8 +82,8 @@ import app.sitecar.uploader.data.insights.DocumentInsights
 import app.sitecar.uploader.data.insights.RuleBasedInsightsEngine
 import app.sitecar.uploader.data.reminders.ReminderScheduler
 import app.sitecar.uploader.ui.support.SupportDialog
-import app.sitecar.uploader.ui.util.ApiErrorMessages
 import app.sitecar.uploader.ui.util.friendlyErrorMessage
+import app.sitecar.uploader.ui.util.rememberApiErrorMessages
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -119,14 +118,7 @@ fun UploadScreen(
     var dropdownOpen by remember { mutableStateOf(false) }
     var showSupportDialog by remember { mutableStateOf(false) }
     val pdfBuildFailedMessage = stringResource(R.string.upload_pdf_build_failed)
-    val apiErrorMessages = ApiErrorMessages(
-        unauthorized = stringResource(R.string.error_unauthorized),
-        notFound = stringResource(R.string.error_not_found),
-        server = stringResource(R.string.error_server),
-        noConnection = stringResource(R.string.error_no_connection),
-        timeout = stringResource(R.string.error_timeout),
-        unknown = stringResource(R.string.error_unknown),
-    )
+    val apiErrorMessages = rememberApiErrorMessages()
 
     var documentFile by remember { mutableStateOf<File?>(null) }
     var documentMimeType by remember { mutableStateOf("application/pdf") }
@@ -481,8 +473,6 @@ fun UploadScreen(
                 )
             }
 
-            Spacer(Modifier.height(4.dp))
-
             Button(
                 onClick = onClick@{
                     val org = selectedOrg ?: return@onClick
@@ -658,7 +648,7 @@ private fun renderPdfFirstPage(file: File): android.graphics.Bitmap? {
                 }
             }
         }
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         null
     }
 }

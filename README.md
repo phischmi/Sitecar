@@ -2,7 +2,7 @@
   <img src="docs/logo.svg" width="96" height="96" alt="Sitecar Logo">
 </p>
 
-# Sitecar (Android)
+# Sitecar for Papra
 
 Schlanke native Android-App zum Aufnehmen und Hochladen von Dokumenten an eine
 selbst gehostete [Papra](https://github.com/papra-hq/papra)-Instanz — ein
@@ -11,6 +11,12 @@ eigenständiger Begleiter ("Sidecar") für Papra, vormals PapraCam.
 - Inoffiziell, nicht von papra-hq
 - Anbindung via API-Key (kein OAuth/Login)
 - Kotlin + Jetpack Compose, ML Kit Document Scanner, Ktor
+
+"Sitecar for Papra" ist der volle Name (z. B. für den Play-Store-Eintrag);
+auf dem Gerät selbst (Launcher-Icon, Kürzel, App-Info) bleibt es bewusst
+kurz **Sitecar** — `R.string.app_name`/`android:label` sind unverändert
+"Sitecar". Der volle Store-Titel wird in der Play Console gepflegt (Store-
+Eintrag → App-Name), nicht im Code.
 
 ## Features
 
@@ -42,12 +48,29 @@ eigenständiger Begleiter ("Sidecar") für Papra, vormals PapraCam.
   (`POST`/`DELETE .../documents/:documentId/tags`). Zugewiesene Tags werden
   als farbige Chips in der Liste angezeigt, Tippen auf einen Chip filtert
   ebenfalls danach.
-- "Teilen an Sitecar": Bilder und PDFs aus anderen Apps (Mail-Anhänge,
-  Galerie, Chat) lassen sich per Android-Share-Sheet direkt an Sitecar
-  senden und durchlaufen denselben Upload-Screen wie ein Kamera-Scan.
-  Geteilte Bilder werden wie mehrseitige Scans behandelt (zu einem PDF
-  zusammengeführt, optional mit OCR); ein geteiltes PDF wird unverändert
-  hochgeladen. Bei mehreren geteilten Dateien zählt nur die erste.
+- Mehrfachauswahl: langes Drücken auf ein Dokument aktiviert den
+  Auswahlmodus (weitere Dokumente per Tippen dazu-/abwählen), die Titelleiste
+  wechselt zu "N ausgewählt" mit Aktionen zum gemeinsamen Löschen oder
+  Tags-Bearbeiten. Wischgesten sind während der Auswahl deaktiviert, System-
+  Zurück verlässt den Auswahlmodus statt den Bildschirm zu verlassen.
+- "Teilen an Sitecar" (Opt-in, standardmäßig aus — Einstellungen → "Teilen
+  an Sitecar"): Bilder und PDFs aus anderen Apps (Mail-Anhänge, Galerie,
+  Chat, Rechnungs-/Anbieter-Apps) lassen sich per Android-Share-Sheet direkt
+  an Sitecar senden und durchlaufen denselben Upload-Screen wie ein
+  Kamera-Scan. Geteilte Bilder werden wie mehrseitige Scans behandelt (zu
+  einem PDF zusammengeführt, optional mit OCR); ein geteiltes PDF wird
+  unverändert hochgeladen. Bei mehreren geteilten Dateien zählt nur die
+  erste. Erkannte MIME-Typen: `image/*`, `application/pdf` sowie
+  `application/octet-stream` (manche Apps deklarieren PDFs darüber, z. B.
+  wenn ihr FileProvider keinen expliziten Typ zuordnet — Sitecar korrigiert
+  den Typ dann anhand der `.pdf`-Dateiendung). Taucht Sitecar in einer
+  bestimmten App trotz aktiviertem Opt-in nicht im Share-Sheet auf, teilt
+  diese App vermutlich über einen anderen Mechanismus als Androids
+  Standard-`ACTION_SEND` (z. B. einen eigenen "Exportieren"-Button, der
+  direkt ins Dateisystem speichert) — das kann keine Ziel-App abfangen.
+  Technisch per activity-alias umgesetzt (`.ShareReceiver`), damit sich die
+  Sichtbarkeit zur Laufzeit umschalten lässt, ohne dass Sitecar sonst
+  irgendwo im Share-Sheet auftaucht.
 - Intelligente Vorschläge beim Hochladen (regelbasiert, komplett on-device,
   abschaltbar in den Einstellungen): erkennt Tags aus einem kleinen
   Schlüsselwort-Vokabular und schlägt bereits in der Organisation vorhandene
@@ -177,11 +200,21 @@ Im Papra-Web-UI unter **Settings → API Keys** einen Key mit der Berechtigung
 `documents:create` (und idealerweise `organizations:read` für die Org-Liste)
 erzeugen. Der Key beginnt mit `ppapi_`.
 
+Für Papierkorb-Aktionen (Wiederherstellen, endgültig löschen, Papierkorb
+leeren) sowie Tag-/Umbenennen-Aktionen können weitergehende Berechtigungen
+nötig sein als nur `documents:create` — Papra beantwortet fehlende Scopes
+mit HTTP 403, was Sitecar als "Keine Berechtigung für diese Aktion" anzeigt
+(zu unterscheiden von HTTP 401 "Anmeldung fehlgeschlagen" bei einem
+ungültigen Key). Führt eine Aktion zu dieser Meldung, dem Key in Papra
+probeweise die entsprechenden zusätzlichen Dokument-Berechtigungen geben.
+
 ## Hinweise
 
 - `usesCleartextTraffic="true"` ist gesetzt, damit auch HTTP-Self-Hosted-Instanzen
   funktionieren. Für reine HTTPS-Setups später per `networkSecurityConfig` einengen.
-- API-Key und Server-URL liegen in `EncryptedSharedPreferences` (AES-256, Android Keystore).
+- API-Key und Server-URL liegen in `EncryptedSharedPreferences` (AES-256, Android
+  Keystore) und werden nie geloggt; das API-Key-Feld ist zusätzlich als
+  Passwortfeld maskiert.
 - Min-SDK 26 (Android 8), Target-SDK 35.
 - Der ML Kit Document Scanner lädt sein Modell beim ersten Start on-demand
   über Google Play Services nach (einmalig ~ein paar MB). Setzt Play Services voraus.
@@ -189,7 +222,7 @@ erzeugen. Der Key beginnt mit `ppapi_`.
   separate Activity in Play Services und fordert seine Permissions selbst an.
 - Texterkennung (OCR) auf dem Gerät lässt sich in den Einstellungen abschalten,
   falls die Papra-Instanz bereits serverseitig OCR durchführt (z. B. Mistral OCR).
-- Die Akzentfarben-Icons werden über vier `activity-alias`-Einträge im Manifest
+- Die Akzentfarben-Icons werden über fünf `activity-alias`-Einträge im Manifest
   realisiert (eine pro Farbe, nur eine ist jeweils `enabled`); `LauncherIcon.apply()`
   schaltet zur Laufzeit um. Je nach Launcher kann die Aktualisierung des
   Home-Screen-Icons ein bis zwei Sekunden dauern — normales Verhalten dieser

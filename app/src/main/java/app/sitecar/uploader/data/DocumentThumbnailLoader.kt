@@ -72,7 +72,7 @@ class DocumentThumbnailLoader(
                     }
                 }
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             null
         } finally {
             tmpFile.delete()

@@ -20,6 +20,9 @@
     <string name="settings_ocr_title">On-device text recognition (OCR)</string>
     <string name="settings_ocr_subtitle">Embeds a searchable text layer into the PDF before upload. Turn off if your Papra server already runs OCR (e.g. Mistral OCR).</string>
 
+    <string name="settings_share_intent_title">Share to Sitecar</string>
+    <string name="settings_share_intent_subtitle">Let other apps share images and PDFs directly to Sitecar via Android\'s share sheet.</string>
+
     <string name="settings_smart_insights_title">Smart suggestions</string>
     <string name="settings_smart_insights_subtitle">Suggests tags, the document\'s own date, and detected deadlines from the scanned text — all on-device, rule-based.</string>
 
@@ -40,8 +43,8 @@
     <string name="settings_accent_subtitle">Each circle shows the light-mode color (top-left) and dark-mode color (bottom-right).</string>
     <string name="settings_accent_locked_hint">Unlock more colors with a one-time donation.</string>
 
-    <string name="settings_support_title">Support</string>
-    <string name="settings_support_badge">✓ You\'re supporting Sitecar — thank you!</string>
+    <string name="settings_support_title">Support 🏆</string>
+    <string name="settings_support_badge">You\'re supporting Sitecar — thank you! ❤️</string>
     <string name="settings_support_cta">Support Sitecar</string>
 
     <string name="support_dialog_title">Enjoying Sitecar?</string>
@@ -106,6 +109,12 @@
     <string name="documents_sort_name_asc">Name (A–Z)</string>
     <string name="documents_sort_name_desc">Name (Z–A)</string>
     <string name="documents_manage_tags_title">Manage tags</string>
+    <string name="documents_selected_count">%1$d selected</string>
+    <string name="documents_bulk_delete_title">Delete %1$d documents?</string>
+    <string name="documents_bulk_delete_message">They will be moved to the trash on your Papra server.</string>
+    <string name="documents_bulk_delete_partial_failure">Some documents could not be deleted.</string>
+    <string name="documents_bulk_tags_title">Edit tags for %1$d documents</string>
+    <string name="documents_bulk_tags_partial_failure">Some tags could not be updated for all documents.</string>
     <string name="documents_manage_tags_empty">No tags in this organization yet. Create one in the Tags tab first.</string>
 
     <string name="trash_title">Trash</string>
@@ -132,6 +141,7 @@
 
     <string name="error_unknown">Unknown error</string>
     <string name="error_unauthorized">Authentication failed — check your API key.</string>
+    <string name="error_forbidden">Your API key doesn\'t have permission for this action — check its scopes in Papra (Settings → API Keys).</string>
     <string name="error_not_found">Server not found — check the server URL.</string>
     <string name="error_server">Server error — please try again later.</string>
     <string name="error_no_connection">Couldn\'t reach the server.</string>

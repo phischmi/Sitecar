@@ -1,4 +1,4 @@
-# Datenschutzerklärung – Sitecar
+# Datenschutzerklärung – Sitecar for Papra
 
 Stand: 2026-07-22
 
@@ -12,7 +12,11 @@ von einer Einzelperson entwickelt und steht in keiner Verbindung zu papra-hq.
   lokal auf deinem Gerät gespeichert, verschlüsselt via
   `EncryptedSharedPreferences` (AES-256, Android Keystore). Sie verlassen das
   Gerät nur in Form der direkten HTTPS/HTTP-Anfragen an die von dir
-  angegebene Papra-Server-Adresse.
+  angegebene Papra-Server-Adresse. Das API-Key-Feld im Einstellungen-
+  Bildschirm ist zusätzlich als Passwortfeld maskiert. Die App schreibt
+  weder Server-URL noch API-Key jemals in Logs
+  (`android:allowBackup="false"` schließt zudem aus, dass die verschlüsselten
+  Einstellungen über Android-Backups das Gerät verlassen).
 - **Gescannte Dokumente**: werden auf dem Gerät zwischengespeichert
   (App-Cache) und ausschließlich an die von dir konfigurierte Papra-Instanz
   hochgeladen. Der App-Entwickler hat keinen Zugriff auf diese Inhalte.
