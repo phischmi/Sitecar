@@ -201,10 +201,8 @@ probeweise die entsprechenden zusätzlichen Dokument-Berechtigungen geben.
 - `usesCleartextTraffic="true"` ist gesetzt, damit auch HTTP-Self-Hosted-Instanzen
   funktionieren. Für reine HTTPS-Setups später per `networkSecurityConfig` einengen.
 - API-Key und Server-URL liegen in `EncryptedSharedPreferences` (AES-256, Android
-  Keystore) und werden nie geloggt. Der Einstellungen-Bildschirm setzt
-  `FLAG_SECURE`, solange er sichtbar ist — blockiert Screenshots/Bildschirm-
-  aufnahmen und blendet den Inhalt im "Letzte Apps"-Vorschaubild aus (siehe
-  `SecureScreen()`); das API-Key-Feld ist zusätzlich als Passwortfeld maskiert.
+  Keystore) und werden nie geloggt; das API-Key-Feld ist zusätzlich als
+  Passwortfeld maskiert.
 - Min-SDK 26 (Android 8), Target-SDK 35.
 - Der ML Kit Document Scanner lädt sein Modell beim ersten Start on-demand
   über Google Play Services nach (einmalig ~ein paar MB). Setzt Play Services voraus.
