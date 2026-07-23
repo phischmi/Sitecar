@@ -13,6 +13,7 @@ import io.ktor.client.request.headers
 import io.ktor.client.request.parameter
 import io.ktor.client.request.patch
 import io.ktor.client.request.post
+import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
@@ -223,6 +224,21 @@ class SitecarApiClient(private val store: SettingsStore) {
             setBody(CreateTagBody(name = name, color = color, description = description?.takeIf { it.isNotBlank() }))
         }
         json.decodeFromString(CreateTagResponse.serializer(), res.textOrThrow()).tag
+    }
+
+    suspend fun updateTag(
+        organizationId: String,
+        tagId: String,
+        name: String,
+        color: String,
+        description: String? = null,
+    ): Result<TagDto> = runCatching {
+        val res = http.put("$baseUrl/api/organizations/$organizationId/tags/$tagId") {
+            authHeaders()
+            contentType(ContentType.Application.Json)
+            setBody(UpdateTagBody(name = name, color = color, description = description?.takeIf { it.isNotBlank() }))
+        }
+        json.decodeFromString(UpdateTagResponse.serializer(), res.textOrThrow()).tag
     }
 
     suspend fun deleteTag(organizationId: String, tagId: String): Result<Unit> = runCatching {

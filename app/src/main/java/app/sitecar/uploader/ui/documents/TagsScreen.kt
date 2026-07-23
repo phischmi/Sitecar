@@ -24,6 +24,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Sell
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
@@ -100,6 +101,12 @@ fun TagsScreen(
     var tagPendingDelete by remember { mutableStateOf<TagDto?>(null) }
     var deletingTagId by remember { mutableStateOf<String?>(null) }
 
+    var editingTag by remember { mutableStateOf<TagDto?>(null) }
+    var editTagName by remember { mutableStateOf("") }
+    var editTagColor by remember { mutableStateOf(TAG_COLORS.first()) }
+    var editTagDescription by remember { mutableStateOf("") }
+    var savingTag by remember { mutableStateOf(false) }
+
     val apiErrorMessages = rememberApiErrorMessages()
 
     suspend fun fetchTags(org: Organization) {
@@ -146,6 +153,36 @@ fun TagsScreen(
                 }
                 .onFailure { errorMessage = friendlyErrorMessage(it, apiErrorMessages) }
             creatingTag = false
+        }
+    }
+
+    fun startEditingTag(tag: TagDto) {
+        editingTag = tag
+        editTagName = tag.name
+        editTagColor = tag.color
+        editTagDescription = tag.description.orEmpty()
+    }
+
+    fun updateTag() {
+        val org = selectedOrg ?: return
+        val tag = editingTag ?: return
+        val name = editTagName.trim()
+        if (name.isEmpty()) return
+        savingTag = true
+        scope.launch {
+            client.updateTag(
+                organizationId = org.id,
+                tagId = tag.id,
+                name = name,
+                color = editTagColor,
+                description = editTagDescription.trim(),
+            )
+                .onSuccess { updated ->
+                    tags = tags.map { if (it.id == updated.id) updated else it }
+                    editingTag = null
+                }
+                .onFailure { errorMessage = friendlyErrorMessage(it, apiErrorMessages) }
+            savingTag = false
         }
     }
 
@@ -286,11 +323,19 @@ fun TagsScreen(
                                     if (deletingTagId == tag.id) {
                                         CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(20.dp))
                                     } else {
-                                        IconButton(onClick = { tagPendingDelete = tag }) {
-                                            Icon(
-                                                Icons.Default.Delete,
-                                                contentDescription = stringResource(R.string.action_delete),
-                                            )
+                                        Row {
+                                            IconButton(onClick = { startEditingTag(tag) }) {
+                                                Icon(
+                                                    Icons.Default.Edit,
+                                                    contentDescription = stringResource(R.string.action_edit),
+                                                )
+                                            }
+                                            IconButton(onClick = { tagPendingDelete = tag }) {
+                                                Icon(
+                                                    Icons.Default.Delete,
+                                                    contentDescription = stringResource(R.string.action_delete),
+                                                )
+                                            }
                                         }
                                     }
                                 },
@@ -310,36 +355,14 @@ fun TagsScreen(
             onDismissRequest = { if (!creatingTag) createDialogOpen = false },
             title = { Text(stringResource(R.string.tags_create_title)) },
             text = {
-                Column {
-                    OutlinedTextField(
-                        value = newTagName,
-                        onValueChange = { newTagName = it },
-                        singleLine = true,
-                        label = { Text(stringResource(R.string.tags_name_label)) },
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text(
-                        text = stringResource(R.string.tags_color_label),
-                        style = MaterialTheme.typography.labelLarge,
-                    )
-                    Row(modifier = Modifier.horizontalScroll(rememberScrollState()).padding(vertical = 4.dp)) {
-                        TAG_COLORS.forEach { colorHex ->
-                            ColorSwatch(
-                                colorHex = colorHex,
-                                selected = colorHex == newTagColor,
-                                onClick = { newTagColor = colorHex },
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = newTagDescription,
-                        onValueChange = { newTagDescription = it },
-                        label = { Text(stringResource(R.string.tags_description_label)) },
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
+                TagFormFields(
+                    name = newTagName,
+                    onNameChange = { newTagName = it },
+                    color = newTagColor,
+                    onColorChange = { newTagColor = it },
+                    description = newTagDescription,
+                    onDescriptionChange = { newTagDescription = it },
+                )
             },
             confirmButton = {
                 TextButton(
@@ -357,6 +380,43 @@ fun TagsScreen(
                 TextButton(
                     enabled = !creatingTag,
                     onClick = { createDialogOpen = false },
+                ) {
+                    Text(stringResource(R.string.action_cancel))
+                }
+            },
+        )
+    }
+
+    if (editingTag != null) {
+        AlertDialog(
+            onDismissRequest = { if (!savingTag) editingTag = null },
+            title = { Text(stringResource(R.string.tags_edit_title)) },
+            text = {
+                TagFormFields(
+                    name = editTagName,
+                    onNameChange = { editTagName = it },
+                    color = editTagColor,
+                    onColorChange = { editTagColor = it },
+                    description = editTagDescription,
+                    onDescriptionChange = { editTagDescription = it },
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    enabled = editTagName.isNotBlank() && !savingTag,
+                    onClick = { updateTag() },
+                ) {
+                    if (savingTag) {
+                        CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(18.dp))
+                    } else {
+                        Text(stringResource(R.string.action_save))
+                    }
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    enabled = !savingTag,
+                    onClick = { editingTag = null },
                 ) {
                     Text(stringResource(R.string.action_cancel))
                 }
@@ -385,6 +445,47 @@ fun TagsScreen(
                     Text(stringResource(R.string.action_cancel))
                 }
             },
+        )
+    }
+}
+
+@Composable
+private fun TagFormFields(
+    name: String,
+    onNameChange: (String) -> Unit,
+    color: String,
+    onColorChange: (String) -> Unit,
+    description: String,
+    onDescriptionChange: (String) -> Unit,
+) {
+    Column {
+        OutlinedTextField(
+            value = name,
+            onValueChange = onNameChange,
+            singleLine = true,
+            label = { Text(stringResource(R.string.tags_name_label)) },
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        Text(
+            text = stringResource(R.string.tags_color_label),
+            style = MaterialTheme.typography.labelLarge,
+        )
+        Row(modifier = Modifier.horizontalScroll(rememberScrollState()).padding(vertical = 4.dp)) {
+            TAG_COLORS.forEach { colorHex ->
+                ColorSwatch(
+                    colorHex = colorHex,
+                    selected = colorHex == color,
+                    onClick = { onColorChange(colorHex) },
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedTextField(
+            value = description,
+            onValueChange = onDescriptionChange,
+            label = { Text(stringResource(R.string.tags_description_label)) },
+            modifier = Modifier.fillMaxWidth(),
         )
     }
 }

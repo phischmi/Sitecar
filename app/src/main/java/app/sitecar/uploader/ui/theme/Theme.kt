@@ -18,15 +18,17 @@ private data class PrimaryTokens(
 
 // INDIGO ist der kostenlose Standard, bewusst nicht Papras Markenfarbe, sondern
 // jeweils eine nahezu komplementäre Farbe – harmoniert mit Papra, statt dessen
-// Farbe zu duplizieren (Dark: Neon-Lime hue 77° -> Indigo hue 230°; Light:
-// Orange hue ~30° -> Azurblau hue 201°). EMERALD/AMBER/ROSE sind rein
-// kosmetische Unterstützer-Akzente, gleiche Bau-Logik wie Indigo.
+// Farbe zu duplizieren. EMERALD/AMBER/ROSE sind rein kosmetische
+// Unterstützer-Akzente, gleiche Bau-Logik wie Indigo. Töne orientieren sich an
+// gängigen modernen UI-Paletten (kräftiger, satter) statt an den blasseren
+// Pastelltönen der Vorgängerversion; alle primary/onPrimary-Paarungen liegen
+// bei Kontrast ≥ 5:1 (WCAG AA).
 private val lightPrimaryTokens: Map<AccentColor, PrimaryTokens> = mapOf(
     AccentColor.INDIGO to PrimaryTokens(
-        primary = Color(0xFF0369A1),
+        primary = Color(0xFF4F46E5),
         onPrimary = Color(0xFFFFFFFF),
-        primaryContainer = Color(0xFFE0F2FE),
-        onPrimaryContainer = Color(0xFF082F49),
+        primaryContainer = Color(0xFFE0E7FF),
+        onPrimaryContainer = Color(0xFF312E81),
     ),
     AccentColor.EMERALD to PrimaryTokens(
         primary = Color(0xFF047857),
@@ -35,16 +37,16 @@ private val lightPrimaryTokens: Map<AccentColor, PrimaryTokens> = mapOf(
         onPrimaryContainer = Color(0xFF022C22),
     ),
     AccentColor.AMBER to PrimaryTokens(
-        primary = Color(0xFF9A5B0A),
+        primary = Color(0xFFB45309),
         onPrimary = Color(0xFFFFFFFF),
-        primaryContainer = Color(0xFFFDE9C8),
-        onPrimaryContainer = Color(0xFF3D2705),
+        primaryContainer = Color(0xFFFEF3C7),
+        onPrimaryContainer = Color(0xFF78350F),
     ),
     AccentColor.ROSE to PrimaryTokens(
-        primary = Color(0xFFBE185D),
+        primary = Color(0xFFBE123C),
         onPrimary = Color(0xFFFFFFFF),
-        primaryContainer = Color(0xFFFCE0EE),
-        onPrimaryContainer = Color(0xFF4A0826),
+        primaryContainer = Color(0xFFFFE4E6),
+        onPrimaryContainer = Color(0xFF881337),
     ),
     // Papras eigenes Orange (Hellmodus), siehe Kommentar oben.
     AccentColor.PAPRA to PrimaryTokens(

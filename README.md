@@ -40,9 +40,10 @@ Eintrag → App-Name), nicht im Code.
   Papierkorb-Tab wiederherstellen oder einzeln bzw. komplett endgültig löschen
   (`POST .../restore`, `DELETE .../documents/trash/:documentId`,
   `DELETE .../documents/trash`).
-- Tags-Tab: Tags anlegen und löschen (`POST`/`DELETE .../tags`). Tippen auf
-  einen Tag springt in den Dokumente-Tab und filtert dort per Suchsyntax
-  `tag:Name` — derselbe Suchparser wie in der Papra-Weboberfläche.
+- Tags-Tab: Tags anlegen, bearbeiten und löschen (`POST`/`PUT`/`DELETE
+  .../tags`). Tippen auf einen Tag springt in den Dokumente-Tab und filtert
+  dort per Suchsyntax `tag:Name` — derselbe Suchparser wie in der
+  Papra-Weboberfläche.
 - Tags einem Dokument zuweisen/entfernen über das Kontextmenü im Dokumente-Tab
   (`POST`/`DELETE .../documents/:documentId/tags`). Zugewiesene Tags werden
   als farbige Chips in der Liste angezeigt, Tippen auf einen Chip filtert
@@ -180,6 +181,17 @@ Wenn lokal `gradle` installiert ist (z. B. via `brew install gradle`):
 gradle wrapper
 ./gradlew assembleDebug
 ./gradlew installDebug   # auf verbundenes Gerät installieren
+```
+
+### Debug-APK per GitHub Action
+
+Unter **Actions → Build APK → Run workflow** lässt sich manuell ein Build der
+aktuellsten Version des jeweiligen Branches anstoßen. Nach Abschluss steht die
+APK als Artifact (`sitecar-<version>-debug-<sha>`) zum Download bereit. Lokal
+installieren:
+
+```sh
+adb install sitecar-*.apk
 ```
 
 ## API-Key in Papra anlegen
