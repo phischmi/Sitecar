@@ -34,9 +34,10 @@ eigenständiger Begleiter ("Sidecar") für Papra, vormals PapraCam.
   Papierkorb-Tab wiederherstellen oder einzeln bzw. komplett endgültig löschen
   (`POST .../restore`, `DELETE .../documents/trash/:documentId`,
   `DELETE .../documents/trash`).
-- Tags-Tab: Tags anlegen und löschen (`POST`/`DELETE .../tags`). Tippen auf
-  einen Tag springt in den Dokumente-Tab und filtert dort per Suchsyntax
-  `tag:Name` — derselbe Suchparser wie in der Papra-Weboberfläche.
+- Tags-Tab: Tags anlegen, bearbeiten und löschen (`POST`/`PUT`/`DELETE
+  .../tags`). Tippen auf einen Tag springt in den Dokumente-Tab und filtert
+  dort per Suchsyntax `tag:Name` — derselbe Suchparser wie in der
+  Papra-Weboberfläche.
 - Tags einem Dokument zuweisen/entfernen über das Kontextmenü im Dokumente-Tab
   (`POST`/`DELETE .../documents/:documentId/tags`). Zugewiesene Tags werden
   als farbige Chips in der Liste angezeigt, Tippen auf einen Chip filtert
