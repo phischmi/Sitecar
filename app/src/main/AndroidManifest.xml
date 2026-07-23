@@ -136,9 +136,10 @@
         </activity-alias>
 
         <!--
-          "Papra"-Akzent: reproduziert Papras eigenes Neon-Lime (Dunkelmodus-
-          Farbe, siehe Theme.kt/AccentColor.PAPRA) als Icon-Hintergrund — beim
-          Icon wird bewusst immer die Dunkelmodus-Akzentfarbe verwendet.
+          "Papra"-Akzent: reproduziert Papras eigenes Orange (Hellmodus-Farbe,
+          siehe Theme.kt/AccentColor.PAPRA) als Icon-Hintergrund — beim Icon
+          wird bewusst immer die (dunklere, kontrastreichere) Hellmodus-
+          Akzentfarbe verwendet, nicht die hellere Dunkelmodus-Variante.
         -->
         <activity-alias
             android:name=".LauncherPapra"

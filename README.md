@@ -106,9 +106,9 @@ Eintrag → App-Name), nicht im Code.
   Hell- und Dunkelmodus-Farbe diagonal geteilt in einem Kreis (oben links /
   unten rechts), unabhängig vom aktuell aktiven App-Theme. Jede Akzentfarbe
   hat ein eigenfarbenes App-Icon (activity-alias); beim Icon wird bewusst
-  immer die Dunkelmodus-Akzentfarbe verwendet (z. B. Papras Neon-Lime statt
-  des helleren Orange). Kein bestehendes Feature wird Nicht-Unterstützern
-  weggenommen oder vorenthalten.
+  immer die (dunklere, kontrastreichere) Hellmodus-Akzentfarbe verwendet
+  (z. B. Papras Orange statt des helleren Neon-Lime). Kein bestehendes
+  Feature wird Nicht-Unterstützern weggenommen oder vorenthalten.
 
 ## Bezahlfunktion (vorerst deaktiviert)
 
