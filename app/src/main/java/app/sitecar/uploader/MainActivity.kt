@@ -1,5 +1,6 @@
 package app.sitecar.uploader
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -7,10 +8,13 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import app.sitecar.uploader.data.AccentColor
+import app.sitecar.uploader.data.PendingUpload
+import app.sitecar.uploader.data.ShareIntentHandler
 import app.sitecar.uploader.data.ThemeMode
 import app.sitecar.uploader.ui.documents.DocumentsScreen
 import app.sitecar.uploader.ui.documents.TagsScreen
@@ -23,12 +27,15 @@ import app.sitecar.uploader.ui.theme.SitecarTheme
 import app.sitecar.uploader.ui.upload.UploadScreen
 
 class MainActivity : ComponentActivity() {
+    private var navController: NavHostController? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
         val app = application as SitecarApp
         val startFromScanShortcut = intent?.getStringExtra(EXTRA_SHORTCUT_ROUTE) == SHORTCUT_ROUTE_SCAN
+        val startFromShare = consumeShareIntent(intent, app)
 
         setContent {
             val themeMode by app.settingsStore.themeModeFlow.collectAsState(initial = ThemeMode.SYSTEM)
@@ -41,11 +48,16 @@ class MainActivity : ComponentActivity() {
 
             SitecarTheme(darkTheme = darkTheme, accentColor = accentColor) {
                 val nav = rememberNavController()
+                navController = nav
                 val configured by app.settingsStore.isConfigured.collectAsState(initial = null)
 
                 val start = when (configured) {
                     null -> null
-                    true -> if (startFromScanShortcut) Route.Scan else Route.Documents
+                    true -> when {
+                        startFromShare -> Route.Upload
+                        startFromScanShortcut -> Route.Scan
+                        else -> Route.Documents
+                    }
                     false -> Route.Settings
                 }
 
@@ -57,7 +69,8 @@ class MainActivity : ComponentActivity() {
                                 client = app.apiClient,
                                 billing = app.billingManager,
                                 onSaved = {
-                                    nav.navigate(Route.Documents) {
+                                    val target = if (app.pendingUpload != null) Route.Upload else Route.Documents
+                                    nav.navigate(target) {
                                         popUpTo<Route.Settings> { inclusive = true }
                                     }
                                 },
@@ -67,7 +80,7 @@ class MainActivity : ComponentActivity() {
                         composable<Route.Scan> {
                             ScanScreen(
                                 onScanned = { pages ->
-                                    app.currentScanPages = pages
+                                    app.pendingUpload = PendingUpload.Images(pages)
                                     nav.navigate(Route.Upload)
                                 },
                                 onOpenSettings = { nav.navigate(Route.Settings) },
@@ -106,16 +119,23 @@ class MainActivity : ComponentActivity() {
                         }
                         composable<Route.Upload> {
                             UploadScreen(
-                                pages = app.currentScanPages,
+                                pendingUpload = app.pendingUpload,
                                 client = app.apiClient,
                                 pdfBuilder = app.pdfBuilder,
                                 store = app.settingsStore,
                                 billing = app.billingManager,
                                 onDone = {
-                                    app.currentScanPages = emptyList()
-                                    nav.popBackStack(Route.Scan, inclusive = false)
+                                    app.pendingUpload = null
+                                    if (!nav.popBackStack(Route.Scan, inclusive = false)) {
+                                        nav.navigate(Route.Documents) {
+                                            popUpTo(nav.graph.id) { inclusive = true }
+                                        }
+                                    }
                                 },
-                                onBack = { nav.popBackStack() },
+                                onBack = {
+                                    app.pendingUpload = null
+                                    if (!nav.popBackStack()) finish()
+                                },
                                 onOpenSettings = { nav.navigate(Route.Settings) },
                             )
                         }
@@ -123,6 +143,32 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        val app = application as SitecarApp
+        if (consumeShareIntent(intent, app)) {
+            // Ist der Server noch nicht konfiguriert, bleibt der Screen auf
+            // Settings; SettingsScreen.onSaved navigiert dann selbst zu Upload,
+            // sobald app.pendingUpload gesetzt ist.
+            val isConfigured = app.settingsStore.serverUrl.isNotBlank() && app.settingsStore.apiKey.isNotBlank()
+            if (isConfigured) {
+                navController?.navigate(Route.Upload) { launchSingleTop = true }
+            }
+            return
+        }
+        if (intent.getStringExtra(EXTRA_SHORTCUT_ROUTE) == SHORTCUT_ROUTE_SCAN) {
+            navController?.navigate(Route.Scan) { launchSingleTop = true }
+        }
+    }
+
+    /** Übernimmt einen per Android-Share-Sheet empfangenen Intent als [PendingUpload]. */
+    private fun consumeShareIntent(intent: Intent?, app: SitecarApp): Boolean {
+        val pending = ShareIntentHandler.parse(this, intent) ?: return false
+        app.pendingUpload = pending
+        return true
     }
 
     companion object {

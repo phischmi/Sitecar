@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.InsertDriveFile
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -54,6 +55,7 @@ import app.sitecar.uploader.R
 import app.sitecar.uploader.data.BillingManager
 import app.sitecar.uploader.data.FilenameTemplate
 import app.sitecar.uploader.data.Organization
+import app.sitecar.uploader.data.PendingUpload
 import app.sitecar.uploader.data.SitecarApiClient
 import app.sitecar.uploader.data.PdfBuilder
 import app.sitecar.uploader.data.SettingsStore
@@ -68,7 +70,7 @@ import java.io.File
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UploadScreen(
-    pages: List<File>,
+    pendingUpload: PendingUpload?,
     client: SitecarApiClient,
     pdfBuilder: PdfBuilder,
     store: SettingsStore,
@@ -77,8 +79,8 @@ fun UploadScreen(
     onBack: () -> Unit,
     onOpenSettings: () -> Unit,
 ) {
-    if (pages.isEmpty()) {
-        // Falls UploadScreen ohne State erreicht wird (Prozess-Restart) – einfach zurück.
+    if (pendingUpload == null) {
+        // Screen ohne State erreicht (z. B. Prozess-Restart) – einfach zurück.
         LaunchedEffect(Unit) { onBack() }
         return
     }
@@ -99,17 +101,29 @@ fun UploadScreen(
         unknown = stringResource(R.string.error_unknown),
     )
 
-    var pdfFile by remember { mutableStateOf<File?>(null) }
+    var documentFile by remember { mutableStateOf<File?>(null) }
+    var documentMimeType by remember { mutableStateOf("application/pdf") }
     var pdfProgressCurrent by remember { mutableIntStateOf(0) }
-    val totalPages = pages.size
+    val totalPages = (pendingUpload as? PendingUpload.Images)?.pages?.size ?: 1
 
     var uploading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val scope = rememberCoroutineScope()
-    val firstPageThumbnail = remember(pages) {
-        runCatching { android.graphics.BitmapFactory.decodeFile(pages.first().absolutePath) }
-            .getOrNull()
+    val previewBitmap = remember(pendingUpload) {
+        when (pendingUpload) {
+            is PendingUpload.Images ->
+                runCatching { android.graphics.BitmapFactory.decodeFile(pendingUpload.pages.first().absolutePath) }
+                    .getOrNull()
+            is PendingUpload.ReadyDocument -> when {
+                pendingUpload.mimeType.startsWith("image/") ->
+                    runCatching { android.graphics.BitmapFactory.decodeFile(pendingUpload.file.absolutePath) }
+                        .getOrNull()
+                pendingUpload.mimeType == "application/pdf" ->
+                    runCatching { renderPdfFirstPage(pendingUpload.file) }.getOrNull()
+                else -> null
+            }
+        }
     }
 
     LaunchedEffect(Unit) {
@@ -124,32 +138,51 @@ fun UploadScreen(
 
     LaunchedEffect(selectedOrg) {
         if (fileName.isBlank()) {
-            fileName = FilenameTemplate.render(
-                template = store.filenameTemplate,
-                organizationName = selectedOrg?.name,
-                counter = store.uploadCount + 1,
-            ) + ".pdf"
+            fileName = when (pendingUpload) {
+                is PendingUpload.Images -> FilenameTemplate.render(
+                    template = store.filenameTemplate,
+                    organizationName = selectedOrg?.name,
+                    counter = store.uploadCount + 1,
+                ) + ".pdf"
+                is PendingUpload.ReadyDocument -> pendingUpload.suggestedName?.takeIf { it.isNotBlank() }
+                    ?: FilenameTemplate.render(
+                        template = store.filenameTemplate,
+                        organizationName = selectedOrg?.name,
+                        counter = store.uploadCount + 1,
+                    ) + "." + extensionForMimeType(pendingUpload.mimeType)
+            }
         }
     }
 
-    LaunchedEffect(pages) {
-        val outFile = File(
-            File(pages.first().parentFile?.parentFile, "pdfs").apply { mkdirs() },
-            "sitecar-${System.currentTimeMillis()}.pdf",
-        )
-        val res = withContext(Dispatchers.IO) {
-            pdfBuilder.build(
-                imageFiles = pages,
-                outputFile = outFile,
-                ocrEnabled = store.onDeviceOcrEnabled,
-                onProgress = { current, _ -> pdfProgressCurrent = current },
-            )
+    LaunchedEffect(pendingUpload) {
+        when (pendingUpload) {
+            is PendingUpload.Images -> {
+                val outFile = File(
+                    File(pendingUpload.pages.first().parentFile?.parentFile, "pdfs").apply { mkdirs() },
+                    "sitecar-${System.currentTimeMillis()}.pdf",
+                )
+                val res = withContext(Dispatchers.IO) {
+                    pdfBuilder.build(
+                        imageFiles = pendingUpload.pages,
+                        outputFile = outFile,
+                        ocrEnabled = store.onDeviceOcrEnabled,
+                        onProgress = { current, _ -> pdfProgressCurrent = current },
+                    )
+                }
+                res.onSuccess {
+                    documentFile = it
+                    documentMimeType = "application/pdf"
+                }.onFailure { errorMessage = it.message ?: pdfBuildFailedMessage }
+            }
+            is PendingUpload.ReadyDocument -> {
+                documentFile = pendingUpload.file
+                documentMimeType = pendingUpload.mimeType
+            }
         }
-        res.onSuccess { pdfFile = it }
-            .onFailure { errorMessage = it.message ?: pdfBuildFailedMessage }
     }
 
-    val pdfReady = pdfFile != null
+    val documentReady = documentFile != null
+    val isReadyDocument = pendingUpload is PendingUpload.ReadyDocument
 
     Scaffold(
         topBar = {
@@ -189,12 +222,18 @@ fun UploadScreen(
                     .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center,
             ) {
-                firstPageThumbnail?.let {
+                if (previewBitmap != null) {
                     Image(
-                        bitmap = it.asImageBitmap(),
+                        bitmap = previewBitmap.asImageBitmap(),
                         contentDescription = null,
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Fit,
+                    )
+                } else if (isReadyDocument) {
+                    Icon(
+                        imageVector = Icons.Default.InsertDriveFile,
+                        contentDescription = null,
+                        modifier = Modifier.height(64.dp),
                     )
                 }
                 if (totalPages > 1) {
@@ -213,7 +252,7 @@ fun UploadScreen(
                 }
             }
 
-            if (!pdfReady) {
+            if (!documentReady && pendingUpload is PendingUpload.Images) {
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(
                         text = stringResource(
@@ -235,6 +274,17 @@ fun UploadScreen(
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
+            }
+
+            if (pendingUpload is PendingUpload.ReadyDocument && pendingUpload.ignoredCount > 0) {
+                Text(
+                    text = stringResource(
+                        R.string.upload_shared_multiple_ignored,
+                        pendingUpload.ignoredCount + 1,
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
 
             ExposedDropdownMenuBox(
@@ -288,25 +338,30 @@ fun UploadScreen(
             Button(
                 onClick = onClick@{
                     val org = selectedOrg ?: return@onClick
-                    val pdf = pdfFile ?: return@onClick
+                    val doc = documentFile ?: return@onClick
                     uploading = true
                     errorMessage = null
                     scope.launch {
-                        val finalName = fileName.trim().ifBlank { pdf.name }
-                            .let { if (it.endsWith(".pdf", ignoreCase = true)) it else "$it.pdf" }
+                        val finalName = fileName.trim().ifBlank { doc.name }.let { raw ->
+                            if (pendingUpload is PendingUpload.Images) {
+                                if (raw.endsWith(".pdf", ignoreCase = true)) raw else "$raw.pdf"
+                            } else {
+                                ensureExtension(raw, documentMimeType)
+                            }
+                        }
                         val res = withContext(Dispatchers.IO) {
                             client.uploadDocument(
                                 organizationId = org.id,
-                                file = pdf,
+                                file = doc,
                                 fileName = finalName,
-                                mimeType = "application/pdf",
+                                mimeType = documentMimeType,
                             )
                         }
                         uploading = false
                         res.onSuccess {
-                            // Cleanup: PDF und Quell-JPEGs löschen.
-                            pdf.delete()
-                            pages.forEach { it.delete() }
+                            // Cleanup: erzeugtes/übernommenes Dokument und ggf. Quell-JPEGs löschen.
+                            doc.delete()
+                            (pendingUpload as? PendingUpload.Images)?.pages?.forEach { it.delete() }
 
                             store.uploadCount += 1
                             val count = store.uploadCount
@@ -324,7 +379,7 @@ fun UploadScreen(
                         }
                     }
                 },
-                enabled = !uploading && pdfReady && selectedOrg != null && fileName.isNotBlank(),
+                enabled = !uploading && documentReady && selectedOrg != null && fileName.isNotBlank(),
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 if (uploading) {
@@ -342,7 +397,7 @@ fun UploadScreen(
                 enabled = !uploading,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text(stringResource(R.string.upload_retake))
+                Text(stringResource(if (isReadyDocument) R.string.upload_cancel else R.string.upload_retake))
             }
         }
     }
@@ -356,4 +411,37 @@ fun UploadScreen(
             },
         )
     }
+}
+
+private fun renderPdfFirstPage(file: File): android.graphics.Bitmap? {
+    return try {
+        android.os.ParcelFileDescriptor.open(file, android.os.ParcelFileDescriptor.MODE_READ_ONLY).use { pfd ->
+            android.graphics.pdf.PdfRenderer(pfd).use { renderer ->
+                if (renderer.pageCount == 0) return null
+                renderer.openPage(0).use { page ->
+                    val bitmap = android.graphics.Bitmap.createBitmap(
+                        page.width,
+                        page.height,
+                        android.graphics.Bitmap.Config.ARGB_8888,
+                    )
+                    bitmap.eraseColor(android.graphics.Color.WHITE)
+                    page.render(bitmap, null, null, android.graphics.pdf.PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+                    bitmap
+                }
+            }
+        }
+    } catch (e: Exception) {
+        null
+    }
+}
+
+private fun extensionForMimeType(mimeType: String): String = when {
+    mimeType == "application/pdf" -> "pdf"
+    mimeType.startsWith("image/") -> mimeType.substringAfter('/').ifBlank { "jpg" }
+    else -> "bin"
+}
+
+private fun ensureExtension(name: String, mimeType: String): String {
+    if (name.contains('.')) return name
+    return "$name.${extensionForMimeType(mimeType)}"
 }

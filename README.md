@@ -41,6 +41,12 @@ eigenständiger Begleiter ("Sidecar") für Papra, vormals PapraCam.
   (`POST`/`DELETE .../documents/:documentId/tags`). Zugewiesene Tags werden
   als farbige Chips in der Liste angezeigt, Tippen auf einen Chip filtert
   ebenfalls danach.
+- "Teilen an Sitecar": Bilder und PDFs aus anderen Apps (Mail-Anhänge,
+  Galerie, Chat) lassen sich per Android-Share-Sheet direkt an Sitecar
+  senden und durchlaufen denselben Upload-Screen wie ein Kamera-Scan.
+  Geteilte Bilder werden wie mehrseitige Scans behandelt (zu einem PDF
+  zusammengeführt, optional mit OCR); ein geteiltes PDF wird unverändert
+  hochgeladen. Bei mehreren geteilten Dateien zählt nur die erste.
 - Pull-to-refresh zum Aktualisieren der Dokumentenliste.
 - Darstellung wählbar: Hell / Dunkel / System.
 - Schnellzugriff-Shortcut "Scannen" per Long-Press auf das App-Icon.

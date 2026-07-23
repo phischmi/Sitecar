@@ -52,11 +52,13 @@
     <string name="upload_filename">Filename</string>
     <string name="upload_button">Send to Papra</string>
     <string name="upload_retake">Scan again</string>
+    <string name="upload_cancel">Cancel</string>
     <string name="upload_failed">Upload failed: %1$s</string>
     <string name="upload_pages_count">%1$d pages</string>
     <string name="upload_pdf_progress">Creating PDF – page %1$d of %2$d (OCR)</string>
     <string name="upload_pdf_progress_no_ocr">Creating PDF – page %1$d of %2$d</string>
     <string name="upload_pdf_build_failed">Couldn\'t create PDF</string>
+    <string name="upload_shared_multiple_ignored">Only the first of %1$d shared files is used.</string>
 
     <string name="nav_settings">Settings</string>
     <string name="nav_scan">Scan</string>
