@@ -84,6 +84,7 @@ fun SettingsScreen(
     var orgCount by remember { mutableStateOf<Int?>(null) }
     var themeMode by remember { mutableStateOf(store.themeMode) }
     var ocrEnabled by remember { mutableStateOf(store.onDeviceOcrEnabled) }
+    var smartInsightsEnabled by remember { mutableStateOf(store.smartInsightsEnabled) }
     var filenameTemplate by remember { mutableStateOf(store.filenameTemplate) }
     var accentColor by remember { mutableStateOf(store.accentColor) }
     var showSupportDialog by remember { mutableStateOf(false) }
@@ -170,6 +171,32 @@ fun SettingsScreen(
                     onCheckedChange = {
                         ocrEnabled = it
                         store.onDeviceOcrEnabled = it
+                    },
+                )
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            Text(
+                text = stringResource(R.string.settings_smart_insights_title),
+                style = MaterialTheme.typography.labelLarge,
+            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(
+                    text = stringResource(R.string.settings_smart_insights_subtitle),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f),
+                )
+                Spacer(Modifier.width(12.dp))
+                Switch(
+                    checked = smartInsightsEnabled,
+                    onCheckedChange = {
+                        smartInsightsEnabled = it
+                        store.smartInsightsEnabled = it
                     },
                 )
             }

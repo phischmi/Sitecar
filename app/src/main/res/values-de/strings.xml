@@ -20,6 +20,9 @@
     <string name="settings_ocr_title">Texterkennung auf dem Gerät (OCR)</string>
     <string name="settings_ocr_subtitle">Bettet vor dem Upload einen durchsuchbaren Textlayer ins PDF ein. Deaktivieren, wenn dein Papra-Server bereits OCR durchführt (z. B. Mistral OCR).</string>
 
+    <string name="settings_smart_insights_title">Intelligente Vorschläge</string>
+    <string name="settings_smart_insights_subtitle">Schlägt Tags, das Dokumentdatum und erkannte Fristen aus dem gescannten Text vor — komplett on-device, regelbasiert.</string>
+
     <string name="settings_filename_template_title">Dateinamen-Format</string>
     <string name="settings_filename_template_hint">Scan-{date}-{time} — Platzhalter: {date} {time} {org} {counter}</string>
 
@@ -52,11 +55,23 @@
     <string name="upload_filename">Dateiname</string>
     <string name="upload_button">An Papra senden</string>
     <string name="upload_retake">Neu scannen</string>
+    <string name="upload_cancel">Abbrechen</string>
     <string name="upload_failed">Upload fehlgeschlagen: %1$s</string>
     <string name="upload_pages_count">%1$d Seiten</string>
     <string name="upload_pdf_progress">PDF wird erstellt – Seite %1$d von %2$d (OCR)</string>
     <string name="upload_pdf_progress_no_ocr">PDF wird erstellt – Seite %1$d von %2$d</string>
     <string name="upload_pdf_build_failed">PDF konnte nicht erstellt werden</string>
+    <string name="upload_shared_multiple_ignored">Nur die erste von %1$d geteilten Dateien wird verwendet.</string>
+    <string name="upload_suggested_tags">Vorgeschlagene Tags</string>
+    <string name="upload_use_document_date">Dokumentdatum verwenden: %1$s</string>
+    <string name="upload_deadline_dialog_title">Frist erkannt</string>
+    <string name="upload_deadline_dialog_message">%1$s am %2$s. Lokale Erinnerung setzen?</string>
+    <string name="upload_deadline_dialog_confirm">Erinnerung setzen</string>
+    <string name="upload_deadline_dialog_dismiss">Nein danke</string>
+    <string name="upload_duplicate_warning">Ähnlich zu \"%1$s\", hochgeladen am %2$s.</string>
+
+    <string name="reminder_channel_name">Dokument-Fristen</string>
+    <string name="reminder_default_title">Frist-Erinnerung</string>
 
     <string name="nav_settings">Einstellungen</string>
     <string name="nav_scan">Scannen</string>

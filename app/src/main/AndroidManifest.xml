@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Nur für lokale Erinnerungen an erkannte Fristen (Feature "Intelligente Vorschläge"). -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <!--
       Bezahlfunktion vorerst deaktiviert (siehe Features.SUPPORTER_ENABLED): die
@@ -30,7 +32,29 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.Sitecar" />
+            android:launchMode="singleTask"
+            android:theme="@style/Theme.Sitecar">
+
+            <!--
+              "Teilen an Sitecar": empfängt Bilder und PDFs aus anderen Apps
+              (z. B. Mail-Anhänge, Galerie-Fotos, Chat-Bilder) und schickt sie
+              in denselben Upload-Screen wie ein Kamera-Scan. Bewusst auf
+              image/* und application/pdf beschränkt, damit die App im
+              Share-Sheet nicht für beliebige Inhalte auftaucht.
+            -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+                <data android:mimeType="application/pdf" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+                <data android:mimeType="application/pdf" />
+            </intent-filter>
+        </activity>
 
         <!--
           Launcher-Icon-Varianten (eine pro Akzentfarbe, siehe LauncherIcon.kt).

@@ -1,7 +1,14 @@
 package app.sitecar.uploader.ui.upload
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,12 +17,17 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.InsertDriveFile
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -23,6 +35,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -32,6 +45,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -47,6 +61,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.sitecar.uploader.Features
@@ -54,9 +69,19 @@ import app.sitecar.uploader.R
 import app.sitecar.uploader.data.BillingManager
 import app.sitecar.uploader.data.FilenameTemplate
 import app.sitecar.uploader.data.Organization
+import app.sitecar.uploader.data.PdfTextExtractor
+import app.sitecar.uploader.data.PendingUpload
 import app.sitecar.uploader.data.SitecarApiClient
 import app.sitecar.uploader.data.PdfBuilder
 import app.sitecar.uploader.data.SettingsStore
+import app.sitecar.uploader.data.TagDto
+import app.sitecar.uploader.data.duplicates.PerceptualHash
+import app.sitecar.uploader.data.duplicates.RecentUpload
+import app.sitecar.uploader.data.duplicates.RecentUploadsStore
+import app.sitecar.uploader.data.insights.Deadline
+import app.sitecar.uploader.data.insights.DocumentInsights
+import app.sitecar.uploader.data.insights.RuleBasedInsightsEngine
+import app.sitecar.uploader.data.reminders.ReminderScheduler
 import app.sitecar.uploader.ui.support.SupportDialog
 import app.sitecar.uploader.ui.util.ApiErrorMessages
 import app.sitecar.uploader.ui.util.friendlyErrorMessage
@@ -64,21 +89,25 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UploadScreen(
-    pages: List<File>,
+    pendingUpload: PendingUpload?,
     client: SitecarApiClient,
     pdfBuilder: PdfBuilder,
     store: SettingsStore,
     billing: BillingManager,
+    recentUploads: RecentUploadsStore,
     onDone: () -> Unit,
     onBack: () -> Unit,
     onOpenSettings: () -> Unit,
 ) {
-    if (pages.isEmpty()) {
-        // Falls UploadScreen ohne State erreicht wird (Prozess-Restart) – einfach zurück.
+    if (pendingUpload == null) {
+        // Screen ohne State erreicht (z. B. Prozess-Restart) – einfach zurück.
         LaunchedEffect(Unit) { onBack() }
         return
     }
@@ -99,17 +128,56 @@ fun UploadScreen(
         unknown = stringResource(R.string.error_unknown),
     )
 
-    var pdfFile by remember { mutableStateOf<File?>(null) }
+    var documentFile by remember { mutableStateOf<File?>(null) }
+    var documentMimeType by remember { mutableStateOf("application/pdf") }
     var pdfProgressCurrent by remember { mutableIntStateOf(0) }
-    val totalPages = pages.size
+    val totalPages = (pendingUpload as? PendingUpload.Images)?.pages?.size ?: 1
 
     var uploading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
+    var insights by remember { mutableStateOf(DocumentInsights.EMPTY) }
+    var orgTags by remember { mutableStateOf<List<TagDto>>(emptyList()) }
+    var selectedTagIds by remember { mutableStateOf<Set<String>>(emptySet()) }
+    var pendingDeadline by remember { mutableStateOf<Deadline?>(null) }
+    var pendingDeadlineDocumentName by remember { mutableStateOf("") }
+    var pendingShouldPromptSupport by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = {},
+    )
+
     val scope = rememberCoroutineScope()
-    val firstPageThumbnail = remember(pages) {
-        runCatching { android.graphics.BitmapFactory.decodeFile(pages.first().absolutePath) }
-            .getOrNull()
+    val previewBitmap = remember(pendingUpload) {
+        when (pendingUpload) {
+            is PendingUpload.Images ->
+                runCatching { android.graphics.BitmapFactory.decodeFile(pendingUpload.pages.first().absolutePath) }
+                    .getOrNull()
+            is PendingUpload.ReadyDocument -> when {
+                pendingUpload.mimeType.startsWith("image/") ->
+                    runCatching { android.graphics.BitmapFactory.decodeFile(pendingUpload.file.absolutePath) }
+                        .getOrNull()
+                pendingUpload.mimeType == "application/pdf" ->
+                    runCatching { renderPdfFirstPage(pendingUpload.file) }.getOrNull()
+                else -> null
+            }
+        }
+    }
+
+    var imageHash by remember { mutableStateOf<Long?>(null) }
+    var duplicateWarning by remember { mutableStateOf<RecentUpload?>(null) }
+
+    LaunchedEffect(previewBitmap) {
+        val bitmap = previewBitmap ?: return@LaunchedEffect
+        imageHash = withContext(Dispatchers.Default) { PerceptualHash.compute(bitmap) }
+    }
+
+    LaunchedEffect(imageHash, selectedOrg) {
+        val hash = imageHash ?: return@LaunchedEffect
+        val org = selectedOrg ?: return@LaunchedEffect
+        duplicateWarning = withContext(Dispatchers.Default) { recentUploads.findSimilar(org.id, hash) }
     }
 
     LaunchedEffect(Unit) {
@@ -123,33 +191,81 @@ fun UploadScreen(
     }
 
     LaunchedEffect(selectedOrg) {
+        val org = selectedOrg ?: return@LaunchedEffect
+        if (store.smartInsightsEnabled) {
+            client.listTags(org.id).onSuccess { orgTags = it }
+        }
+    }
+
+    LaunchedEffect(documentFile) {
+        val doc = documentFile ?: return@LaunchedEffect
+        if (!store.smartInsightsEnabled) return@LaunchedEffect
+        val text = when (pendingUpload) {
+            is PendingUpload.Images -> if (store.onDeviceOcrEnabled) {
+                PdfTextExtractor.extractText(doc)
+            } else {
+                pdfBuilder.recognizeText(pendingUpload.pages)
+            }
+            is PendingUpload.ReadyDocument ->
+                if (pendingUpload.mimeType == "application/pdf") PdfTextExtractor.extractText(doc) else ""
+        }
+        insights = RuleBasedInsightsEngine.analyze(text)
+    }
+
+    LaunchedEffect(insights, orgTags) {
+        selectedTagIds = orgTags
+            .filter { tag -> insights.suggestedTagNames.any { it.equals(tag.name, ignoreCase = true) } }
+            .map { it.id }
+            .toSet()
+    }
+
+    LaunchedEffect(selectedOrg) {
         if (fileName.isBlank()) {
-            fileName = FilenameTemplate.render(
-                template = store.filenameTemplate,
-                organizationName = selectedOrg?.name,
-                counter = store.uploadCount + 1,
-            ) + ".pdf"
+            fileName = when (pendingUpload) {
+                is PendingUpload.Images -> FilenameTemplate.render(
+                    template = store.filenameTemplate,
+                    organizationName = selectedOrg?.name,
+                    counter = store.uploadCount + 1,
+                ) + ".pdf"
+                is PendingUpload.ReadyDocument -> pendingUpload.suggestedName?.takeIf { it.isNotBlank() }
+                    ?: FilenameTemplate.render(
+                        template = store.filenameTemplate,
+                        organizationName = selectedOrg?.name,
+                        counter = store.uploadCount + 1,
+                    ) + "." + extensionForMimeType(pendingUpload.mimeType)
+            }
         }
     }
 
-    LaunchedEffect(pages) {
-        val outFile = File(
-            File(pages.first().parentFile?.parentFile, "pdfs").apply { mkdirs() },
-            "sitecar-${System.currentTimeMillis()}.pdf",
-        )
-        val res = withContext(Dispatchers.IO) {
-            pdfBuilder.build(
-                imageFiles = pages,
-                outputFile = outFile,
-                ocrEnabled = store.onDeviceOcrEnabled,
-                onProgress = { current, _ -> pdfProgressCurrent = current },
-            )
+    LaunchedEffect(pendingUpload) {
+        when (pendingUpload) {
+            is PendingUpload.Images -> {
+                val outFile = File(
+                    File(pendingUpload.pages.first().parentFile?.parentFile, "pdfs").apply { mkdirs() },
+                    "sitecar-${System.currentTimeMillis()}.pdf",
+                )
+                val res = withContext(Dispatchers.IO) {
+                    pdfBuilder.build(
+                        imageFiles = pendingUpload.pages,
+                        outputFile = outFile,
+                        ocrEnabled = store.onDeviceOcrEnabled,
+                        onProgress = { current, _ -> pdfProgressCurrent = current },
+                    )
+                }
+                res.onSuccess {
+                    documentFile = it
+                    documentMimeType = "application/pdf"
+                }.onFailure { errorMessage = it.message ?: pdfBuildFailedMessage }
+            }
+            is PendingUpload.ReadyDocument -> {
+                documentFile = pendingUpload.file
+                documentMimeType = pendingUpload.mimeType
+            }
         }
-        res.onSuccess { pdfFile = it }
-            .onFailure { errorMessage = it.message ?: pdfBuildFailedMessage }
     }
 
-    val pdfReady = pdfFile != null
+    val documentReady = documentFile != null
+    val isReadyDocument = pendingUpload is PendingUpload.ReadyDocument
 
     Scaffold(
         topBar = {
@@ -189,12 +305,18 @@ fun UploadScreen(
                     .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center,
             ) {
-                firstPageThumbnail?.let {
+                if (previewBitmap != null) {
                     Image(
-                        bitmap = it.asImageBitmap(),
+                        bitmap = previewBitmap.asImageBitmap(),
                         contentDescription = null,
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Fit,
+                    )
+                } else if (isReadyDocument) {
+                    Icon(
+                        imageVector = Icons.Default.InsertDriveFile,
+                        contentDescription = null,
+                        modifier = Modifier.height(64.dp),
                     )
                 }
                 if (totalPages > 1) {
@@ -213,7 +335,7 @@ fun UploadScreen(
                 }
             }
 
-            if (!pdfReady) {
+            if (!documentReady && pendingUpload is PendingUpload.Images) {
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(
                         text = stringResource(
@@ -235,6 +357,17 @@ fun UploadScreen(
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
+            }
+
+            if (pendingUpload is PendingUpload.ReadyDocument && pendingUpload.ignoredCount > 0) {
+                Text(
+                    text = stringResource(
+                        R.string.upload_shared_multiple_ignored,
+                        pendingUpload.ignoredCount + 1,
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
 
             ExposedDropdownMenuBox(
@@ -276,6 +409,71 @@ fun UploadScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
 
+            insights.documentDate?.let { docDate ->
+                AssistChip(
+                    onClick = {
+                        val extension = if (pendingUpload is PendingUpload.Images) {
+                            "pdf"
+                        } else {
+                            extensionForMimeType(documentMimeType)
+                        }
+                        fileName = FilenameTemplate.render(
+                            template = store.filenameTemplate,
+                            organizationName = selectedOrg?.name,
+                            counter = store.uploadCount + 1,
+                            documentDate = docDate,
+                        ) + ".$extension"
+                    },
+                    label = { Text(stringResource(R.string.upload_use_document_date, docDate.format(DISPLAY_DATE_FORMATTER))) },
+                )
+            }
+
+            val suggestedTags = orgTags.filter { tag ->
+                insights.suggestedTagNames.any { it.equals(tag.name, ignoreCase = true) }
+            }
+            if (suggestedTags.isNotEmpty()) {
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(
+                        text = stringResource(R.string.upload_suggested_tags),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Row(
+                        modifier = Modifier.horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        suggestedTags.forEach { tag ->
+                            FilterChip(
+                                selected = tag.id in selectedTagIds,
+                                onClick = {
+                                    selectedTagIds = if (tag.id in selectedTagIds) {
+                                        selectedTagIds - tag.id
+                                    } else {
+                                        selectedTagIds + tag.id
+                                    }
+                                },
+                                label = { Text(tag.name) },
+                            )
+                        }
+                    }
+                }
+            }
+
+            duplicateWarning?.let { duplicate ->
+                val uploadedDate = Instant.ofEpochMilli(duplicate.uploadedAtEpochMillis)
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate()
+                Text(
+                    text = stringResource(
+                        R.string.upload_duplicate_warning,
+                        duplicate.fileName,
+                        uploadedDate.format(DISPLAY_DATE_FORMATTER),
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+
             errorMessage?.let {
                 Text(
                     text = stringResource(R.string.upload_failed, it),
@@ -288,43 +486,77 @@ fun UploadScreen(
             Button(
                 onClick = onClick@{
                     val org = selectedOrg ?: return@onClick
-                    val pdf = pdfFile ?: return@onClick
+                    val doc = documentFile ?: return@onClick
                     uploading = true
                     errorMessage = null
                     scope.launch {
-                        val finalName = fileName.trim().ifBlank { pdf.name }
-                            .let { if (it.endsWith(".pdf", ignoreCase = true)) it else "$it.pdf" }
+                        val finalName = fileName.trim().ifBlank { doc.name }.let { raw ->
+                            if (pendingUpload is PendingUpload.Images) {
+                                if (raw.endsWith(".pdf", ignoreCase = true)) raw else "$raw.pdf"
+                            } else {
+                                ensureExtension(raw, documentMimeType)
+                            }
+                        }
                         val res = withContext(Dispatchers.IO) {
                             client.uploadDocument(
                                 organizationId = org.id,
-                                file = pdf,
+                                file = doc,
                                 fileName = finalName,
-                                mimeType = "application/pdf",
+                                mimeType = documentMimeType,
                             )
                         }
                         uploading = false
-                        res.onSuccess {
-                            // Cleanup: PDF und Quell-JPEGs löschen.
-                            pdf.delete()
-                            pages.forEach { it.delete() }
+                        val uploadedDoc = res.getOrNull()
+                        if (uploadedDoc == null) {
+                            errorMessage = friendlyErrorMessage(
+                                res.exceptionOrNull() ?: IllegalStateException("Upload failed"),
+                                apiErrorMessages,
+                            )
+                            return@launch
+                        }
 
-                            store.uploadCount += 1
-                            val count = store.uploadCount
-                            val shouldPromptSupport = Features.SUPPORTER_ENABLED &&
-                                !store.isSupporter &&
-                                (count == 5 || (count > 5 && (count - 5) % 10 == 0))
+                        // Cleanup: erzeugtes/übernommenes Dokument und ggf. Quell-JPEGs löschen.
+                        doc.delete()
+                        (pendingUpload as? PendingUpload.Images)?.pages?.forEach { it.delete() }
 
-                            if (shouldPromptSupport) {
-                                showSupportDialog = true
-                            } else {
-                                onDone()
+                        if (selectedTagIds.isNotEmpty()) {
+                            withContext(Dispatchers.IO) {
+                                selectedTagIds.forEach { tagId ->
+                                    runCatching { client.addTagToDocument(org.id, uploadedDoc.id, tagId) }
+                                }
                             }
-                        }.onFailure { e ->
-                            errorMessage = friendlyErrorMessage(e, apiErrorMessages)
+                        }
+
+                        imageHash?.let { hash ->
+                            recentUploads.record(
+                                RecentUpload(
+                                    organizationId = org.id,
+                                    hash = hash,
+                                    fileName = finalName,
+                                    uploadedAtEpochMillis = System.currentTimeMillis(),
+                                ),
+                            )
+                        }
+
+                        store.uploadCount += 1
+                        val count = store.uploadCount
+                        val shouldPromptSupport = Features.SUPPORTER_ENABLED &&
+                            !store.isSupporter &&
+                            (count == 5 || (count > 5 && (count - 5) % 10 == 0))
+
+                        val deadline = insights.deadline
+                        when {
+                            deadline != null && store.smartInsightsEnabled -> {
+                                pendingDeadlineDocumentName = finalName
+                                pendingShouldPromptSupport = shouldPromptSupport
+                                pendingDeadline = deadline
+                            }
+                            shouldPromptSupport -> showSupportDialog = true
+                            else -> onDone()
                         }
                     }
                 },
-                enabled = !uploading && pdfReady && selectedOrg != null && fileName.isNotBlank(),
+                enabled = !uploading && documentReady && selectedOrg != null && fileName.isNotBlank(),
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 if (uploading) {
@@ -342,9 +574,60 @@ fun UploadScreen(
                 enabled = !uploading,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text(stringResource(R.string.upload_retake))
+                Text(stringResource(if (isReadyDocument) R.string.upload_cancel else R.string.upload_retake))
             }
         }
+    }
+
+    pendingDeadline?.let { deadline ->
+        AlertDialog(
+            onDismissRequest = {
+                pendingDeadline = null
+                if (pendingShouldPromptSupport) showSupportDialog = true else onDone()
+            },
+            title = { Text(stringResource(R.string.upload_deadline_dialog_title)) },
+            text = {
+                Text(
+                    stringResource(
+                        R.string.upload_deadline_dialog_message,
+                        deadline.label,
+                        deadline.date.format(DISPLAY_DATE_FORMATTER),
+                    ),
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) !=
+                            PackageManager.PERMISSION_GRANTED
+                        ) {
+                            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        }
+                        ReminderScheduler.schedule(
+                            context = context,
+                            date = deadline.date,
+                            label = deadline.label,
+                            documentName = pendingDeadlineDocumentName,
+                        )
+                        pendingDeadline = null
+                        if (pendingShouldPromptSupport) showSupportDialog = true else onDone()
+                    },
+                ) {
+                    Text(stringResource(R.string.upload_deadline_dialog_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        pendingDeadline = null
+                        if (pendingShouldPromptSupport) showSupportDialog = true else onDone()
+                    },
+                ) {
+                    Text(stringResource(R.string.upload_deadline_dialog_dismiss))
+                }
+            },
+        )
     }
 
     if (Features.SUPPORTER_ENABLED && showSupportDialog) {
@@ -356,4 +639,40 @@ fun UploadScreen(
             },
         )
     }
+}
+
+private fun renderPdfFirstPage(file: File): android.graphics.Bitmap? {
+    return try {
+        android.os.ParcelFileDescriptor.open(file, android.os.ParcelFileDescriptor.MODE_READ_ONLY).use { pfd ->
+            android.graphics.pdf.PdfRenderer(pfd).use { renderer ->
+                if (renderer.pageCount == 0) return null
+                renderer.openPage(0).use { page ->
+                    val bitmap = android.graphics.Bitmap.createBitmap(
+                        page.width,
+                        page.height,
+                        android.graphics.Bitmap.Config.ARGB_8888,
+                    )
+                    bitmap.eraseColor(android.graphics.Color.WHITE)
+                    page.render(bitmap, null, null, android.graphics.pdf.PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+                    bitmap
+                }
+            }
+        }
+    } catch (e: Exception) {
+        null
+    }
+}
+
+private val DISPLAY_DATE_FORMATTER: DateTimeFormatter =
+    DateTimeFormatter.ofPattern("dd.MM.yyyy", java.util.Locale.US)
+
+private fun extensionForMimeType(mimeType: String): String = when {
+    mimeType == "application/pdf" -> "pdf"
+    mimeType.startsWith("image/") -> mimeType.substringAfter('/').ifBlank { "jpg" }
+    else -> "bin"
+}
+
+private fun ensureExtension(name: String, mimeType: String): String {
+    if (name.contains('.')) return name
+    return "$name.${extensionForMimeType(mimeType)}"
 }
