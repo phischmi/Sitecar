@@ -45,6 +45,19 @@ android {
                 keyPassword = keystoreProperties.getProperty("keyPassword")
             }
         }
+        // Ohne dieses explizite Signing generiert AGP den Debug-Key pro Maschine neu
+        // (~/.android/debug.keystore) — eine lokal gebaute Debug-APK und eine vom
+        // GitHub-Action-Workflow (build-apk.yml) gebaute wären dann unterschiedlich
+        // signiert und ließen sich nicht übereinander installieren
+        // (INSTALL_FAILED_UPDATE_INCOMPATIBLE). debug.keystore ist bewusst eingecheckt
+        // (siehe .gitignore) — es ist Androids öffentlich bekannter, nicht-geheimer
+        // Standard-Debug-Key, kein Sicherheitsrisiko.
+        getByName("debug") {
+            storeFile = rootProject.file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
     }
 
     buildTypes {

@@ -192,6 +192,16 @@ gradle wrapper
 ./gradlew installDebug   # auf verbundenes Gerät installieren
 ```
 
+Debug-Builds werden immer mit dem im Repo eingecheckten `debug.keystore`
+signiert (Androids öffentlich bekannter, nicht-geheimer Standard-Debug-Key —
+siehe `app/build.gradle.kts`), egal ob lokal oder per GitHub Action gebaut.
+So lässt sich eine lokal gebaute Debug-APK jederzeit über eine per Action
+gebaute installieren (und umgekehrt), ohne
+`INSTALL_FAILED_UPDATE_INCOMPATIBLE`. Kam eine ältere Debug-APK vor dieser
+Änderung mit einem anderen (automatisch generierten) Debug-Key auf das
+Gerät, hilft einmalig `adb uninstall app.sitecar.uploader.debug` vor der
+nächsten Installation.
+
 ### Debug-APK per GitHub Action
 
 Unter **Actions → Build APK → Run workflow** lässt sich manuell ein Build der
