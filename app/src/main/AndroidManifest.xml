@@ -3,8 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- Nur für lokale Erinnerungen an erkannte Fristen (Feature "Intelligente Vorschläge"). -->
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <!--
       Bezahlfunktion vorerst deaktiviert (siehe Features.SUPPORTER_ENABLED): die

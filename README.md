@@ -76,10 +76,7 @@ Eintrag → App-Name), nicht im Code.
   Schlüsselwort-Vokabular und schlägt bereits in der Organisation vorhandene
   Tags vor; erkennt das Dokumentdatum (z. B. Rechnungsdatum) und den
   Absender (Briefkopf-Firmenname oder ein "Von:"/"Absender:"-Label) als
-  Alternative zum Scan-Datum bzw. zur Organisation im Dateinamen; erkennt
-  Fristen (z. B. Kündigungsfrist, Garantie-Ablauf) und bietet nach dem
-  Upload eine lokale Erinnerung an (Android-Notification via WorkManager,
-  kein Server-/Kalenderzugriff).
+  Alternative zum Scan-Datum bzw. zur Organisation im Dateinamen.
 - Duplikat-Warnung: vergleicht einen Perceptual-Hash der ersten Seite mit den
   letzten Uploads derselben Organisation (rein lokal, 14 Tage Gedächtnis,
   kein Download bestehender Dokumente) und warnt unaufdringlich, falls ein
