@@ -17,6 +17,11 @@ enum class AccentColor {
     INDIGO, EMERALD, AMBER, ROSE
 }
 
+/** Aktion, die eine Wischgeste in der Dokumentenliste auslöst. */
+enum class SwipeAction {
+    NONE, DELETE, RENAME, EDIT_TAGS
+}
+
 class SettingsStore(context: Context) {
 
     private val prefs: SharedPreferences = EncryptedSharedPreferences.create(
@@ -75,6 +80,18 @@ class SettingsStore(context: Context) {
             ?: AccentColor.INDIGO
         set(value) = prefs.edit().putString(KEY_ACCENT_COLOR, value.name).apply()
 
+    /** Wischgeste von links nach rechts (Finger nach rechts) in der Dokumentenliste. */
+    var swipeStartToEndAction: SwipeAction
+        get() = SwipeAction.entries.firstOrNull { it.name == prefs.getString(KEY_SWIPE_START_TO_END, null) }
+            ?: SwipeAction.EDIT_TAGS
+        set(value) = prefs.edit().putString(KEY_SWIPE_START_TO_END, value.name).apply()
+
+    /** Wischgeste von rechts nach links (Finger nach links) in der Dokumentenliste. */
+    var swipeEndToStartAction: SwipeAction
+        get() = SwipeAction.entries.firstOrNull { it.name == prefs.getString(KEY_SWIPE_END_TO_START, null) }
+            ?: SwipeAction.DELETE
+        set(value) = prefs.edit().putString(KEY_SWIPE_END_TO_START, value.name).apply()
+
     val isConfigured: Flow<Boolean> = callbackFlow {
         val send = { trySend(serverUrl.isNotBlank() && apiKey.isNotBlank()) }
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ -> send() }
@@ -113,6 +130,26 @@ class SettingsStore(context: Context) {
         awaitClose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
     }
 
+    val swipeStartToEndActionFlow: Flow<SwipeAction> = callbackFlow {
+        val send = { trySend(swipeStartToEndAction) }
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == KEY_SWIPE_START_TO_END) send()
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        send()
+        awaitClose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
+
+    val swipeEndToStartActionFlow: Flow<SwipeAction> = callbackFlow {
+        val send = { trySend(swipeEndToStartAction) }
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == KEY_SWIPE_END_TO_START) send()
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        send()
+        awaitClose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
+
     companion object {
         private const val KEY_SERVER_URL = "server_url"
         private const val KEY_API_KEY = "api_key"
@@ -124,5 +161,7 @@ class SettingsStore(context: Context) {
         private const val KEY_IS_SUPPORTER = "is_supporter"
         private const val KEY_FILENAME_TEMPLATE = "filename_template"
         private const val KEY_ACCENT_COLOR = "accent_color"
+        private const val KEY_SWIPE_START_TO_END = "swipe_start_to_end_action"
+        private const val KEY_SWIPE_END_TO_START = "swipe_end_to_start_action"
     }
 }

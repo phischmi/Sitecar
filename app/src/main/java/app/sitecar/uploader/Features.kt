@@ -19,4 +19,13 @@ package app.sitecar.uploader
  */
 object Features {
     const val SUPPORTER_ENABLED = false
+
+    /**
+     * Zeigt die Akzentfarben-Auswahl in den Einstellungen unabhängig von
+     * [SUPPORTER_ENABLED] und ohne Sperre — zum Testen der Farben, bevor sie
+     * perspektivisch wieder exklusiv an [SUPPORTER_ENABLED] geknüpft werden.
+     * Sobald [SUPPORTER_ENABLED] wieder `true` ist, greift automatisch wieder
+     * die echte Unterstützer-Sperre (siehe `unlocked` in SettingsScreen).
+     */
+    const val ACCENT_COLOR_PICKER_ENABLED = true
 }

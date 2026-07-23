@@ -25,6 +25,16 @@
 
     <string name="settings_filename_template_title">Dateinamen-Format</string>
     <string name="settings_filename_template_hint">Scan-{date}-{time} — Platzhalter: {date} {time} {org} {counter}</string>
+    <string name="settings_filename_template_help">Platzhalter-Hilfe</string>
+    <string name="settings_filename_placeholder_date">Scan-Datum (yyyyMMdd)</string>
+    <string name="settings_filename_placeholder_time">Scan-Uhrzeit (HHmmss)</string>
+    <string name="settings_filename_placeholder_org">Name der Ziel-Organisation</string>
+    <string name="settings_filename_placeholder_counter">Upload-Zähler, 3-stellig (z. B. 007)</string>
+
+    <string name="settings_swipe_title">Wischgesten</string>
+    <string name="settings_swipe_start_to_end">Nach rechts wischen</string>
+    <string name="settings_swipe_end_to_start">Nach links wischen</string>
+    <string name="settings_swipe_action_none">Aus</string>
 
     <string name="settings_accent_title">Akzentfarbe</string>
     <string name="settings_accent_locked_hint">Weitere Farben mit einer einmaligen Spende freischalten.</string>

@@ -63,7 +63,13 @@ eigenständiger Begleiter ("Sidecar") für Papra, vormals PapraCam.
 - Darstellung wählbar: Hell / Dunkel / System.
 - Schnellzugriff-Shortcut "Scannen" per Long-Press auf das App-Icon.
 - Anpassbares Dateinamen-Format für Scans (Platzhalter `{date}` `{time}`
-  `{org}` `{counter}`).
+  `{org}` `{counter}`), mit In-App-Hilfe (Info-Icon neben dem Feld in den
+  Einstellungen) zur Erklärung der Platzhalter.
+- Konfigurierbare Wischgesten in der Dokumentenliste (links/rechts getrennt
+  einstellbar in den Einstellungen): Löschen, Umbenennen oder Tags
+  bearbeiten. Löst nie direkt die Aktion aus, sondern öffnet den jeweiligen
+  Dialog wie im "..."-Kontextmenü — kein versehentliches Löschen durch
+  Wischen. Standard: rechts wischen → Tags, links wischen → Löschen.
 - _(Derzeit deaktiviert — die App wird zunächst vollständig kostenfrei
   ausgeliefert, siehe [Bezahlfunktion](#bezahlfunktion-vorerst-deaktiviert).)_
   Freiwilliger "Sitecar unterstützen"-Hinweis (einmalig 0,99 €, Play Billing),
@@ -77,7 +83,12 @@ eigenständiger Begleiter ("Sidecar") für Papra, vormals PapraCam.
 
 Die freiwillige Unterstützer-Bezahlfunktion ist über den zentralen Schalter
 `Features.SUPPORTER_ENABLED` (in `app/src/main/java/app/sitecar/uploader/Features.kt`)
-**abgeschaltet** (`false`). Solange sie aus ist:
+**abgeschaltet** (`false`). Die Akzentfarben-Auswahl in den Einstellungen ist
+davon unabhängig über `Features.ACCENT_COLOR_PICKER_ENABLED` (aktuell `true`)
+zum Testen freigeschaltet — alle vier Farben sind ohne Sperre wählbar.
+Sobald `SUPPORTER_ENABLED` wieder aktiviert wird, greift automatisch erneut
+die echte Unterstützer-Sperre (nur Indigo kostenlos), ganz ohne weitere
+Code-Änderung. Solange die Bezahlfunktion aus ist:
 
 - kein In-App-Kauf, kein Spenden-Dialog, keine Kauf-Aufforderung nach Uploads;
 - der Akzentfarben- und Unterstützer-Bereich in den Einstellungen ist
