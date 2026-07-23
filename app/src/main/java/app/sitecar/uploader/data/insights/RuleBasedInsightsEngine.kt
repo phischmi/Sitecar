@@ -5,7 +5,7 @@ import java.time.LocalDate
 /**
  * Regelbasierte (rein lokale, keyword-/regex-basierte) Standard-Implementierung
  * von [SmartInsightsEngine]. Erkennt deutsche und englische Datumsformate sowie
- * ein kleines, festes Vokabular an Dokumentarten- und Fristen-Schlüsselwörtern.
+ * ein kleines, festes Vokabular an Dokumentarten-Schlüsselwörtern.
  * Läuft komplett offline, ohne zusätzliches Modell.
  */
 object RuleBasedInsightsEngine : SmartInsightsEngine {
@@ -15,7 +15,6 @@ object RuleBasedInsightsEngine : SmartInsightsEngine {
 
         val dates = findDates(text)
         val documentDate = dates.minByOrNull { it.first }?.second
-        val deadline = findDeadline(text)
         val senderName = findSenderName(text)
         val tags = TAG_KEYWORDS
             .filter { (keyword, _) -> containsWord(text, keyword) }
@@ -26,7 +25,6 @@ object RuleBasedInsightsEngine : SmartInsightsEngine {
             suggestedTagNames = tags,
             documentDate = documentDate,
             senderName = senderName,
-            deadline = deadline,
         )
     }
 
@@ -47,17 +45,6 @@ object RuleBasedInsightsEngine : SmartInsightsEngine {
         return lines.take(15)
             .firstOrNull { line -> LEGAL_FORM_SUFFIXES.any { containsWord(line, it, ignoreCase = false) } }
             ?.take(60)
-    }
-
-    private fun findDeadline(text: String): Deadline? {
-        val lines = text.lines()
-        lines.forEachIndexed { index, line ->
-            val keyword = DEADLINE_KEYWORDS.firstOrNull { containsWord(line, it) } ?: return@forEachIndexed
-            val window = if (index + 1 < lines.size) "$line ${lines[index + 1]}" else line
-            val date = findDates(window).minByOrNull { it.first }?.second
-            if (date != null) return Deadline(date, keyword.replaceFirstChar { it.uppercase() })
-        }
-        return null
     }
 
     /** Findet alle erkennbaren Datumsangaben im Text, sortiert nach Position im Text. */
@@ -154,20 +141,5 @@ object RuleBasedInsightsEngine : SmartInsightsEngine {
         "Quote" to "Angebot",
         "Bestellung" to "Bestellung",
         "Mahnung" to "Mahnung",
-    )
-
-    /** Schlüsselwörter, die auf eine relevante Frist hindeuten (Kündigung, Garantie-Ablauf, Fälligkeit). */
-    private val DEADLINE_KEYWORDS = listOf(
-        "gültig bis",
-        "kündigen bis",
-        "Kündigungsfrist",
-        "Garantie bis",
-        "zahlbar bis",
-        "fällig am",
-        "Ablaufdatum",
-        "expires",
-        "valid until",
-        "cancel by",
-        "due date",
     )
 }

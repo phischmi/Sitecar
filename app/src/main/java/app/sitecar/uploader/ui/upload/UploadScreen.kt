@@ -1,11 +1,5 @@
 package app.sitecar.uploader.ui.upload
 
-import android.Manifest
-import android.content.pm.PackageManager
-import android.os.Build
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -26,7 +20,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.InsertDriveFile
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -45,7 +38,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -61,7 +53,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.sitecar.uploader.Features
@@ -78,10 +69,8 @@ import app.sitecar.uploader.data.TagDto
 import app.sitecar.uploader.data.duplicates.PerceptualHash
 import app.sitecar.uploader.data.duplicates.RecentUpload
 import app.sitecar.uploader.data.duplicates.RecentUploadsStore
-import app.sitecar.uploader.data.insights.Deadline
 import app.sitecar.uploader.data.insights.DocumentInsights
 import app.sitecar.uploader.data.insights.RuleBasedInsightsEngine
-import app.sitecar.uploader.data.reminders.ReminderScheduler
 import app.sitecar.uploader.ui.support.SupportDialog
 import app.sitecar.uploader.ui.util.friendlyErrorMessage
 import app.sitecar.uploader.ui.util.rememberApiErrorMessages
@@ -132,15 +121,6 @@ fun UploadScreen(
     var insights by remember { mutableStateOf(DocumentInsights.EMPTY) }
     var orgTags by remember { mutableStateOf<List<TagDto>>(emptyList()) }
     var selectedTagIds by remember { mutableStateOf<Set<String>>(emptySet()) }
-    var pendingDeadline by remember { mutableStateOf<Deadline?>(null) }
-    var pendingDeadlineDocumentName by remember { mutableStateOf("") }
-    var pendingShouldPromptSupport by remember { mutableStateOf(false) }
-
-    val context = LocalContext.current
-    val notificationPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission(),
-        onResult = {},
-    )
 
     val scope = rememberCoroutineScope()
     val previewBitmap = remember(pendingUpload) {
@@ -551,16 +531,7 @@ fun UploadScreen(
                             !store.isSupporter &&
                             (count == 5 || (count > 5 && (count - 5) % 10 == 0))
 
-                        val deadline = insights.deadline
-                        when {
-                            deadline != null && store.smartInsightsEnabled -> {
-                                pendingDeadlineDocumentName = finalName
-                                pendingShouldPromptSupport = shouldPromptSupport
-                                pendingDeadline = deadline
-                            }
-                            shouldPromptSupport -> showSupportDialog = true
-                            else -> onDone()
-                        }
+                        if (shouldPromptSupport) showSupportDialog = true else onDone()
                     }
                 },
                 enabled = !uploading && documentReady && selectedOrg != null && fileName.isNotBlank(),
@@ -584,57 +555,6 @@ fun UploadScreen(
                 Text(stringResource(if (isReadyDocument) R.string.upload_cancel else R.string.upload_retake))
             }
         }
-    }
-
-    pendingDeadline?.let { deadline ->
-        AlertDialog(
-            onDismissRequest = {
-                pendingDeadline = null
-                if (pendingShouldPromptSupport) showSupportDialog = true else onDone()
-            },
-            title = { Text(stringResource(R.string.upload_deadline_dialog_title)) },
-            text = {
-                Text(
-                    stringResource(
-                        R.string.upload_deadline_dialog_message,
-                        deadline.label,
-                        deadline.date.format(DISPLAY_DATE_FORMATTER),
-                    ),
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-                            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) !=
-                            PackageManager.PERMISSION_GRANTED
-                        ) {
-                            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                        }
-                        ReminderScheduler.schedule(
-                            context = context,
-                            date = deadline.date,
-                            label = deadline.label,
-                            documentName = pendingDeadlineDocumentName,
-                        )
-                        pendingDeadline = null
-                        if (pendingShouldPromptSupport) showSupportDialog = true else onDone()
-                    },
-                ) {
-                    Text(stringResource(R.string.upload_deadline_dialog_confirm))
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        pendingDeadline = null
-                        if (pendingShouldPromptSupport) showSupportDialog = true else onDone()
-                    },
-                ) {
-                    Text(stringResource(R.string.upload_deadline_dialog_dismiss))
-                }
-            },
-        )
     }
 
     if (Features.SUPPORTER_ENABLED && showSupportDialog) {
