@@ -27,11 +27,12 @@
     <string name="settings_smart_insights_subtitle">Schlägt Tags, das Dokumentdatum und erkannte Fristen aus dem gescannten Text vor — komplett on-device, regelbasiert.</string>
 
     <string name="settings_filename_template_title">Dateinamen-Format</string>
-    <string name="settings_filename_template_hint">Scan-{date}-{time} — Platzhalter: {date} {time} {org} {counter}</string>
+    <string name="settings_filename_template_hint">Scan-{date}-{time} — Platzhalter: {date} {time} {org} {sender} {counter}</string>
     <string name="settings_filename_template_help">Platzhalter-Hilfe</string>
     <string name="settings_filename_placeholder_date">Scan-Datum (yyyyMMdd)</string>
     <string name="settings_filename_placeholder_time">Scan-Uhrzeit (HHmmss)</string>
     <string name="settings_filename_placeholder_org">Name der Ziel-Organisation</string>
+    <string name="settings_filename_placeholder_sender">Erkannter Absender (z. B. Firmenname), falls erkannt</string>
     <string name="settings_filename_placeholder_counter">Upload-Zähler, 3-stellig (z. B. 007)</string>
 
     <string name="settings_swipe_title">Wischgesten</string>
@@ -78,6 +79,7 @@
     <string name="upload_shared_multiple_ignored">Nur die erste von %1$d geteilten Dateien wird verwendet.</string>
     <string name="upload_suggested_tags">Vorgeschlagene Tags</string>
     <string name="upload_use_document_date">Dokumentdatum verwenden: %1$s</string>
+    <string name="upload_use_sender_name">Absendername verwenden: %1$s</string>
     <string name="upload_deadline_dialog_title">Frist erkannt</string>
     <string name="upload_deadline_dialog_message">%1$s am %2$s. Lokale Erinnerung setzen?</string>
     <string name="upload_deadline_dialog_confirm">Erinnerung setzen</string>

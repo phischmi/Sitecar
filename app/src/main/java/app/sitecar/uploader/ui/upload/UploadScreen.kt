@@ -403,22 +403,37 @@ fun UploadScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
 
+            val filenameExtension = if (pendingUpload is PendingUpload.Images) {
+                "pdf"
+            } else {
+                extensionForMimeType(documentMimeType)
+            }
+
             insights.documentDate?.let { docDate ->
                 AssistChip(
                     onClick = {
-                        val extension = if (pendingUpload is PendingUpload.Images) {
-                            "pdf"
-                        } else {
-                            extensionForMimeType(documentMimeType)
-                        }
                         fileName = FilenameTemplate.render(
                             template = store.filenameTemplate,
                             organizationName = selectedOrg?.name,
                             counter = store.uploadCount + 1,
                             documentDate = docDate,
-                        ) + ".$extension"
+                        ) + ".$filenameExtension"
                     },
                     label = { Text(stringResource(R.string.upload_use_document_date, docDate.format(DISPLAY_DATE_FORMATTER))) },
+                )
+            }
+
+            insights.senderName?.let { sender ->
+                AssistChip(
+                    onClick = {
+                        fileName = FilenameTemplate.render(
+                            template = store.filenameTemplate,
+                            organizationName = selectedOrg?.name,
+                            counter = store.uploadCount + 1,
+                            senderName = sender,
+                        ) + ".$filenameExtension"
+                    },
+                    label = { Text(stringResource(R.string.upload_use_sender_name, sender)) },
                 )
             }
 

@@ -74,10 +74,12 @@ Eintrag → App-Name), nicht im Code.
 - Intelligente Vorschläge beim Hochladen (regelbasiert, komplett on-device,
   abschaltbar in den Einstellungen): erkennt Tags aus einem kleinen
   Schlüsselwort-Vokabular und schlägt bereits in der Organisation vorhandene
-  Tags vor; erkennt das Dokumentdatum (z. B. Rechnungsdatum) als Alternative
-  zum Scan-Datum im Dateinamen; erkennt Fristen (z. B. Kündigungsfrist,
-  Garantie-Ablauf) und bietet nach dem Upload eine lokale Erinnerung an
-  (Android-Notification via WorkManager, kein Server-/Kalenderzugriff).
+  Tags vor; erkennt das Dokumentdatum (z. B. Rechnungsdatum) und den
+  Absender (Briefkopf-Firmenname oder ein "Von:"/"Absender:"-Label) als
+  Alternative zum Scan-Datum bzw. zur Organisation im Dateinamen; erkennt
+  Fristen (z. B. Kündigungsfrist, Garantie-Ablauf) und bietet nach dem
+  Upload eine lokale Erinnerung an (Android-Notification via WorkManager,
+  kein Server-/Kalenderzugriff).
 - Duplikat-Warnung: vergleicht einen Perceptual-Hash der ersten Seite mit den
   letzten Uploads derselben Organisation (rein lokal, 14 Tage Gedächtnis,
   kein Download bestehender Dokumente) und warnt unaufdringlich, falls ein
@@ -87,8 +89,8 @@ Eintrag → App-Name), nicht im Code.
 - Darstellung wählbar: Hell / Dunkel / System.
 - Schnellzugriff-Shortcut "Scannen" per Long-Press auf das App-Icon.
 - Anpassbares Dateinamen-Format für Scans (Platzhalter `{date}` `{time}`
-  `{org}` `{counter}`), mit In-App-Hilfe (Info-Icon neben dem Feld in den
-  Einstellungen) zur Erklärung der Platzhalter.
+  `{org}` `{sender}` `{counter}`), mit In-App-Hilfe (Info-Icon neben dem Feld
+  in den Einstellungen) zur Erklärung der Platzhalter.
 - Konfigurierbare Wischgesten in der Dokumentenliste (links/rechts getrennt
   einstellbar in den Einstellungen): Löschen, Umbenennen oder Tags
   bearbeiten. Löst nie direkt die Aktion aus, sondern öffnet den jeweiligen

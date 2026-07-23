@@ -27,11 +27,12 @@
     <string name="settings_smart_insights_subtitle">Suggests tags, the document\'s own date, and detected deadlines from the scanned text — all on-device, rule-based.</string>
 
     <string name="settings_filename_template_title">Filename format</string>
-    <string name="settings_filename_template_hint">Scan-{date}-{time} — placeholders: {date} {time} {org} {counter}</string>
+    <string name="settings_filename_template_hint">Scan-{date}-{time} — placeholders: {date} {time} {org} {sender} {counter}</string>
     <string name="settings_filename_template_help">Placeholder help</string>
     <string name="settings_filename_placeholder_date">Scan date (yyyyMMdd)</string>
     <string name="settings_filename_placeholder_time">Scan time (HHmmss)</string>
     <string name="settings_filename_placeholder_org">Target organization name</string>
+    <string name="settings_filename_placeholder_sender">Detected sender (e.g. company name), if recognized</string>
     <string name="settings_filename_placeholder_counter">Upload counter, 3 digits (e.g. 007)</string>
 
     <string name="settings_swipe_title">Swipe gestures</string>
@@ -78,6 +79,7 @@
     <string name="upload_shared_multiple_ignored">Only the first of %1$d shared files is used.</string>
     <string name="upload_suggested_tags">Suggested tags</string>
     <string name="upload_use_document_date">Use document date: %1$s</string>
+    <string name="upload_use_sender_name">Use sender name: %1$s</string>
     <string name="upload_deadline_dialog_title">Deadline detected</string>
     <string name="upload_deadline_dialog_message">%1$s on %2$s. Set a local reminder?</string>
     <string name="upload_deadline_dialog_confirm">Set reminder</string>
