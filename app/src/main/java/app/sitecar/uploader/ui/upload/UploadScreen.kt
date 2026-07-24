@@ -12,11 +12,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.InsertDriveFile
 import androidx.compose.material.icons.filled.Settings
@@ -120,6 +122,7 @@ fun UploadScreen(
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     var insights by remember { mutableStateOf(DocumentInsights.EMPTY) }
+    var analyzingInsights by remember { mutableStateOf(false) }
     var orgTags by remember { mutableStateOf<List<TagDto>>(emptyList()) }
     var selectedTagIds by remember { mutableStateOf<Set<String>>(emptySet()) }
     /** Vorgeschlagene Tags, die es in der Organisation noch nicht gibt — per Name, nicht vorausgewählt. */
@@ -176,17 +179,22 @@ fun UploadScreen(
     LaunchedEffect(documentFile, orgTags) {
         val doc = documentFile ?: return@LaunchedEffect
         if (!store.smartInsightsEnabled) return@LaunchedEffect
-        val text = when (pendingUpload) {
-            is PendingUpload.Images -> if (store.onDeviceOcrEnabled) {
-                PdfTextExtractor.extractText(doc)
-            } else {
-                pdfBuilder.recognizeText(pendingUpload.pages)
+        analyzingInsights = true
+        try {
+            val text = when (pendingUpload) {
+                is PendingUpload.Images -> if (store.onDeviceOcrEnabled) {
+                    PdfTextExtractor.extractText(doc)
+                } else {
+                    pdfBuilder.recognizeText(pendingUpload.pages)
+                }
+                is PendingUpload.ReadyDocument ->
+                    if (pendingUpload.mimeType == "application/pdf") PdfTextExtractor.extractText(doc) else ""
             }
-            is PendingUpload.ReadyDocument ->
-                if (pendingUpload.mimeType == "application/pdf") PdfTextExtractor.extractText(doc) else ""
+            val engine = if (store.onDeviceAiEnabled) HybridInsightsEngine else RuleBasedInsightsEngine
+            insights = engine.analyze(text, orgTags.map { it.name })
+        } finally {
+            analyzingInsights = false
         }
-        val engine = if (store.onDeviceAiEnabled) HybridInsightsEngine else RuleBasedInsightsEngine
-        insights = engine.analyze(text, orgTags.map { it.name })
     }
 
     LaunchedEffect(insights, orgTags) {
@@ -393,34 +401,6 @@ fun UploadScreen(
                 extensionForMimeType(documentMimeType)
             }
 
-            insights.documentDate?.let { docDate ->
-                AssistChip(
-                    onClick = {
-                        fileName = FilenameTemplate.render(
-                            template = store.filenameTemplate,
-                            organizationName = selectedOrg?.name,
-                            counter = store.uploadCount + 1,
-                            documentDate = docDate,
-                        ) + ".$filenameExtension"
-                    },
-                    label = { Text(stringResource(R.string.upload_use_document_date, docDate.format(DISPLAY_DATE_FORMATTER))) },
-                )
-            }
-
-            insights.senderName?.let { sender ->
-                AssistChip(
-                    onClick = {
-                        fileName = FilenameTemplate.render(
-                            template = store.filenameTemplate,
-                            organizationName = selectedOrg?.name,
-                            counter = store.uploadCount + 1,
-                            senderName = sender,
-                        ) + ".$filenameExtension"
-                    },
-                    label = { Text(stringResource(R.string.upload_use_sender_name, sender)) },
-                )
-            }
-
             // Jeder erkannte Tag-Name wird angezeigt, auch wenn er in der Organisation noch
             // nicht existiert. Bereits vorhandene Tags sind vorausgewählt (siehe LaunchedEffect
             // oben); noch nicht existierende sind nur ein Vorschlag und werden erst beim
@@ -430,44 +410,109 @@ fun UploadScreen(
                     ?.let { SuggestedTagOption.Existing(it) }
                     ?: SuggestedTagOption.New(name)
             }
-            if (suggestedTagOptions.isNotEmpty()) {
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text(
-                        text = stringResource(R.string.upload_suggested_tags),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+            val hasSuggestions = insights.documentDate != null ||
+                insights.senderName != null ||
+                suggestedTagOptions.isNotEmpty()
+
+            if (store.smartInsightsEnabled && (analyzingInsights || hasSuggestions)) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Row(
-                        modifier = Modifier.horizontalScroll(rememberScrollState()),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
                     ) {
-                        suggestedTagOptions.forEach { option ->
-                            val selected = when (option) {
-                                is SuggestedTagOption.Existing -> option.tag.id in selectedTagIds
-                                is SuggestedTagOption.New -> option.name in selectedNewTagNames
-                            }
-                            FilterChip(
-                                selected = selected,
-                                onClick = {
-                                    when (option) {
-                                        is SuggestedTagOption.Existing -> {
-                                            selectedTagIds = if (selected) {
-                                                selectedTagIds - option.tag.id
-                                            } else {
-                                                selectedTagIds + option.tag.id
-                                            }
-                                        }
-                                        is SuggestedTagOption.New -> {
-                                            selectedNewTagNames = if (selected) {
-                                                selectedNewTagNames - option.name
-                                            } else {
-                                                selectedNewTagNames + option.name
-                                            }
-                                        }
-                                    }
-                                },
-                                label = { Text(option.name) },
+                        if (store.onDeviceAiEnabled) {
+                            Icon(
+                                imageVector = Icons.Default.AutoAwesome,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.height(16.dp),
                             )
+                        }
+                        Text(
+                            text = stringResource(R.string.upload_smart_suggestions_title),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+
+                    if (analyzingInsights) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            CircularProgressIndicator(
+                                strokeWidth = 2.dp,
+                                modifier = Modifier.height(16.dp).width(16.dp),
+                            )
+                            Text(
+                                text = stringResource(R.string.upload_analyzing_document),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    } else {
+                        insights.documentDate?.let { docDate ->
+                            AssistChip(
+                                onClick = {
+                                    fileName = FilenameTemplate.render(
+                                        template = store.filenameTemplate,
+                                        organizationName = selectedOrg?.name,
+                                        counter = store.uploadCount + 1,
+                                        documentDate = docDate,
+                                    ) + ".$filenameExtension"
+                                },
+                                label = { Text(stringResource(R.string.upload_use_document_date, docDate.format(DISPLAY_DATE_FORMATTER))) },
+                            )
+                        }
+
+                        insights.senderName?.let { sender ->
+                            AssistChip(
+                                onClick = {
+                                    fileName = FilenameTemplate.render(
+                                        template = store.filenameTemplate,
+                                        organizationName = selectedOrg?.name,
+                                        counter = store.uploadCount + 1,
+                                        senderName = sender,
+                                    ) + ".$filenameExtension"
+                                },
+                                label = { Text(stringResource(R.string.upload_use_sender_name, sender)) },
+                            )
+                        }
+
+                        if (suggestedTagOptions.isNotEmpty()) {
+                            Row(
+                                modifier = Modifier.horizontalScroll(rememberScrollState()),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                suggestedTagOptions.forEach { option ->
+                                    val selected = when (option) {
+                                        is SuggestedTagOption.Existing -> option.tag.id in selectedTagIds
+                                        is SuggestedTagOption.New -> option.name in selectedNewTagNames
+                                    }
+                                    FilterChip(
+                                        selected = selected,
+                                        onClick = {
+                                            when (option) {
+                                                is SuggestedTagOption.Existing -> {
+                                                    selectedTagIds = if (selected) {
+                                                        selectedTagIds - option.tag.id
+                                                    } else {
+                                                        selectedTagIds + option.tag.id
+                                                    }
+                                                }
+                                                is SuggestedTagOption.New -> {
+                                                    selectedNewTagNames = if (selected) {
+                                                        selectedNewTagNames - option.name
+                                                    } else {
+                                                        selectedNewTagNames + option.name
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        label = { Text(option.name) },
+                                    )
+                                }
+                            }
                         }
                     }
                 }

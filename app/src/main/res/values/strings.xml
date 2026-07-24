@@ -82,7 +82,8 @@
     <string name="upload_pdf_progress_no_ocr">Creating PDF – page %1$d of %2$d</string>
     <string name="upload_pdf_build_failed">Couldn\'t create PDF</string>
     <string name="upload_shared_multiple_ignored">Only the first of %1$d shared files is used.</string>
-    <string name="upload_suggested_tags">Suggested tags</string>
+    <string name="upload_smart_suggestions_title">Smart suggestions</string>
+    <string name="upload_analyzing_document">Analyzing document…</string>
     <string name="upload_use_document_date">Use document date: %1$s</string>
     <string name="upload_use_sender_name">Use sender name: %1$s</string>
     <string name="upload_duplicate_warning">Looks similar to \"%1$s\", uploaded on %2$s.</string>

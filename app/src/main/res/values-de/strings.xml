@@ -82,7 +82,8 @@
     <string name="upload_pdf_progress_no_ocr">PDF wird erstellt – Seite %1$d von %2$d</string>
     <string name="upload_pdf_build_failed">PDF konnte nicht erstellt werden</string>
     <string name="upload_shared_multiple_ignored">Nur die erste von %1$d geteilten Dateien wird verwendet.</string>
-    <string name="upload_suggested_tags">Vorgeschlagene Tags</string>
+    <string name="upload_smart_suggestions_title">Intelligente Vorschläge</string>
+    <string name="upload_analyzing_document">Dokument wird analysiert…</string>
     <string name="upload_use_document_date">Dokumentdatum verwenden: %1$s</string>
     <string name="upload_use_sender_name">Absendername verwenden: %1$s</string>
     <string name="upload_duplicate_warning">Ähnlich zu \"%1$s\", hochgeladen am %2$s.</string>
