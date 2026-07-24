@@ -598,6 +598,11 @@ fun DocumentsScreen(
                                         // passenden Dialog, das Listenelement bleibt bestehen.
                                         false
                                     },
+                                    // Deutlich höher als das Default (50 %), damit ein schneller
+                                    // vertikaler Scroll-Fling mit leichtem horizontalem Versatz
+                                    // nicht versehentlich als Wisch-Aktion durchgeht — erst ein
+                                    // bewusst weiter geführter Wisch löst die Aktion aus.
+                                    positionalThreshold = { totalDistance -> totalDistance * 0.75f },
                                 )
                                 SwipeToDismissBox(
                                     state = dismissState,

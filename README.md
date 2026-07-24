@@ -306,11 +306,17 @@ nur unsigniert.
   Kauf-Button bleibt wirkungslos (`launchPurchaseFlow` bricht früh ab).
   Erst ab dem ersten Internal-Testing-Release testbar (Play Billing
   funktioniert nicht mit reinen Debug-Builds ohne Play-Console-Release-Track).
-- **Store-Assets**: Hi-Res-Icon (512×512, 32-Bit-PNG mit Alpha-Kanal) liegt
-  als [`docs/play-icon-512.png`](./docs/play-icon-512.png) bereit
-  (Quelle: [`docs/play-icon-512.svg`](./docs/play-icon-512.svg) — volles
-  quadratisches Bleed ohne eigene Formmaskierung, da Play Store das Icon
-  je nach Gerät selbst maskiert). Screenshots und Feature-Grafik fehlen noch.
+- **Store-Assets**:
+  - Hi-Res-Icon (512×512, 32-Bit-PNG mit Alpha-Kanal) liegt als
+    [`docs/play-icon-512.png`](./docs/play-icon-512.png) bereit (Quelle:
+    [`docs/play-icon-512.svg`](./docs/play-icon-512.svg) — volles
+    quadratisches Bleed ohne eigene Formmaskierung, da Play Store das Icon
+    je nach Gerät selbst maskiert).
+  - Vorstellungsgrafik (1024×500, 24-Bit-PNG ohne Alpha-Kanal) liegt in
+    Englisch ([`docs/play-feature-graphic-1024x500-en.png`](./docs/play-feature-graphic-1024x500-en.png))
+    und Deutsch ([`docs/play-feature-graphic-1024x500-de.png`](./docs/play-feature-graphic-1024x500-de.png))
+    bereit, jeweils mit SVG-Quelle daneben.
+  - Screenshots fehlen noch — dafür wird ein echtes Gerät/Emulator benötigt.
 - **Versionierung**: `versionCode`/`versionName` vor dem ersten Upload final
   festlegen (aktuell `1` / `0.1.0`).
 
