@@ -302,8 +302,11 @@ nur unsigniert.
   Kauf-Button bleibt wirkungslos (`launchPurchaseFlow` bricht früh ab).
   Erst ab dem ersten Internal-Testing-Release testbar (Play Billing
   funktioniert nicht mit reinen Debug-Builds ohne Play-Console-Release-Track).
-- **Store-Assets**: Screenshots, Feature-Grafik, kurze/lange Beschreibung
-  fehlen noch.
+- **Store-Assets**: Hi-Res-Icon (512×512, 32-Bit-PNG mit Alpha-Kanal) liegt
+  als [`docs/play-icon-512.png`](./docs/play-icon-512.png) bereit
+  (Quelle: [`docs/play-icon-512.svg`](./docs/play-icon-512.svg) — volles
+  quadratisches Bleed ohne eigene Formmaskierung, da Play Store das Icon
+  je nach Gerät selbst maskiert). Screenshots und Feature-Grafik fehlen noch.
 - **Versionierung**: `versionCode`/`versionName` vor dem ersten Upload final
   festlegen (aktuell `1` / `0.1.0`).
 
