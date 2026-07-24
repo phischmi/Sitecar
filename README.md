@@ -2,7 +2,7 @@
   <img src="docs/logo.svg" width="96" height="96" alt="Sitecar Logo">
 </p>
 
-# Sitecar for Papra
+# Sitecar (for Papra)
 
 Schlanke native Android-App zum Aufnehmen und Hochladen von Dokumenten an eine
 selbst gehostete [Papra](https://github.com/papra-hq/papra)-Instanz — ein
@@ -12,7 +12,7 @@ eigenständiger Begleiter ("Sidecar") für Papra, vormals PapraCam.
 - Anbindung via API-Key (kein OAuth/Login)
 - Kotlin + Jetpack Compose, ML Kit Document Scanner, Ktor
 
-"Sitecar for Papra" ist der volle Name (z. B. für den Play-Store-Eintrag);
+"Sitecar (for Papra)" ist der volle Name (z. B. für den Play-Store-Eintrag);
 auf dem Gerät selbst (Launcher-Icon, Kürzel, App-Info) bleibt es bewusst
 kurz **Sitecar** — `R.string.app_name`/`android:label` sind unverändert
 "Sitecar". Der volle Store-Titel wird in der Play Console gepflegt (Store-
