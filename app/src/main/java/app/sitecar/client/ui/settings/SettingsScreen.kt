@@ -21,7 +21,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.CorporateFare
 import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.AlertDialog
@@ -49,7 +48,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -70,7 +68,6 @@ import app.sitecar.client.Features
 import app.sitecar.client.R
 import app.sitecar.client.data.AccentColor
 import app.sitecar.client.data.BillingManager
-import app.sitecar.client.data.Organization
 import app.sitecar.client.data.SitecarApiClient
 import app.sitecar.client.data.SettingsStore
 import app.sitecar.client.data.SwipeAction
@@ -117,23 +114,12 @@ fun SettingsScreen(
     var showSupportDialog by remember { mutableStateOf(false) }
     val isSupporter by store.isSupporterFlow.collectAsState(initial = store.isSupporter)
 
-    var orgs by remember { mutableStateOf<List<Organization>>(emptyList()) }
-    var activeOrgId by remember { mutableStateOf(store.defaultOrgId) }
-    var orgDropdownOpen by remember { mutableStateOf(false) }
-    val activeOrg = orgs.firstOrNull { it.id == activeOrgId } ?: orgs.firstOrNull()
-
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val missingFieldsMessage = stringResource(R.string.settings_error_missing_fields)
     val onDeviceAiUnavailableMessage = stringResource(R.string.settings_on_device_ai_unavailable)
     val onDeviceAiDownloadFailedMessage = stringResource(R.string.settings_on_device_ai_download_failed)
     val apiErrorMessages = rememberApiErrorMessages()
-
-    LaunchedEffect(Unit) {
-        if (store.serverUrl.isNotBlank() && store.apiKey.isNotBlank()) {
-            client.listOrganizations().onSuccess { orgs = it }
-        }
-    }
 
     Scaffold(
         topBar = {
@@ -183,61 +169,6 @@ fun SettingsScreen(
             }
 
             Spacer(Modifier.height(16.dp))
-
-            if (orgs.size > 1) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.CorporateFare,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp),
-                    )
-                    Text(
-                        text = stringResource(R.string.settings_active_org_title),
-                        style = MaterialTheme.typography.labelLarge,
-                    )
-                }
-                Text(
-                    text = stringResource(R.string.settings_active_org_subtitle),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                ExposedDropdownMenuBox(
-                    expanded = orgDropdownOpen,
-                    onExpandedChange = { orgDropdownOpen = !orgDropdownOpen },
-                ) {
-                    OutlinedTextField(
-                        value = activeOrg?.name.orEmpty(),
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text(stringResource(R.string.documents_org)) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor(MenuAnchorType.PrimaryNotEditable),
-                        colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
-                    )
-                    DropdownMenu(
-                        expanded = orgDropdownOpen,
-                        onDismissRequest = { orgDropdownOpen = false },
-                    ) {
-                        orgs.forEach { org ->
-                            DropdownMenuItem(
-                                text = { Text(org.name) },
-                                onClick = {
-                                    activeOrgId = org.id
-                                    store.defaultOrgId = org.id
-                                    orgDropdownOpen = false
-                                },
-                            )
-                        }
-                    }
-                }
-
-                Spacer(Modifier.height(16.dp))
-            }
 
             Text(
                 text = stringResource(R.string.settings_ocr_title),
