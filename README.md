@@ -278,9 +278,13 @@ Ohne `keystore.properties` bauen `assembleRelease`/`bundleRelease` weiterhin,
 nur unsigniert.
 
 ### Vor der Veröffentlichung offen
-- **Datenschutzerklärung**: Entwurf liegt in [`PRIVACY.md`](./PRIVACY.md),
-  muss noch unter einer öffentlichen URL gehostet werden (z. B. GitHub Pages
-  oder die gerenderte GitHub-Blob-Ansicht) und in der Play Console verlinkt
+- **Datenschutzerklärung**: Inhalt liegt in [`PRIVACY.md`](./PRIVACY.md) sowie
+  als eigenständige HTML-Seite im separaten, öffentlichen Repo
+  [`phischmi/sitecar-privacy`](https://github.com/phischmi/sitecar-privacy)
+  (getrennt vom privaten App-Repo, da GitHub Pages aus privaten Repos ohne
+  GitHub Pro nicht öffentlich veröffentlicht werden kann). Sobald dort unter
+  Settings → Pages die Veröffentlichung aktiviert ist (Source: `main` /
+  `/ (root)`), muss die resultierende URL noch in der Play Console verlinkt
   werden.
 - **Data-Safety-Formular**: Die App erhebt/übermittelt keine Daten an den
   Entwickler oder Dritte (siehe `PRIVACY.md`) — im Formular entsprechend
