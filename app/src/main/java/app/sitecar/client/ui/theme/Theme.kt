@@ -16,13 +16,8 @@ private data class PrimaryTokens(
     val onPrimaryContainer: Color,
 )
 
-// INDIGO ist der kostenlose Standard, bewusst nicht Papras Markenfarbe, sondern
-// jeweils eine nahezu komplementäre Farbe – harmoniert mit Papra, statt dessen
-// Farbe zu duplizieren. EMERALD/AMBER/ROSE sind rein kosmetische
-// Unterstützer-Akzente, gleiche Bau-Logik wie Indigo. Töne orientieren sich an
-// gängigen modernen UI-Paletten (kräftiger, satter) statt an den blasseren
-// Pastelltönen der Vorgängerversion; alle primary/onPrimary-Paarungen liegen
-// bei Kontrast ≥ 5:1 (WCAG AA).
+// INDIGO ist der Standard-Akzent, die übrigen sind wählbare Alternativen.
+// Alle primary/onPrimary-Paarungen liegen bei Kontrast ≥ 5:1 (WCAG AA).
 private val lightPrimaryTokens: Map<AccentColor, PrimaryTokens> = mapOf(
     AccentColor.INDIGO to PrimaryTokens(
         primary = Color(0xFF4F46E5),
@@ -48,7 +43,7 @@ private val lightPrimaryTokens: Map<AccentColor, PrimaryTokens> = mapOf(
         primaryContainer = Color(0xFFFFE4E6),
         onPrimaryContainer = Color(0xFF881337),
     ),
-    // Papras eigenes Orange (Hellmodus), siehe Kommentar oben.
+    // Papras eigenes Orange (Hellmodus).
     AccentColor.PAPRA to PrimaryTokens(
         primary = Color(0xFFC2410C),
         onPrimary = Color(0xFFFFFFFF),
@@ -82,9 +77,7 @@ private val darkPrimaryTokens: Map<AccentColor, PrimaryTokens> = mapOf(
         primaryContainer = Color(0xFF7A1245),
         onPrimaryContainer = Color(0xFFFCE0EE),
     ),
-    // Papras eigenes Neon-Lime/-Gelb (Dunkelmodus), siehe Kommentar oben —
-    // bewusst neonig-knallig, im Gegensatz zu den sonst eher gedeckten
-    // Pastelltönen der übrigen Akzentfarben im Dunkelmodus.
+    // Papras eigenes Neon-Lime/-Gelb (Dunkelmodus).
     AccentColor.PAPRA to PrimaryTokens(
         primary = Color(0xFFC6FF00),
         onPrimary = Color(0xFF1A2E05),
@@ -93,8 +86,7 @@ private val darkPrimaryTokens: Map<AccentColor, PrimaryTokens> = mapOf(
     ),
 )
 
-// Neutrale, Papra-inspirierte Töne (Grau-Hintergründe, Warn-Orange als Tertiär) –
-// gelten unabhängig von der gewählten Akzentfarbe.
+// Neutrale Töne, unabhängig von der gewählten Akzentfarbe.
 private fun lightScheme(tokens: PrimaryTokens): ColorScheme = lightColorScheme(
     primary = tokens.primary,
     onPrimary = tokens.onPrimary,
