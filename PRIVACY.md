@@ -1,51 +1,51 @@
-# Datenschutzerklärung – Sitecar for Papra
+# Privacy Policy – Sitecar for Papra
 
-Stand: 2026-07-22
+Last updated: 2026-07-22
 
-Sitecar ist eine inoffizielle, eigenständige Begleiter-App für selbst
-gehostete [Papra](https://github.com/papra-hq/papra)-Instanzen. Sitecar wird
-von einer Einzelperson entwickelt und steht in keiner Verbindung zu papra-hq.
+_Deutsche Fassung: [`PRIVACY.de.md`](./PRIVACY.de.md)_
 
-## Welche Daten werden verarbeitet?
+Sitecar is an unofficial, standalone companion app for self-hosted
+[Papra](https://github.com/papra-hq/papra) instances. Sitecar is developed by
+an individual and is not affiliated with papra-hq.
 
-- **Server-URL und API-Key** deiner Papra-Instanz: werden ausschließlich
-  lokal auf deinem Gerät gespeichert, verschlüsselt via
-  `EncryptedSharedPreferences` (AES-256, Android Keystore). Sie verlassen das
-  Gerät nur in Form der direkten HTTPS/HTTP-Anfragen an die von dir
-  angegebene Papra-Server-Adresse. Das API-Key-Feld im Einstellungen-
-  Bildschirm ist zusätzlich als Passwortfeld maskiert. Die App schreibt
-  weder Server-URL noch API-Key jemals in Logs
-  (`android:allowBackup="false"` schließt zudem aus, dass die verschlüsselten
-  Einstellungen über Android-Backups das Gerät verlassen).
-- **Gescannte Dokumente**: werden auf dem Gerät zwischengespeichert
-  (App-Cache) und ausschließlich an die von dir konfigurierte Papra-Instanz
-  hochgeladen. Der App-Entwickler hat keinen Zugriff auf diese Inhalte.
-- **On-Device-Verarbeitung**: Kantenerkennung/Perspektivkorrektur (ML Kit
-  Document Scanner), optionale Texterkennung (ML Kit Text Recognition) und
-  PDF-Erstellung laufen vollständig lokal auf dem Gerät. Dabei werden keine
-  Bild- oder Textdaten an Google oder Dritte übertragen.
+## What data is processed?
 
-## Was wird NICHT erhoben?
+- **Server URL and API key** of your Papra instance: stored exclusively
+  locally on your device, encrypted via `EncryptedSharedPreferences` (AES-256,
+  Android Keystore). They only leave the device as part of the direct
+  HTTPS/HTTP requests to the Papra server address you provide. The API key
+  field on the settings screen is additionally masked as a password field. The
+  app never writes the server URL or API key to logs
+  (`android:allowBackup="false"` additionally ensures the encrypted settings
+  cannot leave the device via Android backups).
+- **Scanned documents**: cached on the device (app cache) and uploaded solely
+  to the Papra instance you configured. The app developer has no access to
+  these contents.
+- **On-device processing**: edge detection/perspective correction (ML Kit
+  Document Scanner), optional text recognition (ML Kit Text Recognition) and
+  PDF creation run entirely locally on the device. No image or text data is
+  transmitted to Google or third parties.
 
-- Keine Analytics, kein Tracking, keine Werbung.
-- Keine Übermittlung von Nutzungsdaten an den App-Entwickler.
-- Keine Weitergabe von Daten an Dritte durch die App selbst.
+## What is NOT collected?
 
-## Berechtigungen
+- No analytics, no tracking, no ads.
+- No transmission of usage data to the app developer.
+- No sharing of data with third parties by the app itself.
 
-- **Internet**: für die Kommunikation mit deiner Papra-Instanz.
-- **Kamera**: wird nicht direkt von Sitecar angefordert — der ML-Kit-Scanner
-  läuft als separate Google-Play-Services-Activity und fordert die
-  Kamera-Berechtigung selbst an.
+## Permissions
 
-## Verantwortlichkeit für den Papra-Server
+- **Internet**: for communication with your Papra instance.
+- **Camera**: not requested directly by Sitecar — the ML Kit scanner runs as a
+  separate Google Play Services activity and requests the camera permission
+  itself.
 
-Sitecar sendet Daten ausschließlich an die von dir selbst konfigurierte
-Papra-Instanz. Für den Umgang mit diesen Daten auf dem Server (Speicherung,
-etwaige serverseitige OCR-Verarbeitung, Backups etc.) ist der Betreiber
-dieser Instanz verantwortlich — im Regelfall du selbst.
+## Responsibility for the Papra server
 
-## Kontakt
+Sitecar only sends data to the Papra instance you configured yourself. The
+operator of that instance — usually you — is responsible for handling this
+data on the server (storage, any server-side OCR processing, backups, etc.).
 
-Fragen zu dieser Datenschutzerklärung oder zur App: über die Issues des
-GitHub-Repositories.
+## Contact
+
+Questions about this privacy policy or the app: via the issues of the GitHub
+repository.

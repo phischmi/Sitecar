@@ -98,8 +98,10 @@ Key beginnt mit `ppapi_`.
 ## Datenschutz
 
 Die App erhebt keine Daten für den Entwickler oder Dritte. Details in
-[`PRIVACY.md`](./PRIVACY.md); dieselbe Erklärung liegt als Webseite unter
-[`docs/privacy.html`](./docs/privacy.html) und lässt sich per GitHub Pages
+[`PRIVACY.md`](./PRIVACY.md) (englisch) bzw.
+[`PRIVACY.de.md`](./PRIVACY.de.md) (deutsch); dieselbe Erklärung liegt als
+Webseite unter [`docs/privacy.html`](./docs/privacy.html) /
+[`docs/privacy.de.html`](./docs/privacy.de.html) und lässt sich per GitHub Pages
 (Settings → Pages → Source: `main` / `/docs`) öffentlich veröffentlichen.
 
 ## Lizenz
