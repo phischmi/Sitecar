@@ -70,20 +70,6 @@ gebaute Debug-APKs untereinander installierbar bleiben.
 Über **Actions → Build APK → Run workflow** lässt sich ein Build des jeweiligen
 Branches anstoßen; die APK steht danach als Artifact zum Download bereit.
 
-### Release-Signing
-
-Release-Builds werden signiert, wenn `keystore.properties` im Projektroot
-existiert (Format siehe `keystore.properties.example`; die Datei sowie
-`*.keystore`/`*.jks` sind per `.gitignore` ausgeschlossen):
-
-```sh
-cp keystore.properties.example keystore.properties
-# Werte anpassen, dann:
-./gradlew bundleRelease   # signiertes .aab
-```
-
-Ohne `keystore.properties` bauen `assembleRelease`/`bundleRelease` unsigniert.
-
 ## API-Key in Papra anlegen
 
 Im Papra-Web-UI unter **Settings → API Keys** einen Key mit der Berechtigung
@@ -108,6 +94,15 @@ Key beginnt mit `ppapi_`.
 - Die optionale on-device KI (Gemini Nano) benötigt ein kompatibles Gerät;
   ohne Unterstützung bleibt der Schalter inaktiv. Modell-Download ist geräteweit
   und einmalig.
+
+## Datenschutz
+
+Die App erhebt keine Daten für den Entwickler oder Dritte. Details in
+[`PRIVACY.md`](./PRIVACY.md) (englisch) bzw.
+[`PRIVACY.de.md`](./PRIVACY.de.md) (deutsch); dieselbe Erklärung liegt als
+Webseite unter [`docs/privacy.html`](./docs/privacy.html) /
+[`docs/privacy.de.html`](./docs/privacy.de.html) und lässt sich per GitHub Pages
+(Settings → Pages → Source: `main` / `/docs`) öffentlich veröffentlichen.
 
 ## Lizenz
 

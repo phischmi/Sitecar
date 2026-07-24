@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy Policy – Sitecar for Papra</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #fafafa;
+      --text: #18181b;
+      --muted: #52525b;
+      --accent: #4f46e5;
+      --border: #e4e4e7;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #18181b;
+        --surface: #1f1f23;
+        --text: #fafafa;
+        --muted: #a1a1aa;
+        --accent: #7a90ff;
+        --border: #2e2e33;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.65;
+      -webkit-text-size-adjust: 100%;
+    }
+    main {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 4rem;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      margin-bottom: 0.5rem;
+    }
+    header img { width: 48px; height: 48px; }
+    h1 { font-size: 1.6rem; margin: 0; line-height: 1.25; }
+    h2 {
+      font-size: 1.2rem;
+      margin: 2.25rem 0 0.75rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--border);
+    }
+    .meta { color: var(--muted); font-size: 0.9rem; margin: 0 0 1.75rem; }
+    a { color: var(--accent); }
+    ul { padding-left: 1.25rem; }
+    li { margin: 0.4rem 0; }
+    code {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.1em 0.35em;
+      font-size: 0.88em;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <img src="logo.svg" width="48" height="48" alt="Sitecar Logo">
+      <h1>Privacy Policy – Sitecar for Papra</h1>
+    </header>
+    <p class="meta">Last updated: 2026-07-22 · <a href="privacy.de.html">Deutsche Fassung</a></p>
+
+    <p>
+      Sitecar is an unofficial, standalone companion app for self-hosted
+      <a href="https://github.com/papra-hq/papra">Papra</a> instances. Sitecar
+      is developed by an individual and is not affiliated with papra-hq.
+    </p>
+
+    <h2>What data is processed?</h2>
+    <ul>
+      <li>
+        <strong>Server URL and API key</strong> of your Papra instance: stored
+        exclusively locally on your device, encrypted via
+        <code>EncryptedSharedPreferences</code> (AES-256, Android Keystore).
+        They only leave the device as part of the direct HTTPS/HTTP requests to
+        the Papra server address you provide. The API key field on the settings
+        screen is additionally masked as a password field. The app never writes
+        the server URL or API key to logs
+        (<code>android:allowBackup="false"</code> additionally ensures the
+        encrypted settings cannot leave the device via Android backups).
+      </li>
+      <li>
+        <strong>Scanned documents</strong>: cached on the device (app cache)
+        and uploaded solely to the Papra instance you configured. The app
+        developer has no access to these contents.
+      </li>
+      <li>
+        <strong>On-device processing</strong>: edge detection/perspective
+        correction (ML Kit Document Scanner), optional text recognition (ML Kit
+        Text Recognition) and PDF creation run entirely locally on the device.
+        No image or text data is transmitted to Google or third parties.
+      </li>
+    </ul>
+
+    <h2>What is NOT collected?</h2>
+    <ul>
+      <li>No analytics, no tracking, no ads.</li>
+      <li>No transmission of usage data to the app developer.</li>
+      <li>No sharing of data with third parties by the app itself.</li>
+    </ul>
+
+    <h2>Permissions</h2>
+    <ul>
+      <li><strong>Internet</strong>: for communication with your Papra instance.</li>
+      <li>
+        <strong>Camera</strong>: not requested directly by Sitecar — the ML Kit
+        scanner runs as a separate Google Play Services activity and requests
+        the camera permission itself.
+      </li>
+    </ul>
+
+    <h2>Responsibility for the Papra server</h2>
+    <p>
+      Sitecar only sends data to the Papra instance you configured yourself. The
+      operator of that instance — usually you — is responsible for handling this
+      data on the server (storage, any server-side OCR processing, backups, etc.).
+    </p>
+
+    <h2>Contact</h2>
+    <p>
+      Questions about this privacy policy or the app: via the issues of the
+      GitHub repository.
+    </p>
+  </main>
+</body>
+</html>
