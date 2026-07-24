@@ -163,7 +163,7 @@ fun UploadScreen(
         client.listOrganizations()
             .onSuccess {
                 orgs = it
-                selectedOrg = it.firstOrNull()
+                selectedOrg = it.firstOrNull { org -> org.id == store.defaultOrgId } ?: it.firstOrNull()
             }
             .onFailure { errorMessage = friendlyErrorMessage(it, apiErrorMessages) }
         orgsLoading = false
@@ -380,6 +380,7 @@ fun UploadScreen(
                             text = { Text(org.name) },
                             onClick = {
                                 selectedOrg = org
+                                store.defaultOrgId = org.id
                                 dropdownOpen = false
                             },
                         )

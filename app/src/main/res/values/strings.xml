@@ -2,7 +2,9 @@
 <resources>
     <string name="app_name">Sitecar</string>
 
-    <string name="settings_title">Connection</string>
+    <string name="settings_title">Settings</string>
+    <string name="settings_active_org_title">Active organization</string>
+    <string name="settings_active_org_subtitle">Used as the default organization across Sitecar (scanning, documents, tags, trash).</string>
     <string name="settings_theme_title">Appearance</string>
     <string name="settings_theme_light">Light</string>
     <string name="settings_theme_dark">Dark</string>
