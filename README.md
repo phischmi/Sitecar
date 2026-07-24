@@ -95,6 +95,13 @@ Key beginnt mit `ppapi_`.
   ohne Unterstützung bleibt der Schalter inaktiv. Modell-Download ist geräteweit
   und einmalig.
 
+## Datenschutz
+
+Die App erhebt keine Daten für den Entwickler oder Dritte. Details in
+[`PRIVACY.md`](./PRIVACY.md); dieselbe Erklärung liegt als Webseite unter
+[`docs/privacy.html`](./docs/privacy.html) und lässt sich per GitHub Pages
+(Settings → Pages → Source: `main` / `/docs`) öffentlich veröffentlichen.
+
 ## Lizenz
 
 Sitecar-Code: **MIT** – siehe [`LICENSE`](./LICENSE).
