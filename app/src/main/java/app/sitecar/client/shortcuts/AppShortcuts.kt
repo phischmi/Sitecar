@@ -8,10 +8,7 @@ import androidx.core.graphics.drawable.IconCompat
 import app.sitecar.client.MainActivity
 import app.sitecar.client.R
 
-/**
- * Dynamischer Long-Press-Shortcut "Scannen starten", für alle Nutzer verfügbar.
- * Braucht keine Manifest-Deklaration (nur statische Shortcuts bräuchten das).
- */
+/** Dynamischer Long-Press-Shortcut "Scannen starten". */
 object AppShortcuts {
     private const val SHORTCUT_ID_SCAN = "quick_scan"
 

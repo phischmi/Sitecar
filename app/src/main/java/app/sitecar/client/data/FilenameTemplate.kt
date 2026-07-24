@@ -6,9 +6,8 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 /**
- * Rendert das (für Supporter anpassbare) Dateinamen-Format. Platzhalter:
- * {date}, {time}, {org}, {sender}, {counter}. Der Default reproduziert exakt
- * das bisherige feste Format "Scan-yyyyMMdd-HHmmss".
+ * Rendert das anpassbare Dateinamen-Format. Platzhalter: {date}, {time},
+ * {org}, {sender}, {counter}.
  */
 object FilenameTemplate {
     const val DEFAULT = "Scan-{date}-{time}"

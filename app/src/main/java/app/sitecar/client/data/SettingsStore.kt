@@ -12,12 +12,6 @@ enum class ThemeMode {
     LIGHT, DARK, SYSTEM
 }
 
-/**
- * INDIGO ist der kostenlose Standard, die übrigen sind Unterstützer-Akzente.
- * PAPRA reproduziert bewusst Papras eigenes Original-Farbschema (Orange im
- * Hellmodus, Neon-Lime/-Gelb im Dunkelmodus) statt der von INDIGO bewusst
- * gewählten Abkehr davon (siehe Theme.kt).
- */
 enum class AccentColor {
     INDIGO, EMERALD, AMBER, ROSE, PAPRA
 }
@@ -58,36 +52,26 @@ class SettingsStore(context: Context) {
         get() = prefs.getBoolean(KEY_ON_DEVICE_OCR, true)
         set(value) = prefs.edit().putBoolean(KEY_ON_DEVICE_OCR, value).apply()
 
-    /** Tag-/Datums-/Fristen-Vorschläge aus dem OCR-Text beim Hochladen (regelbasiert, on-device). */
     var smartInsightsEnabled: Boolean
         get() = prefs.getBoolean(KEY_SMART_INSIGHTS, true)
         set(value) = prefs.edit().putBoolean(KEY_SMART_INSIGHTS, value).apply()
 
-    /**
-     * Ergänzt die regelbasierten Vorschläge um on-device KI (Gemini Nano via Android
-     * AICore / ML Kit GenAI Prompt API). Standardmäßig aus, da ein einmaliger,
-     * geräteweiter Modell-Download nötig ist und nicht jedes Gerät Gemini Nano unterstützt.
-     */
+    // Ergänzt die regelbasierten Vorschläge um on-device KI (Gemini Nano). Aus,
+    // da ein einmaliger geräteweiter Modell-Download nötig ist und nicht jedes
+    // Gerät Gemini Nano unterstützt.
     var onDeviceAiEnabled: Boolean
         get() = prefs.getBoolean(KEY_ON_DEVICE_AI, false)
         set(value) = prefs.edit().putBoolean(KEY_ON_DEVICE_AI, value).apply()
 
-    /**
-     * Opt-in: Sitecar als Ziel im Android-Share-Sheet anderer Apps anbieten
-     * ("Teilen an Sitecar"). Standard `false` — die Sichtbarkeit im
-     * Share-Sheet ist ein sichtbarer Zustand für andere Apps, daher bewusst
-     * nicht automatisch aktiv (siehe ShareReceiver.setEnabled).
-     */
+    // Opt-in: Sitecar als Ziel im Android-Share-Sheet anderer Apps anbieten.
     var shareIntentEnabled: Boolean
         get() = prefs.getBoolean(KEY_SHARE_INTENT, false)
         set(value) = prefs.edit().putBoolean(KEY_SHARE_INTENT, value).apply()
 
-    /** Lebenszeit-Zähler erfolgreicher Uploads, steuert den Spenden-Hinweis. */
     var uploadCount: Int
         get() = prefs.getInt(KEY_UPLOAD_COUNT, 0)
         set(value) = prefs.edit().putInt(KEY_UPLOAD_COUNT, value).apply()
 
-    /** True, sobald die einmalige Unterstützer-Freischaltung gekauft wurde. */
     var isSupporter: Boolean
         get() = prefs.getBoolean(KEY_IS_SUPPORTER, false)
         set(value) = prefs.edit().putBoolean(KEY_IS_SUPPORTER, value).apply()
@@ -104,22 +88,20 @@ class SettingsStore(context: Context) {
             ?: AccentColor.INDIGO
         set(value) = prefs.edit().putString(KEY_ACCENT_COLOR, value.name).apply()
 
-    /** Wischgeste von links nach rechts (Finger nach rechts) in der Dokumentenliste. */
+    /** Wischgeste von links nach rechts in der Dokumentenliste. */
     var swipeStartToEndAction: SwipeAction
         get() = SwipeAction.entries.firstOrNull { it.name == prefs.getString(KEY_SWIPE_START_TO_END, null) }
             ?: SwipeAction.EDIT_TAGS
         set(value) = prefs.edit().putString(KEY_SWIPE_START_TO_END, value.name).apply()
 
-    /** Wischgeste von rechts nach links (Finger nach links) in der Dokumentenliste. */
+    /** Wischgeste von rechts nach links in der Dokumentenliste. */
     var swipeEndToStartAction: SwipeAction
         get() = SwipeAction.entries.firstOrNull { it.name == prefs.getString(KEY_SWIPE_END_TO_START, null) }
             ?: SwipeAction.DELETE
         set(value) = prefs.edit().putString(KEY_SWIPE_END_TO_START, value.name).apply()
 
-    /**
-     * Flow, der bei jeder Änderung von [watchedKey] (oder bei jeder beliebigen
-     * Änderung, falls `null`) den aktuellen Wert per [read] neu ausliest.
-     */
+    // Liest den Wert per [read] neu aus, sobald sich [watchedKey] ändert (oder
+    // bei beliebiger Änderung, falls null).
     private fun <T> prefFlow(watchedKey: String?, read: () -> T): Flow<T> = callbackFlow {
         val send = { trySend(read()) }
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
