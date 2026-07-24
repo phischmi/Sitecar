@@ -2,7 +2,7 @@
   <img src="docs/logo.svg" width="96" height="96" alt="Sitecar Logo">
 </p>
 
-# Sitecar for Papra
+# Sitecar (for Papra)
 
 Schlanke native Android-App zum Aufnehmen und Hochladen von Dokumenten an eine
 selbst gehostete [Papra](https://github.com/papra-hq/papra)-Instanz — ein
@@ -12,7 +12,7 @@ eigenständiger Begleiter ("Sidecar") für Papra, vormals PapraCam.
 - Anbindung via API-Key (kein OAuth/Login)
 - Kotlin + Jetpack Compose, ML Kit Document Scanner, Ktor
 
-"Sitecar for Papra" ist der volle Name (z. B. für den Play-Store-Eintrag);
+"Sitecar (for Papra)" ist der volle Name (z. B. für den Play-Store-Eintrag);
 auf dem Gerät selbst (Launcher-Icon, Kürzel, App-Info) bleibt es bewusst
 kurz **Sitecar** — `R.string.app_name`/`android:label` sind unverändert
 "Sitecar". Der volle Store-Titel wird in der Play Console gepflegt (Store-
@@ -122,7 +122,7 @@ Eintrag → App-Name), nicht im Code.
 ## Bezahlfunktion (vorerst deaktiviert)
 
 Die freiwillige Unterstützer-Bezahlfunktion ist über den zentralen Schalter
-`Features.SUPPORTER_ENABLED` (in `app/src/main/java/app/sitecar/uploader/Features.kt`)
+`Features.SUPPORTER_ENABLED` (in `app/src/main/java/app/sitecar/client/Features.kt`)
 **abgeschaltet** (`false`). Akzentfarben-Auswahl und Unterstützer-Bereich in
 den Einstellungen sind davon unabhängig über `Features.SUPPORTER_PREVIEW_ENABLED`
 (aktuell `true`) zum Testen/Vorschauen freigeschaltet: alle fünf Farben sind
@@ -199,7 +199,7 @@ So lässt sich eine lokal gebaute Debug-APK jederzeit über eine per Action
 gebaute installieren (und umgekehrt), ohne
 `INSTALL_FAILED_UPDATE_INCOMPATIBLE`. Kam eine ältere Debug-APK vor dieser
 Änderung mit einem anderen (automatisch generierten) Debug-Key auf das
-Gerät, hilft einmalig `adb uninstall app.sitecar.uploader.debug` vor der
+Gerät, hilft einmalig `adb uninstall app.sitecar.client.debug` vor der
 nächsten Installation.
 
 ### Debug-APK per GitHub Action
@@ -278,9 +278,13 @@ Ohne `keystore.properties` bauen `assembleRelease`/`bundleRelease` weiterhin,
 nur unsigniert.
 
 ### Vor der Veröffentlichung offen
-- **Datenschutzerklärung**: Entwurf liegt in [`PRIVACY.md`](./PRIVACY.md),
-  muss noch unter einer öffentlichen URL gehostet werden (z. B. GitHub Pages
-  oder die gerenderte GitHub-Blob-Ansicht) und in der Play Console verlinkt
+- **Datenschutzerklärung**: Inhalt liegt in [`PRIVACY.md`](./PRIVACY.md) sowie
+  als eigenständige HTML-Seite im separaten, öffentlichen Repo
+  [`phischmi/sitecar-privacy`](https://github.com/phischmi/sitecar-privacy)
+  (getrennt vom privaten App-Repo, da GitHub Pages aus privaten Repos ohne
+  GitHub Pro nicht öffentlich veröffentlicht werden kann). Sobald dort unter
+  Settings → Pages die Veröffentlichung aktiviert ist (Source: `main` /
+  `/ (root)`), muss die resultierende URL noch in der Play Console verlinkt
   werden.
 - **Data-Safety-Formular**: Die App erhebt/übermittelt keine Daten an den
   Entwickler oder Dritte (siehe `PRIVACY.md`) — im Formular entsprechend
@@ -302,8 +306,11 @@ nur unsigniert.
   Kauf-Button bleibt wirkungslos (`launchPurchaseFlow` bricht früh ab).
   Erst ab dem ersten Internal-Testing-Release testbar (Play Billing
   funktioniert nicht mit reinen Debug-Builds ohne Play-Console-Release-Track).
-- **Store-Assets**: Screenshots, Feature-Grafik, kurze/lange Beschreibung
-  fehlen noch.
+- **Store-Assets**: Hi-Res-Icon (512×512, 32-Bit-PNG mit Alpha-Kanal) liegt
+  als [`docs/play-icon-512.png`](./docs/play-icon-512.png) bereit
+  (Quelle: [`docs/play-icon-512.svg`](./docs/play-icon-512.svg) — volles
+  quadratisches Bleed ohne eigene Formmaskierung, da Play Store das Icon
+  je nach Gerät selbst maskiert). Screenshots und Feature-Grafik fehlen noch.
 - **Versionierung**: `versionCode`/`versionName` vor dem ersten Upload final
   festlegen (aktuell `1` / `0.1.0`).
 

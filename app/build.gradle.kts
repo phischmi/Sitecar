@@ -18,11 +18,11 @@ val keystoreProperties = Properties().apply {
 }
 
 android {
-    namespace = "app.sitecar.uploader"
+    namespace = "app.sitecar.client"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "app.sitecar.uploader"
+        applicationId = "app.sitecar.client"
         minSdk = 26
         targetSdk = 35
         versionCode = 1

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Sitecar Play-Store-Hi-Res-Icon (512x512), Indigo-Variante.
+     Volles quadratisches Bleed ohne eigene Maskierung (Play Store maskiert
+     selbst) — entspricht ic_launcher_background.xml / ic_launcher_foreground.xml,
+     ohne den Circle-Clip aus docs/logo.svg (der ist nur für die runde
+     Launcher-Icon-Variante bzw. README-Darstellung gedacht). -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108" width="512" height="512">
+  <defs>
+    <linearGradient id="doc" x1="39" y1="36" x2="69" y2="72" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#DCE1FB"/>
+    </linearGradient>
+    <linearGradient id="fold" x1="59" y1="36" x2="69" y2="46" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#F1F3FE"/>
+      <stop offset="100%" stop-color="#9BA8EE"/>
+    </linearGradient>
+  </defs>
+  <rect width="108" height="108" fill="#0369A1"/>
+  <g transform="translate(10.8 10.8) scale(0.8) rotate(8 54 54)">
+    <g transform="translate(3 4)" fill="#000000" fill-opacity="0.4">
+      <path d="M27,27 L43,27 L43,30 L30,30 L30,43 L27,43 Z
+               M81,27 L65,27 L65,30 L78,30 L78,43 L81,43 Z
+               M27,81 L43,81 L43,78 L30,78 L30,65 L27,65 Z
+               M81,81 L65,81 L65,78 L78,78 L78,65 L81,65 Z"/>
+    </g>
+    <path fill="#FFFFFF" d="M27,27 L43,27 L43,30 L30,30 L30,43 L27,43 Z
+             M81,27 L65,27 L65,30 L78,30 L78,43 L81,43 Z
+             M27,81 L43,81 L43,78 L30,78 L30,65 L27,65 Z
+             M81,81 L65,81 L65,78 L78,78 L78,65 L81,65 Z"/>
+    <path fill="#000000" fill-opacity="0.4"
+          d="M46,40 L62,40 L72,50 L72,72 A4,4 0 0 1 68,76 L46,76 A4,4 0 0 1 42,72 L42,44 A4,4 0 0 1 46,40 Z"/>
+    <path fill="url(#doc)"
+          d="M43,36 L59,36 L69,46 L69,68 A4,4 0 0 1 65,72 L43,72 A4,4 0 0 1 39,68 L39,40 A4,4 0 0 1 43,36 Z"/>
+    <path fill="url(#fold)" d="M59,36 L69,36 L69,46 Z"/>
+    <path fill="#AEB9F2" d="M45,53 h18 a2,2 0 0 1 0,4 h-18 a2,2 0 0 1 0,-4 Z"/>
+    <path fill="#AEB9F2" d="M45,62 h18 a2,2 0 0 1 0,4 h-18 a2,2 0 0 1 0,-4 Z"/>
+  </g>
+</svg>
