@@ -30,6 +30,7 @@
     <string name="settings_on_device_ai_subtitle">Improves smart suggestions using Gemini Nano via Android AICore — fully on-device, no data leaves the phone. Requires a compatible device and a one-time model download; falls back to the rule-based suggestions above if unavailable.</string>
     <string name="settings_on_device_ai_unavailable">This device does not support Gemini Nano. Smart suggestions keep using the rule-based analysis.</string>
     <string name="settings_on_device_ai_download_failed">Model download failed. Please check your connection and try again.</string>
+    <string name="settings_smart_insights_ocr_note">For scans without a text layer, both also require on-device text recognition (OCR, see above) to be turned on.</string>
 
     <string name="settings_filename_template_title">Filename format</string>
     <string name="settings_filename_template_hint">Scan-{date}-{time} — placeholders: {date} {time} {org} {sender} {counter}</string>

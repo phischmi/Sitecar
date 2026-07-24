@@ -20,6 +20,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.AlertDialog
@@ -30,11 +31,13 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
@@ -220,100 +223,127 @@ fun SettingsScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            Text(
-                text = stringResource(R.string.settings_smart_insights_title),
-                style = MaterialTheme.typography.labelLarge,
-            )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(
-                    text = stringResource(R.string.settings_smart_insights_subtitle),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.weight(1f),
-                )
-                Spacer(Modifier.width(12.dp))
-                Switch(
-                    checked = smartInsightsEnabled,
-                    onCheckedChange = {
-                        smartInsightsEnabled = it
-                        store.smartInsightsEnabled = it
-                    },
-                )
-            }
+            // Smart Suggestions und On-Device-KI sind visuell in einer Karte gruppiert,
+            // weil die KI-Ergänzung nur zusammen mit den regelbasierten Vorschlägen läuft
+            // (siehe HybridInsightsEngine) und ohne diese keinen Sinn ergibt.
+            OutlinedCard(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Text(
+                        text = stringResource(R.string.settings_smart_insights_title),
+                        style = MaterialTheme.typography.labelLarge,
+                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.settings_smart_insights_subtitle),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.weight(1f),
+                        )
+                        Spacer(Modifier.width(12.dp))
+                        Switch(
+                            checked = smartInsightsEnabled,
+                            onCheckedChange = {
+                                smartInsightsEnabled = it
+                                store.smartInsightsEnabled = it
+                            },
+                        )
+                    }
 
-            Spacer(Modifier.height(16.dp))
+                    HorizontalDivider()
 
-            Text(
-                text = stringResource(R.string.settings_on_device_ai_title),
-                style = MaterialTheme.typography.labelLarge,
-            )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(
-                    text = stringResource(R.string.settings_on_device_ai_subtitle),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.weight(1f),
-                )
-                Spacer(Modifier.width(12.dp))
-                if (onDeviceAiDownloading) {
-                    CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(24.dp))
-                } else {
-                    Switch(
-                        checked = onDeviceAiEnabled,
-                        enabled = smartInsightsEnabled,
-                        onCheckedChange = { checked ->
-                            if (!checked) {
-                                onDeviceAiEnabled = false
-                                store.onDeviceAiEnabled = false
-                                onDeviceAiError = null
-                            } else {
-                                onDeviceAiError = null
-                                scope.launch {
-                                    val status = runCatching { GenAiInsightsEngine.checkStatus() }.getOrNull()
-                                    when (status) {
-                                        FeatureStatus.AVAILABLE -> {
-                                            onDeviceAiEnabled = true
-                                            store.onDeviceAiEnabled = true
-                                        }
-                                        FeatureStatus.DOWNLOADABLE, FeatureStatus.DOWNLOADING -> {
-                                            onDeviceAiDownloading = true
-                                            val failed = runCatching {
-                                                var hasFailed = false
-                                                GenAiInsightsEngine.download().collect { downloadStatus ->
-                                                    if (downloadStatus is DownloadStatus.DownloadFailed) {
-                                                        hasFailed = true
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.settings_on_device_ai_title),
+                            style = MaterialTheme.typography.labelLarge,
+                        )
+                        Icon(
+                            imageVector = Icons.Default.AutoAwesome,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(16.dp),
+                        )
+                    }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.settings_on_device_ai_subtitle),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.weight(1f),
+                        )
+                        Spacer(Modifier.width(12.dp))
+                        if (onDeviceAiDownloading) {
+                            CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(24.dp))
+                        } else {
+                            Switch(
+                                checked = onDeviceAiEnabled,
+                                enabled = smartInsightsEnabled,
+                                onCheckedChange = { checked ->
+                                    if (!checked) {
+                                        onDeviceAiEnabled = false
+                                        store.onDeviceAiEnabled = false
+                                        onDeviceAiError = null
+                                    } else {
+                                        onDeviceAiError = null
+                                        scope.launch {
+                                            val status = runCatching { GenAiInsightsEngine.checkStatus() }.getOrNull()
+                                            when (status) {
+                                                FeatureStatus.AVAILABLE -> {
+                                                    onDeviceAiEnabled = true
+                                                    store.onDeviceAiEnabled = true
+                                                }
+                                                FeatureStatus.DOWNLOADABLE, FeatureStatus.DOWNLOADING -> {
+                                                    onDeviceAiDownloading = true
+                                                    val failed = runCatching {
+                                                        var hasFailed = false
+                                                        GenAiInsightsEngine.download().collect { downloadStatus ->
+                                                            if (downloadStatus is DownloadStatus.DownloadFailed) {
+                                                                hasFailed = true
+                                                            }
+                                                        }
+                                                        hasFailed
+                                                    }.getOrDefault(true)
+                                                    onDeviceAiDownloading = false
+                                                    if (failed) {
+                                                        onDeviceAiError = onDeviceAiDownloadFailedMessage
+                                                    } else {
+                                                        onDeviceAiEnabled = true
+                                                        store.onDeviceAiEnabled = true
                                                     }
                                                 }
-                                                hasFailed
-                                            }.getOrDefault(true)
-                                            onDeviceAiDownloading = false
-                                            if (failed) {
-                                                onDeviceAiError = onDeviceAiDownloadFailedMessage
-                                            } else {
-                                                onDeviceAiEnabled = true
-                                                store.onDeviceAiEnabled = true
+                                                else -> onDeviceAiError = onDeviceAiUnavailableMessage
                                             }
                                         }
-                                        else -> onDeviceAiError = onDeviceAiUnavailableMessage
                                     }
-                                }
-                            }
-                        },
+                                },
+                            )
+                        }
+                    }
+                    onDeviceAiError?.let {
+                        Text(
+                            text = it,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
+
+                    Text(
+                        text = stringResource(R.string.settings_smart_insights_ocr_note),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-            }
-            onDeviceAiError?.let {
-                Text(
-                    text = it,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.error,
-                )
             }
 
             Spacer(Modifier.height(16.dp))
