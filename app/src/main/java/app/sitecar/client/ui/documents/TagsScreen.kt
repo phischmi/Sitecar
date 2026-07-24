@@ -33,13 +33,10 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -86,7 +83,6 @@ fun TagsScreen(
 
     var orgs by remember { mutableStateOf<List<Organization>>(emptyList()) }
     var selectedOrg by remember { mutableStateOf<Organization?>(null) }
-    var dropdownOpen by remember { mutableStateOf(false) }
 
     var tags by remember { mutableStateOf<List<TagDto>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
@@ -205,6 +201,14 @@ fun TagsScreen(
                     IconButton(onClick = { createDialogOpen = true }) {
                         Icon(Icons.Default.Add, contentDescription = stringResource(R.string.tags_create))
                     }
+                    OrgSwitcherAction(
+                        orgs = orgs,
+                        selectedOrg = selectedOrg,
+                        onSelect = { org ->
+                            selectedOrg = org
+                            store.defaultOrgId = org.id
+                        },
+                    )
                     IconButton(onClick = onOpenSettings) {
                         Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.nav_settings))
                     }
@@ -214,40 +218,6 @@ fun TagsScreen(
         bottomBar = bottomBar,
     ) { inner ->
         Column(modifier = Modifier.fillMaxSize().padding(inner)) {
-            if (orgs.size > 1) {
-                ExposedDropdownMenuBox(
-                    expanded = dropdownOpen,
-                    onExpandedChange = { dropdownOpen = !dropdownOpen },
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
-                ) {
-                    OutlinedTextField(
-                        value = selectedOrg?.name.orEmpty(),
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text(stringResource(R.string.documents_org)) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor(MenuAnchorType.PrimaryNotEditable),
-                        colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
-                    )
-                    DropdownMenu(
-                        expanded = dropdownOpen,
-                        onDismissRequest = { dropdownOpen = false },
-                    ) {
-                        orgs.forEach { org ->
-                            DropdownMenuItem(
-                                text = { Text(org.name) },
-                                onClick = {
-                                    selectedOrg = org
-                                    store.defaultOrgId = org.id
-                                    dropdownOpen = false
-                                },
-                            )
-                        }
-                    }
-                }
-            }
-
             PullToRefreshBox(
                 isRefreshing = loading,
                 onRefresh = {
