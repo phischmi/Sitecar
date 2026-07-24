@@ -122,7 +122,7 @@ Eintrag → App-Name), nicht im Code.
 ## Bezahlfunktion (vorerst deaktiviert)
 
 Die freiwillige Unterstützer-Bezahlfunktion ist über den zentralen Schalter
-`Features.SUPPORTER_ENABLED` (in `app/src/main/java/app/sitecar/uploader/Features.kt`)
+`Features.SUPPORTER_ENABLED` (in `app/src/main/java/app/sitecar/client/Features.kt`)
 **abgeschaltet** (`false`). Akzentfarben-Auswahl und Unterstützer-Bereich in
 den Einstellungen sind davon unabhängig über `Features.SUPPORTER_PREVIEW_ENABLED`
 (aktuell `true`) zum Testen/Vorschauen freigeschaltet: alle fünf Farben sind
@@ -199,7 +199,7 @@ So lässt sich eine lokal gebaute Debug-APK jederzeit über eine per Action
 gebaute installieren (und umgekehrt), ohne
 `INSTALL_FAILED_UPDATE_INCOMPATIBLE`. Kam eine ältere Debug-APK vor dieser
 Änderung mit einem anderen (automatisch generierten) Debug-Key auf das
-Gerät, hilft einmalig `adb uninstall app.sitecar.uploader.debug` vor der
+Gerät, hilft einmalig `adb uninstall app.sitecar.client.debug` vor der
 nächsten Installation.
 
 ### Debug-APK per GitHub Action
