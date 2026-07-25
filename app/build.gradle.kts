@@ -19,14 +19,14 @@ val keystoreProperties = Properties().apply {
 
 android {
     namespace = "app.sitecar.client"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "app.sitecar.client"
         minSdk = 26
-        targetSdk = 35
-        versionCode = 2
-        versionName = "0.1.1"
+        targetSdk = 36
+        versionCode = 3
+        versionName = "0.1.2"
 
         // Beschränkt gepackte String-Ressourcen auf unterstützte Sprachen (sonst
         // landen z. B. Play-Billing-/ML-Kit-Übersetzungen für Dutzende weitere
