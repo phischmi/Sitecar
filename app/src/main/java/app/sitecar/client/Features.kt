@@ -6,5 +6,7 @@ object Features {
 
     // Zeigt die sonst an SUPPORTER_ENABLED gebundenen UI-Teile ohne echten Kauf
     // an (Akzentfarben-Auswahl, Unterstützer-Bereich als freigeschaltetes Badge).
-    const val SUPPORTER_PREVIEW_ENABLED = true
+    // Aus für den geschlossenen Test: Tester sollen nur das Standard-Theme
+    // sehen, ohne Unterstützer-UI.
+    const val SUPPORTER_PREVIEW_ENABLED = false
 }
