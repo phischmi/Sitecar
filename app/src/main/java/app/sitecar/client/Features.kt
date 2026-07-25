@@ -33,5 +33,5 @@ object Features {
      * wieder die echte Unterstützer-Sperre und der echte Kauf-Flow — dieses
      * Flag wird dann für beide Stellen automatisch wirkungslos.
      */
-    const val SUPPORTER_PREVIEW_ENABLED = true
+    const val SUPPORTER_PREVIEW_ENABLED = false
 }
