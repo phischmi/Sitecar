@@ -63,13 +63,6 @@ gradle wrapper
 ./gradlew installDebug   # auf verbundenes Gerät installieren
 ```
 
-Debug-Builds werden mit dem eingecheckten `debug.keystore` signiert (Androids
-öffentlich bekannter Standard-Debug-Key), sodass lokal und per GitHub Action
-gebaute Debug-APKs untereinander installierbar bleiben.
-
-Über **Actions → Build APK → Run workflow** lässt sich ein Build des jeweiligen
-Branches anstoßen; die APK steht danach als Artifact zum Download bereit.
-
 ## API-Key in Papra anlegen
 
 Im Papra-Web-UI unter **Settings → API Keys** einen Key mit der Berechtigung
