@@ -17,7 +17,7 @@ import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
-import io.ktor.client.statement.readBytes
+import io.ktor.client.statement.readRawBytes
 import io.ktor.http.ContentType
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
@@ -166,7 +166,7 @@ class SitecarApiClient(private val store: SettingsStore) {
             authHeaders(acceptJson = false)
         }
         res.ensureSuccess()
-        res.readBytes()
+        res.readRawBytes()
     }
 
     /** Papra löscht weich (Papierkorb) — die Instanz behält das Dokument dort für eine gewisse Zeit. */

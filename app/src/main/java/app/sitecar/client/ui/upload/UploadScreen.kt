@@ -20,9 +20,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.filled.InsertDriveFile
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
@@ -315,7 +315,7 @@ fun UploadScreen(
                     )
                 } else if (isReadyDocument) {
                     Icon(
-                        imageVector = Icons.Default.InsertDriveFile,
+                        imageVector = Icons.AutoMirrored.Filled.InsertDriveFile,
                         contentDescription = null,
                         modifier = Modifier.height(64.dp),
                     )

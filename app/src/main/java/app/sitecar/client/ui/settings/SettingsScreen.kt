@@ -20,8 +20,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -356,7 +356,7 @@ fun SettingsScreen(
                 )
                 IconButton(onClick = { showFilenameHelp = true }, modifier = Modifier.size(28.dp)) {
                     Icon(
-                        Icons.Default.HelpOutline,
+                        Icons.AutoMirrored.Filled.HelpOutline,
                         contentDescription = stringResource(R.string.settings_filename_template_help),
                         modifier = Modifier.size(18.dp),
                     )

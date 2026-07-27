@@ -26,6 +26,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
@@ -35,7 +36,6 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Sell
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
@@ -373,7 +373,7 @@ fun DocumentsScreen(
                     actions = {
                         Box {
                             IconButton(onClick = { sortMenuOpen = true }) {
-                                Icon(Icons.Default.Sort, contentDescription = stringResource(R.string.documents_sort))
+                                Icon(Icons.AutoMirrored.Filled.Sort, contentDescription = stringResource(R.string.documents_sort))
                             }
                             DropdownMenu(
                                 expanded = sortMenuOpen,

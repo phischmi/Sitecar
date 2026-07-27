@@ -1,8 +1,8 @@
 import java.util.Properties
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
 }
@@ -27,13 +27,15 @@ android {
         targetSdk = 36
         versionCode = 3
         versionName = "0.1.2"
+    }
 
+    androidResources {
         // Beschränkt gepackte String-Ressourcen auf unterstützte Sprachen (sonst
         // landen z. B. Play-Billing-/ML-Kit-Übersetzungen für Dutzende weitere
         // Sprachen ungenutzt in der APK). Beim Hinzufügen einer neuen Sprache
         // (values-<code>/strings.xml) hier den Code ergänzen, siehe
         // res/xml/locales_config.xml.
-        resourceConfigurations += listOf("en", "de")
+        localeFilters += listOf("en", "de")
     }
 
     signingConfigs {
@@ -70,10 +72,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-
     buildFeatures {
         compose = true
     }
@@ -82,6 +80,12 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_17
     }
 }
 

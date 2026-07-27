@@ -13,3 +13,6 @@ captures/
 *.keystore
 *.jks
 keystore.properties
+
+# JVM-Heap-Dumps (z. B. bei OOM des Gradle-Daemons)
+*.hprof
