@@ -35,5 +35,5 @@ object PerceptualHash {
         return hash
     }
 
-    fun hammingDistance(a: Long, b: Long): Int = java.lang.Long.bitCount(a xor b)
+    fun hammingDistance(a: Long, b: Long): Int = (a xor b).countOneBits()
 }

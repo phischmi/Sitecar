@@ -2,10 +2,10 @@ package app.sitecar.client
 
 import android.app.Application
 import app.sitecar.client.data.BillingManager
-import app.sitecar.client.data.PendingUpload
-import app.sitecar.client.data.SitecarApiClient
 import app.sitecar.client.data.PdfBuilder
+import app.sitecar.client.data.PendingUpload
 import app.sitecar.client.data.SettingsStore
+import app.sitecar.client.data.SitecarApiClient
 import app.sitecar.client.data.duplicates.RecentUploadsStore
 import app.sitecar.client.icon.LauncherIcon
 import app.sitecar.client.share.ShareReceiver
@@ -44,9 +44,8 @@ class SitecarApp : Application() {
         pdfBuilder = PdfBuilder(applicationContext)
         recentUploadsStore = RecentUploadsStore(applicationContext)
         billingManager = BillingManager(applicationContext, settingsStore)
-        if (Features.SUPPORTER_ENABLED) {
-            billingManager.startConnection()
-        }
+        // Prüft selbst Features.SUPPORTER_ENABLED und tut sonst nichts.
+        billingManager.startConnection()
         AppShortcuts.register(applicationContext)
         LauncherIcon.apply(applicationContext, settingsStore.accentColor)
         ShareReceiver.setEnabled(applicationContext, settingsStore.shareIntentEnabled)

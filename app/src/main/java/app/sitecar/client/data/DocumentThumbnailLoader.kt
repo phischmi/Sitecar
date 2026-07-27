@@ -2,9 +2,6 @@ package app.sitecar.client.data
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Color
-import android.graphics.pdf.PdfRenderer
-import android.os.ParcelFileDescriptor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -32,7 +29,7 @@ class DocumentThumbnailLoader(
         val bitmap = if (mime.startsWith("image/")) {
             decodeSampledBitmap(bytes)
         } else {
-            renderPdfFirstPage(bytes)
+            renderPdfThumbnail(bytes)
         } ?: return@withContext null
 
         runCatching {
@@ -53,25 +50,13 @@ class DocumentThumbnailLoader(
         return BitmapFactory.decodeByteArray(bytes, 0, bytes.size, opts)
     }
 
-    private fun renderPdfFirstPage(bytes: ByteArray): Bitmap? {
+    /** PdfRenderer braucht einen Dateideskriptor, die API liefert aber nur Bytes. */
+    private fun renderPdfThumbnail(bytes: ByteArray): Bitmap? {
         cacheDir.mkdirs()
         val tmpFile = File.createTempFile("thumb", ".pdf", cacheDir)
         return try {
             tmpFile.writeBytes(bytes)
-            ParcelFileDescriptor.open(tmpFile, ParcelFileDescriptor.MODE_READ_ONLY).use { pfd ->
-                PdfRenderer(pfd).use { renderer ->
-                    if (renderer.pageCount == 0) return null
-                    renderer.openPage(0).use { page ->
-                        val scale = THUMBNAIL_SIZE.toFloat() / maxOf(page.width, page.height)
-                        val width = (page.width * scale).toInt().coerceAtLeast(1)
-                        val height = (page.height * scale).toInt().coerceAtLeast(1)
-                        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-                        bitmap.eraseColor(Color.WHITE)
-                        page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
-                        bitmap
-                    }
-                }
-            }
+            renderPdfFirstPage(tmpFile, maxSize = THUMBNAIL_SIZE)
         } catch (_: Exception) {
             null
         } finally {

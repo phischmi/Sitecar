@@ -1,5 +1,7 @@
 package app.sitecar.client.ui.upload
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -46,6 +48,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -63,11 +66,13 @@ import app.sitecar.client.data.BillingManager
 import app.sitecar.client.data.FilenameTemplate
 import app.sitecar.client.data.Organization
 import app.sitecar.client.data.PdfTextExtractor
-import app.sitecar.client.data.PendingUpload
-import app.sitecar.client.data.SitecarApiClient
 import app.sitecar.client.data.PdfBuilder
+import app.sitecar.client.data.PendingUpload
 import app.sitecar.client.data.SettingsStore
+import app.sitecar.client.data.SitecarApiClient
 import app.sitecar.client.data.TagDto
+import app.sitecar.client.data.extensionForMimeType
+import app.sitecar.client.data.renderPdfFirstPage
 import app.sitecar.client.data.duplicates.PerceptualHash
 import app.sitecar.client.data.duplicates.RecentUpload
 import app.sitecar.client.data.duplicates.RecentUploadsStore
@@ -84,6 +89,7 @@ import java.io.File
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -121,6 +127,7 @@ fun UploadScreen(
     var uploading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
+    var documentText by remember { mutableStateOf<String?>(null) }
     var insights by remember { mutableStateOf(DocumentInsights.EMPTY) }
     var analyzingInsights by remember { mutableStateOf(false) }
     var orgTags by remember { mutableStateOf<List<TagDto>>(emptyList()) }
@@ -129,18 +136,17 @@ fun UploadScreen(
     var selectedNewTagNames by remember { mutableStateOf<Set<String>>(emptySet()) }
 
     val scope = rememberCoroutineScope()
-    val previewBitmap = remember(pendingUpload) {
-        when (pendingUpload) {
-            is PendingUpload.Images ->
-                runCatching { android.graphics.BitmapFactory.decodeFile(pendingUpload.pages.first().absolutePath) }
-                    .getOrNull()
-            is PendingUpload.ReadyDocument -> when {
-                pendingUpload.mimeType.startsWith("image/") ->
-                    runCatching { android.graphics.BitmapFactory.decodeFile(pendingUpload.file.absolutePath) }
-                        .getOrNull()
-                pendingUpload.mimeType == "application/pdf" ->
-                    runCatching { renderPdfFirstPage(pendingUpload.file) }.getOrNull()
-                else -> null
+    // Dekodieren/Rendern der Vorschau läuft im Hintergrund — bei einem
+    // hochauflösenden Scan blockiert das sonst spürbar den UI-Thread.
+    val previewBitmap by produceState<Bitmap?>(initialValue = null, pendingUpload) {
+        value = withContext(Dispatchers.IO) {
+            when (pendingUpload) {
+                is PendingUpload.Images -> decodeBitmap(pendingUpload.pages.first())
+                is PendingUpload.ReadyDocument -> when {
+                    pendingUpload.mimeType.startsWith("image/") -> decodeBitmap(pendingUpload.file)
+                    pendingUpload.mimeType == "application/pdf" -> renderPdfFirstPage(pendingUpload.file)
+                    else -> null
+                }
             }
         }
     }
@@ -176,20 +182,28 @@ fun UploadScreen(
         }
     }
 
-    LaunchedEffect(documentFile, orgTags) {
+    // Texterkennung bewusst getrennt von der Analyse: die Tag-Liste der Organisation
+    // wird nebenläufig geladen und stößt die Analyse ein zweites Mal an — die teure
+    // OCR darf dabei nicht erneut über alle Seiten laufen.
+    LaunchedEffect(documentFile) {
         val doc = documentFile ?: return@LaunchedEffect
         if (!store.smartInsightsEnabled) return@LaunchedEffect
         analyzingInsights = true
-        try {
-            val text = when (pendingUpload) {
-                is PendingUpload.Images -> if (store.onDeviceOcrEnabled) {
-                    PdfTextExtractor.extractText(doc)
-                } else {
-                    pdfBuilder.recognizeText(pendingUpload.pages)
-                }
-                is PendingUpload.ReadyDocument ->
-                    if (pendingUpload.mimeType == "application/pdf") PdfTextExtractor.extractText(doc) else ""
+        documentText = when (pendingUpload) {
+            is PendingUpload.Images -> if (store.onDeviceOcrEnabled) {
+                PdfTextExtractor.extractText(doc)
+            } else {
+                pdfBuilder.recognizeText(pendingUpload.pages)
             }
+            is PendingUpload.ReadyDocument ->
+                if (pendingUpload.mimeType == "application/pdf") PdfTextExtractor.extractText(doc) else ""
+        }
+    }
+
+    LaunchedEffect(documentText, orgTags) {
+        val text = documentText ?: return@LaunchedEffect
+        analyzingInsights = true
+        try {
             val engine = if (store.onDeviceAiEnabled) HybridInsightsEngine else RuleBasedInsightsEngine
             insights = engine.analyze(text, orgTags.map { it.name })
         } finally {
@@ -291,9 +305,10 @@ fun UploadScreen(
                     .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center,
             ) {
-                if (previewBitmap != null) {
+                val preview = previewBitmap
+                if (preview != null) {
                     Image(
-                        bitmap = previewBitmap.asImageBitmap(),
+                        bitmap = preview.asImageBitmap(),
                         contentDescription = null,
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Fit,
@@ -647,36 +662,11 @@ fun UploadScreen(
     }
 }
 
-private fun renderPdfFirstPage(file: File): android.graphics.Bitmap? {
-    return try {
-        android.os.ParcelFileDescriptor.open(file, android.os.ParcelFileDescriptor.MODE_READ_ONLY).use { pfd ->
-            android.graphics.pdf.PdfRenderer(pfd).use { renderer ->
-                if (renderer.pageCount == 0) return null
-                renderer.openPage(0).use { page ->
-                    val bitmap = android.graphics.Bitmap.createBitmap(
-                        page.width,
-                        page.height,
-                        android.graphics.Bitmap.Config.ARGB_8888,
-                    )
-                    bitmap.eraseColor(android.graphics.Color.WHITE)
-                    page.render(bitmap, null, null, android.graphics.pdf.PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
-                    bitmap
-                }
-            }
-        }
-    } catch (_: Exception) {
-        null
-    }
-}
+private fun decodeBitmap(file: File): Bitmap? =
+    runCatching { BitmapFactory.decodeFile(file.absolutePath) }.getOrNull()
 
 private val DISPLAY_DATE_FORMATTER: DateTimeFormatter =
-    DateTimeFormatter.ofPattern("dd.MM.yyyy", java.util.Locale.US)
-
-private fun extensionForMimeType(mimeType: String): String = when {
-    mimeType == "application/pdf" -> "pdf"
-    mimeType.startsWith("image/") -> mimeType.substringAfter('/').ifBlank { "jpg" }
-    else -> "bin"
-}
+    DateTimeFormatter.ofPattern("dd.MM.yyyy", Locale.US)
 
 private fun ensureExtension(name: String, mimeType: String): String {
     if (name.contains('.')) return name

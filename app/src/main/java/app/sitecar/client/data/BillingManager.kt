@@ -38,12 +38,16 @@ class BillingManager(
         }
     }
 
-    private val billingClient = BillingClient.newBuilder(appContext)
-        .setListener(purchasesUpdatedListener)
-        .enablePendingPurchases(
-            PendingPurchasesParams.newBuilder().enableOneTimeProducts().build(),
-        )
-        .build()
+    // Lazy, damit bei abgeschalteter Bezahlfunktion beim App-Start gar kein
+    // Play-Billing-Client entsteht.
+    private val billingClient by lazy {
+        BillingClient.newBuilder(appContext)
+            .setListener(purchasesUpdatedListener)
+            .enablePendingPurchases(
+                PendingPurchasesParams.newBuilder().enableOneTimeProducts().build(),
+            )
+            .build()
+    }
 
     fun startConnection() {
         // Bezahlfunktion vorerst deaktiviert – keine Play-Billing-Verbindung aufbauen.

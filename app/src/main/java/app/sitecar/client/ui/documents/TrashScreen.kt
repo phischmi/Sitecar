@@ -1,7 +1,5 @@
 package app.sitecar.client.ui.documents
 
-import android.content.ActivityNotFoundException
-import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,9 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.DeleteSweep
@@ -50,7 +46,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.core.content.FileProvider
 import app.sitecar.client.R
 import app.sitecar.client.data.ApiException
 import app.sitecar.client.data.DocumentDto
@@ -60,9 +55,7 @@ import app.sitecar.client.data.SettingsStore
 import app.sitecar.client.data.SitecarApiClient
 import app.sitecar.client.ui.util.friendlyErrorMessage
 import app.sitecar.client.ui.util.rememberApiErrorMessages
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -169,31 +162,9 @@ fun TrashScreen(
         if (openingDocumentId != null) return
         openingDocumentId = doc.id
         scope.launch {
-            val result = withContext(Dispatchers.IO) {
-                client.downloadDocumentFile(organizationId = org.id, documentId = doc.id)
-                    .mapCatching { bytes ->
-                        val dir = File(context.cacheDir, "documents").apply { mkdirs() }
-                        val file = File(dir, "${doc.id}-${doc.name ?: doc.id}")
-                        file.writeBytes(bytes)
-                        file
-                    }
-            }
+            val failure = openDocumentExternally(context, client, org.id, doc, apiErrorMessages)
             openingDocumentId = null
-            result.onSuccess { file ->
-                val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
-                val intent = Intent(Intent.ACTION_VIEW).apply {
-                    setDataAndType(uri, doc.mimeType ?: "*/*")
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                }
-                runCatching { context.startActivity(intent) }
-                    .onFailure {
-                        errorMessage = if (it is ActivityNotFoundException) {
-                            context.getString(R.string.documents_no_viewer)
-                        } else {
-                            friendlyErrorMessage(it, apiErrorMessages)
-                        }
-                    }
-            }.onFailure { errorMessage = friendlyErrorMessage(it, apiErrorMessages) }
+            if (failure != null) errorMessage = failure
         }
     }
 
@@ -245,28 +216,12 @@ fun TrashScreen(
                 modifier = Modifier.fillMaxWidth().weight(1f),
             ) {
                 when {
-                    errorMessage != null -> Box(
-                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text(
-                            text = stringResource(R.string.documents_load_failed, errorMessage.orEmpty()),
-                            color = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.padding(horizontal = 24.dp),
-                        )
-                    }
-                    documents.isEmpty() && !loading -> Box(
-                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text(
-                            text = stringResource(R.string.trash_empty),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                    documents.isEmpty() -> Box(
-                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+                    errorMessage != null -> ListStateMessage(
+                        text = stringResource(R.string.documents_load_failed, errorMessage.orEmpty()),
+                        isError = true,
                     )
+                    documents.isEmpty() && !loading -> ListStateMessage(stringResource(R.string.trash_empty))
+                    documents.isEmpty() -> ListStateMessage()
                     else -> LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(vertical = 8.dp),

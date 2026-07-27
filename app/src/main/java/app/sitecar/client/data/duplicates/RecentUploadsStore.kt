@@ -29,9 +29,11 @@ class RecentUploadsStore(context: Context) {
 
     fun findSimilar(organizationId: String, hash: Long): RecentUpload? {
         val cutoff = System.currentTimeMillis() - MAX_AGE_MILLIS
-        return loadAll()
-            .filter { it.organizationId == organizationId && it.uploadedAtEpochMillis >= cutoff }
-            .firstOrNull { PerceptualHash.hammingDistance(it.hash, hash) <= MAX_HAMMING_DISTANCE }
+        return loadAll().firstOrNull {
+            it.organizationId == organizationId &&
+                it.uploadedAtEpochMillis >= cutoff &&
+                PerceptualHash.hammingDistance(it.hash, hash) <= MAX_HAMMING_DISTANCE
+        }
     }
 
     fun record(upload: RecentUpload) {

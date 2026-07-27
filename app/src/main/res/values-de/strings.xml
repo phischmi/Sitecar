@@ -12,7 +12,6 @@
     <string name="settings_api_key">API-Key</string>
     <string name="settings_api_key_hint">ppapi_…</string>
     <string name="settings_test">Verbindung testen</string>
-    <string name="settings_save">Speichern</string>
     <string name="settings_test_ok">Verbindung OK – %1$d Organisation(en) gefunden</string>
     <string name="settings_test_failed">Test fehlgeschlagen: %1$s</string>
     <string name="settings_error_missing_fields">Bitte URL und API-Key angeben.</string>

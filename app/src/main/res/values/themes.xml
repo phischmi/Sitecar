@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!--
+      Farbe und Icon-Kontrast der System-Leisten setzt MainActivity zur Laufzeit
+      per enableEdgeToEdge() passend zum in der App gewählten Theme; hier steht
+      daher bewusst kein windowLightStatusBar.
+    -->
     <style name="Theme.Sitecar" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:windowLightStatusBar">true</item>
     </style>
 </resources>

@@ -44,7 +44,9 @@ object ShareIntentHandler {
         val mimeTypes = uris.map { resolver.getType(it) ?: intent.type.orEmpty() }
 
         return if (mimeTypes.all { it.startsWith("image/") }) {
-            val pages = uris.mapNotNull { uri -> runCatching { copyAsJpeg(context, uri) }.getOrNull() }
+            val pages = uris.mapIndexedNotNull { index, uri ->
+                runCatching { copyAsJpeg(context, uri, index) }.getOrNull()
+            }
             if (pages.isEmpty()) null else PendingUpload.Images(pages)
         } else {
             val uri = uris.first()
@@ -73,15 +75,19 @@ object ShareIntentHandler {
         }
     }
 
-    /** Dekodiert und re-encodiert als JPEG, damit auch PNG/WEBP/HEIC-Freigaben im PdfBuilder funktionieren. */
-    private fun copyAsJpeg(context: Context, uri: Uri): File {
+    /**
+     * Dekodiert und re-encodiert als JPEG, damit auch PNG/WEBP/HEIC-Freigaben im
+     * PdfBuilder funktionieren. [pageIndex] hält die Dateinamen auseinander — der
+     * Zeitstempel allein ist sekundengenau.
+     */
+    private fun copyAsJpeg(context: Context, uri: Uri, pageIndex: Int): File {
         val bytes = context.contentResolver.openInputStream(uri).use { input ->
             requireNotNull(input) { "Konnte URI nicht öffnen: $uri" }.readBytes()
         }
         val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
         requireNotNull(bitmap) { "Kein gültiges Bild: $uri" }
         val dir = File(context.cacheDir, "scans").apply { mkdirs() }
-        val out = File(dir, "sitecar-shared-${timestamp()}-${sharedCounter++}.jpg")
+        val out = File(dir, "sitecar-shared-${timestamp()}-%03d.jpg".format(pageIndex + 1))
         out.outputStream().use { bitmap.compress(Bitmap.CompressFormat.JPEG, 92, it) }
         bitmap.recycle()
         return out
@@ -117,13 +123,5 @@ object ShareIntentHandler {
         }
     }
 
-    private fun extensionForMimeType(mimeType: String): String = when (mimeType) {
-        "application/pdf" -> "pdf"
-        else -> "bin"
-    }
-
     private fun timestamp() = SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(Date())
-
-    @Volatile
-    private var sharedCounter = 0
 }

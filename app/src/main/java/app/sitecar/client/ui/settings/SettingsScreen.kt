@@ -62,14 +62,15 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import app.sitecar.client.Features
 import app.sitecar.client.R
 import app.sitecar.client.data.AccentColor
 import app.sitecar.client.data.BillingManager
-import app.sitecar.client.data.SitecarApiClient
 import app.sitecar.client.data.SettingsStore
+import app.sitecar.client.data.SitecarApiClient
 import app.sitecar.client.data.SwipeAction
 import app.sitecar.client.data.ThemeMode
 import app.sitecar.client.data.insights.GenAiInsightsEngine
@@ -79,7 +80,6 @@ import app.sitecar.client.ui.support.SupportDialog
 import app.sitecar.client.ui.theme.accentPrimaryColor
 import app.sitecar.client.ui.util.friendlyErrorMessage
 import app.sitecar.client.ui.util.rememberApiErrorMessages
-import androidx.compose.ui.res.stringResource
 import com.google.mlkit.genai.common.DownloadStatus
 import com.google.mlkit.genai.common.FeatureStatus
 import kotlinx.coroutines.launch
@@ -297,8 +297,9 @@ fun SettingsScreen(
                                     } else {
                                         onDeviceAiError = null
                                         scope.launch {
-                                            val status = runCatching { GenAiInsightsEngine.checkStatus() }.getOrNull()
-                                            when (status) {
+                                            val featureStatus =
+                                                runCatching { GenAiInsightsEngine.checkStatus() }.getOrNull()
+                                            when (featureStatus) {
                                                 FeatureStatus.AVAILABLE -> {
                                                     onDeviceAiEnabled = true
                                                     store.onDeviceAiEnabled = true
@@ -557,7 +558,7 @@ fun SettingsScreen(
                 enabled = serverUrl.isNotBlank() && apiKey.isNotBlank(),
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text(stringResource(R.string.settings_save))
+                Text(stringResource(R.string.action_save))
             }
         }
     }

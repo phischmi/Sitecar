@@ -13,8 +13,8 @@ object RuleBasedInsightsEngine : SmartInsightsEngine {
     override suspend fun analyze(text: String, existingTagNames: List<String>): DocumentInsights {
         if (text.isBlank()) return DocumentInsights.EMPTY
 
-        val dates = findDates(text)
-        val documentDate = dates.minByOrNull { it.first }?.second
+        // Das erste Datum im Text ist in aller Regel das Dokumentdatum.
+        val documentDate = findDates(text).firstOrNull()?.second
         val senderName = findSenderName(text)
         val tags = TAG_KEYWORDS
             .filter { (keyword, _) -> containsWord(text, keyword) }

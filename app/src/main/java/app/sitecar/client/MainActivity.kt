@@ -1,11 +1,14 @@
 package app.sitecar.client
 
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.navigation.NavHostController
@@ -45,6 +48,14 @@ class MainActivity : ComponentActivity() {
                 ThemeMode.SYSTEM -> isSystemInDarkTheme()
             }
             val accentColor by app.settingsStore.accentColorFlow.collectAsState(initial = AccentColor.INDIGO)
+
+            // Die Icon-Farbe der System-Leisten richtet sich nach dem in der App
+            // gewählten Theme, nicht nach dem des Systems — sonst stünden z. B. bei
+            // "Dunkel" auf einem hellen System dunkle Icons auf dunklem Grund.
+            SideEffect {
+                val barStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT) { darkTheme }
+                enableEdgeToEdge(statusBarStyle = barStyle, navigationBarStyle = barStyle)
+            }
 
             SitecarTheme(darkTheme = darkTheme, accentColor = accentColor) {
                 val nav = rememberNavController()

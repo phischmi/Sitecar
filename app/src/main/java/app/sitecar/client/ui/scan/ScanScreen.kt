@@ -82,7 +82,7 @@ fun ScanScreen(
             val scanResult = GmsDocumentScanningResult.fromActivityResultIntent(result.data)
             val pageUris = scanResult?.pages?.mapNotNull { it.imageUri }.orEmpty()
             if (pageUris.isNotEmpty()) {
-                runCatching { pageUris.map { copyUriToCache(context, it) } }
+                runCatching { pageUris.mapIndexed { index, uri -> copyUriToCache(context, uri, index) } }
                     .onSuccess(onScanned)
                     .onFailure { errorMessage = it.message ?: loadFailedMessage }
             } else {
@@ -164,10 +164,15 @@ fun ScanScreen(
     }
 }
 
-private fun copyUriToCache(context: Context, uri: Uri): File {
+/**
+ * [pageIndex] hält die Dateinamen einer mehrseitigen Aufnahme auseinander — der
+ * Zeitstempel allein ist sekundengenau, alle Seiten eines Scans landen also
+ * sonst auf demselben Pfad und überschreiben sich gegenseitig.
+ */
+private fun copyUriToCache(context: Context, uri: Uri, pageIndex: Int): File {
     val dir = File(context.cacheDir, "scans").apply { mkdirs() }
     val ts = SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(Date())
-    val out = File(dir, "sitecar-$ts.jpg")
+    val out = File(dir, "sitecar-$ts-%03d.jpg".format(pageIndex + 1))
     context.contentResolver.openInputStream(uri).use { input ->
         requireNotNull(input) { "Konnte URI nicht öffnen: $uri" }
         out.outputStream().use { output -> input.copyTo(output) }

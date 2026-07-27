@@ -44,7 +44,7 @@ Inoffiziell, nicht von papra-hq. Anbindung ausschließlich über Papras
 - [Ktor](https://ktor.io/) HTTP-Client, kotlinx.serialization
 - Google ML Kit (Document Scanner, Text Recognition, GenAI Prompt)
 - PDFBox-Android für PDF-Erzeugung und -Textextraktion
-- Min-SDK 26 (Android 8), Target-SDK 35
+- Min-SDK 26 (Android 8), Target-SDK 36 (Android 16)
 - Standardsprache Englisch (`res/values/strings.xml`), Deutsch als Override
   (`res/values-de/strings.xml`); alle UI-Texte laufen über `stringResource`.
 

@@ -30,8 +30,6 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -229,16 +227,10 @@ fun TagsScreen(
                 modifier = Modifier.fillMaxWidth().weight(1f),
             ) {
                 when {
-                    errorMessage != null -> Box(
-                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text(
-                            text = stringResource(R.string.documents_load_failed, errorMessage.orEmpty()),
-                            color = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.padding(horizontal = 24.dp),
-                        )
-                    }
+                    errorMessage != null -> ListStateMessage(
+                        text = stringResource(R.string.documents_load_failed, errorMessage.orEmpty()),
+                        isError = true,
+                    )
                     tags.isEmpty() && !loading -> Column(
                         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -262,9 +254,7 @@ fun TagsScreen(
                             Text(stringResource(R.string.tags_create))
                         }
                     }
-                    tags.isEmpty() -> Box(
-                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
-                    )
+                    tags.isEmpty() -> ListStateMessage()
                     else -> LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(vertical = 8.dp),
