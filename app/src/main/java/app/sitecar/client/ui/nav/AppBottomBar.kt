@@ -14,13 +14,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.res.stringResource
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import app.sitecar.client.R
 
 @Composable
 fun AppBottomBar(nav: NavHostController) {
-    val currentRoute = nav.currentBackStackEntryAsState().value?.destination?.route
+    val currentDestination = nav.currentBackStackEntryAsState().value?.destination
     val tabs = listOf(
         Triple(Route.Scan, Icons.Default.DocumentScanner, R.string.nav_scan),
         Triple(Route.Documents, Icons.Default.Description, R.string.nav_documents),
@@ -30,11 +32,15 @@ fun AppBottomBar(nav: NavHostController) {
 
     NavigationBar {
         tabs.forEach { (route, icon, label) ->
-            val routeName = route::class.qualifiedName
+            // Über den Serializer-Hash vergleichen, nicht über Routen-Strings:
+            // destination.route ist der von kotlinx.serialization erzeugte
+            // serialName (ein konstanter String), qualifiedName dagegen der
+            // Laufzeitname der Klasse — den R8 im Release-Build umbenennt.
+            val selected = currentDestination?.hierarchy?.any { it.hasRoute(route::class) } == true
             NavigationBarItem(
-                selected = currentRoute == routeName,
+                selected = selected,
                 onClick = {
-                    if (currentRoute != routeName) {
+                    if (!selected) {
                         nav.navigate(route)
                     }
                 },
