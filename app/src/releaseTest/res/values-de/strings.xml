@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Ohne diesen Override griffe auf deutschsprachigen Geräten weiter
+         values-de/strings.xml aus main. -->
+    <string name="app_name">Sitecar Test</string>
+</resources>

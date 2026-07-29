@@ -61,6 +61,16 @@ android {
                 signingConfig = signingConfigs.getByName("release")
             }
         }
+        // Identisch zu release (R8, gleiche Signatur), nur unter eigener
+        // applicationId und mit eigenem Launcher-Namen (src/releaseTest/res).
+        // Damit lässt sich der echte Release-Stand neben der aus dem Play Store
+        // installierten Version testen — R8-Fehler wie die nicht hervorgehobene
+        // Tab-Leiste treten im Debug-Build nicht auf. Nie hochladen.
+        create("releaseTest") {
+            initWith(getByName("release"))
+            applicationIdSuffix = ".test"
+            versionNameSuffix = "-test"
+        }
         debug {
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-debug"

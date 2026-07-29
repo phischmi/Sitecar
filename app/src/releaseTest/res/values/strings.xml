@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Überschreibt values/strings.xml nur für den Build-Type releaseTest, damit
+         die Testinstallation im Launcher von der Store-Version unterscheidbar ist. -->
+    <string name="app_name">Sitecar Test</string>
+</resources>
