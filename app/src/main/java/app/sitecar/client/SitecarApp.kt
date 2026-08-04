@@ -4,6 +4,7 @@ import android.app.Application
 import app.sitecar.client.data.BillingManager
 import app.sitecar.client.data.PdfBuilder
 import app.sitecar.client.data.PendingUpload
+import app.sitecar.client.data.ReviewPrompt
 import app.sitecar.client.data.SettingsStore
 import app.sitecar.client.data.SitecarApiClient
 import app.sitecar.client.data.duplicates.RecentUploadsStore
@@ -22,6 +23,8 @@ class SitecarApp : Application() {
     lateinit var billingManager: BillingManager
         private set
     lateinit var recentUploadsStore: RecentUploadsStore
+        private set
+    lateinit var reviewPrompt: ReviewPrompt
         private set
 
     /**
@@ -43,6 +46,12 @@ class SitecarApp : Application() {
         apiClient = SitecarApiClient(settingsStore)
         pdfBuilder = PdfBuilder(applicationContext)
         recentUploadsStore = RecentUploadsStore(applicationContext)
+        reviewPrompt = ReviewPrompt(applicationContext, settingsStore)
+        // Referenzpunkt für die Bewertungsanfrage; bei Bestandsinstallationen
+        // zählt damit erst ab dem Update, nicht ab der eigentlichen Installation.
+        if (settingsStore.firstLaunchAtMillis == 0L) {
+            settingsStore.firstLaunchAtMillis = System.currentTimeMillis()
+        }
         billingManager = BillingManager(applicationContext, settingsStore)
         // Prüft selbst Features.SUPPORTER_ENABLED und tut sonst nichts.
         billingManager.startConnection()

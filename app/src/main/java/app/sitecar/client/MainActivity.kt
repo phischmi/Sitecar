@@ -136,6 +136,7 @@ class MainActivity : ComponentActivity() {
                                 store = app.settingsStore,
                                 billing = app.billingManager,
                                 recentUploads = app.recentUploadsStore,
+                                reviewPrompt = app.reviewPrompt,
                                 onDone = {
                                     app.pendingUpload = null
                                     if (!nav.popBackStack(Route.Scan, inclusive = false)) {

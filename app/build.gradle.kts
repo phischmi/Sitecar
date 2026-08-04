@@ -122,6 +122,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.pdfbox.android)
     implementation(libs.billing.ktx)
+    implementation(libs.play.review)
 
     implementation(libs.ktor.client.android)
     implementation(libs.ktor.client.content.negotiation)

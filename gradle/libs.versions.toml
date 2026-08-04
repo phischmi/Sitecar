@@ -16,6 +16,7 @@ mlkitGenaiPrompt = "1.0.0-beta4"
 coroutinesPlayServices = "1.9.0"
 pdfboxAndroid = "2.0.27.0"
 billing = "7.1.1"
+playReview = "2.0.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -39,6 +40,7 @@ mlkit-genai-prompt = { group = "com.google.mlkit", name = "genai-prompt", versio
 kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "coroutinesPlayServices" }
 pdfbox-android = { group = "com.tom-roush", name = "pdfbox-android", version.ref = "pdfboxAndroid" }
 billing-ktx = { group = "com.android.billingclient", name = "billing-ktx", version.ref = "billing" }
+play-review = { group = "com.google.android.play", name = "review", version.ref = "playReview" }
 
 ktor-client-android = { group = "io.ktor", name = "ktor-client-android", version.ref = "ktor" }
 ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }

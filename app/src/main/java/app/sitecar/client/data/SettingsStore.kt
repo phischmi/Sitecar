@@ -76,6 +76,16 @@ class SettingsStore(context: Context) {
         get() = prefs.getBoolean(KEY_IS_SUPPORTER, false)
         set(value) = prefs.edit().putBoolean(KEY_IS_SUPPORTER, value).apply()
 
+    /** Erster App-Start (ms seit Epoch), 0 solange nie gesetzt — siehe [SitecarApp]. */
+    var firstLaunchAtMillis: Long
+        get() = prefs.getLong(KEY_FIRST_LAUNCH_AT, 0L)
+        set(value) = prefs.edit().putLong(KEY_FIRST_LAUNCH_AT, value).apply()
+
+    /** Zeitpunkt der letzten Play-Bewertungsanfrage, 0 wenn noch nie gefragt. */
+    var reviewPromptedAtMillis: Long
+        get() = prefs.getLong(KEY_REVIEW_PROMPTED_AT, 0L)
+        set(value) = prefs.edit().putLong(KEY_REVIEW_PROMPTED_AT, value).apply()
+
     var filenameTemplate: String
         get() = prefs.getString(KEY_FILENAME_TEMPLATE, null)?.takeIf { it.isNotBlank() }
             ?: FilenameTemplate.DEFAULT
@@ -132,6 +142,8 @@ class SettingsStore(context: Context) {
         private const val KEY_SHARE_INTENT = "share_intent_enabled"
         private const val KEY_UPLOAD_COUNT = "upload_count"
         private const val KEY_IS_SUPPORTER = "is_supporter"
+        private const val KEY_FIRST_LAUNCH_AT = "first_launch_at"
+        private const val KEY_REVIEW_PROMPTED_AT = "review_prompted_at"
         private const val KEY_FILENAME_TEMPLATE = "filename_template"
         private const val KEY_ACCENT_COLOR = "accent_color"
         private const val KEY_SWIPE_START_TO_END = "swipe_start_to_end_action"

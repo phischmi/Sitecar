@@ -58,6 +58,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.sitecar.client.Features
@@ -68,6 +69,7 @@ import app.sitecar.client.data.Organization
 import app.sitecar.client.data.PdfTextExtractor
 import app.sitecar.client.data.PdfBuilder
 import app.sitecar.client.data.PendingUpload
+import app.sitecar.client.data.ReviewPrompt
 import app.sitecar.client.data.SettingsStore
 import app.sitecar.client.data.SitecarApiClient
 import app.sitecar.client.data.TagDto
@@ -80,6 +82,7 @@ import app.sitecar.client.data.insights.DocumentInsights
 import app.sitecar.client.data.insights.HybridInsightsEngine
 import app.sitecar.client.data.insights.RuleBasedInsightsEngine
 import app.sitecar.client.ui.support.SupportDialog
+import app.sitecar.client.ui.util.findActivity
 import app.sitecar.client.ui.util.friendlyErrorMessage
 import app.sitecar.client.ui.util.rememberApiErrorMessages
 import kotlinx.coroutines.Dispatchers
@@ -100,6 +103,7 @@ fun UploadScreen(
     store: SettingsStore,
     billing: BillingManager,
     recentUploads: RecentUploadsStore,
+    reviewPrompt: ReviewPrompt,
     onDone: () -> Unit,
     onBack: () -> Unit,
     onOpenSettings: () -> Unit,
@@ -116,6 +120,7 @@ fun UploadScreen(
     var orgsLoading by remember { mutableStateOf(true) }
     var dropdownOpen by remember { mutableStateOf(false) }
     var showSupportDialog by remember { mutableStateOf(false) }
+    val activity = LocalContext.current.findActivity()
     val pdfBuildFailedMessage = stringResource(R.string.upload_pdf_build_failed)
     val apiErrorMessages = rememberApiErrorMessages()
 
@@ -625,7 +630,14 @@ fun UploadScreen(
                             !store.isSupporter &&
                             (count == 5 || (count > 5 && (count - 5) % 10 == 0))
 
-                        if (shouldPromptSupport) showSupportDialog = true else onDone()
+                        if (shouldPromptSupport) {
+                            showSupportDialog = true
+                        } else {
+                            // Tut nichts, solange die Bewertung nicht fällig ist, und
+                            // wartet sonst, bis der Play-Dialog geschlossen wurde.
+                            activity?.let { reviewPrompt.requestIfDue(it) }
+                            onDone()
+                        }
                     }
                 },
                 enabled = !uploading && documentReady && selectedOrg != null && fileName.isNotBlank(),
