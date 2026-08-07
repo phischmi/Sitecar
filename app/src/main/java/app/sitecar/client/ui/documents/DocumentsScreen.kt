@@ -911,7 +911,7 @@ private fun RowScope.SwipeActionBackground(
 }
 
 @Composable
-private fun TagChip(tag: TagDto, onClick: () -> Unit) {
+internal fun TagChip(tag: TagDto, onClick: () -> Unit) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier

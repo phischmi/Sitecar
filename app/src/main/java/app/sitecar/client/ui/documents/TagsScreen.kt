@@ -262,22 +262,18 @@ fun TagsScreen(
                     ) {
                         items(tags, key = { it.id }) { tag ->
                             ListItem(
-                                headlineContent = { Text(tag.name) },
+                                headlineContent = {
+                                    TagChip(
+                                        tag = tag,
+                                        onClick = { onFilterByTag(buildTagSearchQuery(tag.name)) },
+                                    )
+                                },
                                 supportingContent = {
                                     val subtitle = listOfNotNull(
                                         stringResource(R.string.tags_document_count, tag.documentsCount),
                                         tag.description?.takeIf { it.isNotBlank() },
                                     ).joinToString(" · ")
                                     Text(subtitle)
-                                },
-                                leadingContent = {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(20.dp)
-                                            .clip(CircleShape)
-                                            .background(parseHexColor(tag.color))
-                                            .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape),
-                                    )
                                 },
                                 trailingContent = {
                                     if (deletingTagId == tag.id) {
