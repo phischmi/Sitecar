@@ -350,7 +350,7 @@ fun DocumentsScreen(
                         if (bulkActionInProgress) {
                             CircularProgressIndicator(
                                 strokeWidth = 2.dp,
-                                modifier = Modifier.size(20.dp).padding(horizontal = 12.dp),
+                                modifier = Modifier.padding(horizontal = 12.dp).size(20.dp),
                             )
                         } else {
                             IconButton(

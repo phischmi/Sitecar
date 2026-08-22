@@ -13,7 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -465,7 +465,7 @@ fun UploadScreen(
                         ) {
                             CircularProgressIndicator(
                                 strokeWidth = 2.dp,
-                                modifier = Modifier.height(16.dp).width(16.dp),
+                                modifier = Modifier.size(16.dp),
                             )
                             Text(
                                 text = stringResource(R.string.upload_analyzing_document),
@@ -648,7 +648,7 @@ fun UploadScreen(
                 if (uploading) {
                     CircularProgressIndicator(
                         strokeWidth = 2.dp,
-                        modifier = Modifier.height(20.dp),
+                        modifier = Modifier.size(18.dp),
                     )
                 } else {
                     Text(stringResource(R.string.upload_button))

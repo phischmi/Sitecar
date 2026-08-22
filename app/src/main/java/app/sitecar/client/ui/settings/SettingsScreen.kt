@@ -527,7 +527,7 @@ fun SettingsScreen(
                 if (loading) {
                     CircularProgressIndicator(
                         strokeWidth = 2.dp,
-                        modifier = Modifier.height(20.dp),
+                        modifier = Modifier.size(18.dp),
                     )
                 } else {
                     Text(stringResource(R.string.settings_test))
