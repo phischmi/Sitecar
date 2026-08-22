@@ -912,16 +912,36 @@ private fun RowScope.SwipeActionBackground(
 
 @Composable
 internal fun TagChip(tag: TagDto, onClick: () -> Unit) {
+    TagPill(name = tag.name, colorHex = tag.color, onClick = onClick)
+}
+
+/**
+ * Die einheitliche Tag-Darstellung der App: eine Pille in der Farbe des Tags.
+ * [selected] = false zeichnet nur den Umriss — für die noch unbestätigten
+ * Tag-Vorschläge auf dem Upload-Screen.
+ */
+@Composable
+internal fun TagPill(
+    name: String,
+    colorHex: String,
+    onClick: () -> Unit,
+    selected: Boolean = true,
+) {
+    val color = parseHexColor(colorHex)
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .clip(RoundedCornerShape(50))
-            .background(parseHexColor(tag.color).copy(alpha = 0.25f))
-            .border(1.dp, parseHexColor(tag.color), RoundedCornerShape(50))
+            .background(if (selected) color.copy(alpha = 0.25f) else Color.Transparent)
+            .border(1.dp, if (selected) color else color.copy(alpha = 0.4f), RoundedCornerShape(50))
             .clickable(onClick = onClick)
             .padding(horizontal = 8.dp, vertical = 2.dp),
     ) {
-        Text(tag.name, style = MaterialTheme.typography.labelSmall)
+        Text(
+            text = name,
+            style = MaterialTheme.typography.labelSmall,
+            color = if (selected) Color.Unspecified else MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 

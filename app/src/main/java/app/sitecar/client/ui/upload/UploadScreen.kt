@@ -31,7 +31,6 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -81,6 +80,7 @@ import app.sitecar.client.data.duplicates.RecentUploadsStore
 import app.sitecar.client.data.insights.DocumentInsights
 import app.sitecar.client.data.insights.HybridInsightsEngine
 import app.sitecar.client.data.insights.RuleBasedInsightsEngine
+import app.sitecar.client.ui.documents.TagPill
 import app.sitecar.client.ui.support.SupportDialog
 import app.sitecar.client.ui.util.findActivity
 import app.sitecar.client.ui.util.friendlyErrorMessage
@@ -506,13 +506,16 @@ fun UploadScreen(
                             Row(
                                 modifier = Modifier.horizontalScroll(rememberScrollState()),
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 suggestedTagOptions.forEach { option ->
                                     val selected = when (option) {
                                         is SuggestedTagOption.Existing -> option.tag.id in selectedTagIds
                                         is SuggestedTagOption.New -> option.name in selectedNewTagNames
                                     }
-                                    FilterChip(
+                                    TagPill(
+                                        name = option.name,
+                                        colorHex = option.colorHex,
                                         selected = selected,
                                         onClick = {
                                             when (option) {
@@ -532,7 +535,6 @@ fun UploadScreen(
                                                 }
                                             }
                                         },
-                                        label = { Text(option.name) },
                                     )
                                 }
                             }
@@ -688,11 +690,17 @@ private fun ensureExtension(name: String, mimeType: String): String {
 private sealed interface SuggestedTagOption {
     val name: String
 
+    /** Farbe der Pille — bei neuen Vorschlägen die Farbe, die der Tag beim Anlegen bekommt. */
+    val colorHex: String
+
     data class Existing(val tag: TagDto) : SuggestedTagOption {
         override val name get() = tag.name
+        override val colorHex get() = tag.color
     }
 
-    data class New(override val name: String) : SuggestedTagOption
+    data class New(override val name: String) : SuggestedTagOption {
+        override val colorHex get() = NEW_TAG_COLOR
+    }
 }
 
 /** Default-Farbe für automatisch angelegte Smart-Suggestion-Tags — gleicher Wert wie TagsScreens Standard-Swatch. */
