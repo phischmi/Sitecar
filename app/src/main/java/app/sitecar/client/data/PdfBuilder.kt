@@ -6,6 +6,7 @@ import android.net.Uri
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import com.tom_roush.pdfbox.io.MemoryUsageSetting
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.pdmodel.PDPage
 import com.tom_roush.pdfbox.pdmodel.PDPageContentStream
@@ -51,7 +52,7 @@ class PdfBuilder(private val context: Context) {
     ): Result<File> = withContext(Dispatchers.IO) {
         runCatching {
             outputFile.parentFile?.mkdirs()
-            val doc = PDDocument()
+            val doc = PDDocument(scratchFileSetting())
             try {
                 imageFiles.forEachIndexed { index, imageFile ->
                     onProgress(index + 1, imageFiles.size)
@@ -140,7 +141,17 @@ class PdfBuilder(private val context: Context) {
         return c in WIN_ANSI_EXTRAS
     }
 
+    /**
+     * PDFBox hält die JPEG-Daten aller Seiten bis zum Speichern im Heap — bei
+     * einem mehrseitigen Scan sind das schnell dreistellige MB, und der Prozess
+     * wird abgeschossen. Nur die ersten Megabyte bleiben deshalb im RAM, alles
+     * Weitere landet in einer Scratch-Datei im Cache-Verzeichnis.
+     */
+    private fun scratchFileSetting(): MemoryUsageSetting =
+        MemoryUsageSetting.setupMixed(MAX_MAIN_MEMORY_BYTES).setTempDir(context.cacheDir)
+
     companion object {
         private const val WIN_ANSI_EXTRAS = "€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ"
+        private const val MAX_MAIN_MEMORY_BYTES = 8L * 1024 * 1024
     }
 }

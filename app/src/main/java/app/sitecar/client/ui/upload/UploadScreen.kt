@@ -1,7 +1,6 @@
 package app.sitecar.client.ui.upload
 
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -74,6 +73,7 @@ import app.sitecar.client.data.SettingsStore
 import app.sitecar.client.data.SitecarApiClient
 import app.sitecar.client.data.TagDto
 import app.sitecar.client.data.extensionForMimeType
+import app.sitecar.client.data.decodeSampledBitmap
 import app.sitecar.client.data.renderPdfFirstPage
 import app.sitecar.client.data.duplicates.PerceptualHash
 import app.sitecar.client.data.duplicates.RecentUpload
@@ -146,10 +146,12 @@ fun UploadScreen(
     val previewBitmap by produceState<Bitmap?>(initialValue = null, pendingUpload) {
         value = withContext(Dispatchers.IO) {
             when (pendingUpload) {
-                is PendingUpload.Images -> decodeBitmap(pendingUpload.pages.first())
+                is PendingUpload.Images -> decodeSampledBitmap(pendingUpload.pages.first(), PREVIEW_MAX_SIZE)
                 is PendingUpload.ReadyDocument -> when {
-                    pendingUpload.mimeType.startsWith("image/") -> decodeBitmap(pendingUpload.file)
-                    pendingUpload.mimeType == "application/pdf" -> renderPdfFirstPage(pendingUpload.file)
+                    pendingUpload.mimeType.startsWith("image/") ->
+                        decodeSampledBitmap(pendingUpload.file, PREVIEW_MAX_SIZE)
+                    pendingUpload.mimeType == "application/pdf" ->
+                        renderPdfFirstPage(pendingUpload.file, PREVIEW_MAX_SIZE)
                     else -> null
                 }
             }
@@ -674,9 +676,6 @@ fun UploadScreen(
     }
 }
 
-private fun decodeBitmap(file: File): Bitmap? =
-    runCatching { BitmapFactory.decodeFile(file.absolutePath) }.getOrNull()
-
 private val DISPLAY_DATE_FORMATTER: DateTimeFormatter =
     DateTimeFormatter.ofPattern("dd.MM.yyyy", Locale.US)
 
@@ -698,3 +697,10 @@ private sealed interface SuggestedTagOption {
 
 /** Default-Farbe für automatisch angelegte Smart-Suggestion-Tags — gleicher Wert wie TagsScreens Standard-Swatch. */
 private const val NEW_TAG_COLOR = "#D8FF75"
+
+/**
+ * Längere Kante der Vorschau-Bitmap. Reicht für die Vorschaufläche auf jedem
+ * Telefondisplay und hält die Bitmap bei wenigen MB statt bei der vollen
+ * Kameraauflösung eines Scans.
+ */
+private const val PREVIEW_MAX_SIZE = 1280

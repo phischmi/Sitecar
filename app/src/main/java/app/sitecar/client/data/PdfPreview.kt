@@ -8,16 +8,17 @@ import java.io.File
 
 /**
  * Rendert die erste Seite eines PDFs als Bitmap — für die Upload-Vorschau und
- * die Miniaturbilder der Dokumentenliste. [maxSize] begrenzt, falls gesetzt,
- * die längere Kante; ohne Angabe wird in Seitengröße gerendert.
- * Liefert null, wenn die Datei kein lesbares PDF ist.
+ * die Miniaturbilder der Dokumentenliste. [maxSize] begrenzt die längere Kante
+ * und ist bewusst Pflicht: die Seitengröße eines aus einem Scan gebauten PDFs
+ * entspricht der Pixelgröße der Aufnahme, ungebremst also einer Bitmap von
+ * mehreren Dutzend MB. Liefert null, wenn die Datei kein lesbares PDF ist.
  */
-fun renderPdfFirstPage(file: File, maxSize: Int? = null): Bitmap? = runCatching<Bitmap?> {
+fun renderPdfFirstPage(file: File, maxSize: Int): Bitmap? = runCatching<Bitmap?> {
     ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY).use { pfd ->
         PdfRenderer(pfd).use { renderer ->
             if (renderer.pageCount == 0) return@runCatching null
             renderer.openPage(0).use { page ->
-                val scale = if (maxSize == null) 1f else maxSize.toFloat() / maxOf(page.width, page.height)
+                val scale = (maxSize.toFloat() / maxOf(page.width, page.height)).coerceAtMost(1f)
                 val bitmap = Bitmap.createBitmap(
                     (page.width * scale).toInt().coerceAtLeast(1),
                     (page.height * scale).toInt().coerceAtLeast(1),

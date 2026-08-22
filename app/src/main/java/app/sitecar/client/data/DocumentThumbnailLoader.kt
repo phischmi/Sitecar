@@ -27,7 +27,7 @@ class DocumentThumbnailLoader(
 
         val bytes = client.downloadDocumentFile(organizationId, doc.id).getOrNull() ?: return@withContext null
         val bitmap = if (mime.startsWith("image/")) {
-            decodeSampledBitmap(bytes)
+            decodeSampledBitmap(bytes, THUMBNAIL_SIZE)
         } else {
             renderPdfThumbnail(bytes)
         } ?: return@withContext null
@@ -37,17 +37,6 @@ class DocumentThumbnailLoader(
             cacheFile.outputStream().use { out -> bitmap.compress(Bitmap.CompressFormat.JPEG, 80, out) }
         }
         bitmap
-    }
-
-    private fun decodeSampledBitmap(bytes: ByteArray): Bitmap? {
-        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
-        var sample = 1
-        while (bounds.outWidth / (sample * 2) >= THUMBNAIL_SIZE && bounds.outHeight / (sample * 2) >= THUMBNAIL_SIZE) {
-            sample *= 2
-        }
-        val opts = BitmapFactory.Options().apply { inSampleSize = sample }
-        return BitmapFactory.decodeByteArray(bytes, 0, bytes.size, opts)
     }
 
     /** PdfRenderer braucht einen Dateideskriptor, die API liefert aber nur Bytes. */
