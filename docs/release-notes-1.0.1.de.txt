@@ -1,0 +1,5 @@
+Fehlerbehebungen und Feinschliff:
+
+• Die App konnte sich nach mehreren mehrseitigen Scans hintereinander unerwartet beenden. Das Scannen braucht jetzt deutlich weniger Arbeitsspeicher.
+• Ladeanzeigen in Schaltflächen wurden abgeschnitten oder gar nicht angezeigt.
+• Erkannte Tags sehen auf der Scan-Seite jetzt genauso aus wie in der Dokument- und Tag-Liste.

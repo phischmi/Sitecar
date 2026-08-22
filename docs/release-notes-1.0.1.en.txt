@@ -1,0 +1,5 @@
+Bug fixes and polish:
+
+• The app could close unexpectedly after several multi-page scans in a row. Scanning now uses far less memory.
+• Loading spinners in buttons were cut off or not shown at all.
+• Detected tags on the scan screen now look exactly like they do in the document and tag lists.
