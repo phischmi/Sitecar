@@ -1,5 +1,6 @@
 package app.sitecar.client.ui.settings
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -48,6 +49,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -73,15 +75,13 @@ import app.sitecar.client.data.SettingsStore
 import app.sitecar.client.data.SitecarApiClient
 import app.sitecar.client.data.SwipeAction
 import app.sitecar.client.data.ThemeMode
-import app.sitecar.client.data.insights.GenAiInsightsEngine
+import app.sitecar.client.data.insights.OnDeviceAiDownload
 import app.sitecar.client.icon.LauncherIcon
 import app.sitecar.client.share.ShareReceiver
 import app.sitecar.client.ui.support.SupportDialog
 import app.sitecar.client.ui.theme.accentPrimaryColor
 import app.sitecar.client.ui.util.friendlyErrorMessage
 import app.sitecar.client.ui.util.rememberApiErrorMessages
-import com.google.mlkit.genai.common.DownloadStatus
-import com.google.mlkit.genai.common.FeatureStatus
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -104,8 +104,6 @@ fun SettingsScreen(
     var shareIntentEnabled by remember { mutableStateOf(store.shareIntentEnabled) }
     var smartInsightsEnabled by remember { mutableStateOf(store.smartInsightsEnabled) }
     var onDeviceAiEnabled by remember { mutableStateOf(store.onDeviceAiEnabled) }
-    var onDeviceAiDownloading by remember { mutableStateOf(false) }
-    var onDeviceAiError by remember { mutableStateOf<String?>(null) }
     var filenameTemplate by remember { mutableStateOf(store.filenameTemplate) }
     var showFilenameHelp by remember { mutableStateOf(false) }
     var swipeStartToEndAction by remember { mutableStateOf(store.swipeStartToEndAction) }
@@ -117,8 +115,12 @@ fun SettingsScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val missingFieldsMessage = stringResource(R.string.settings_error_missing_fields)
-    val onDeviceAiUnavailableMessage = stringResource(R.string.settings_on_device_ai_unavailable)
-    val onDeviceAiDownloadFailedMessage = stringResource(R.string.settings_on_device_ai_download_failed)
+    // Der Download läuft app-weit weiter, auch wenn dieser Screen verlassen wird;
+    // der Zustand kommt deshalb aus OnDeviceAiDownload statt aus lokalem State.
+    val onDeviceAiState by OnDeviceAiDownload.state.collectAsState()
+    LaunchedEffect(onDeviceAiState) {
+        if (onDeviceAiState is OnDeviceAiDownload.State.Ready) onDeviceAiEnabled = true
+    }
     val apiErrorMessages = rememberApiErrorMessages()
 
     Scaffold(
@@ -283,60 +285,68 @@ fun SettingsScreen(
                             modifier = Modifier.weight(1f),
                         )
                         Spacer(Modifier.width(12.dp))
-                        if (onDeviceAiDownloading) {
-                            CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(24.dp))
-                        } else {
-                            Switch(
+                        // An der Stelle des Schalters füllt sich während des Downloads ein
+                        // Kreis; ist er voll, steht dort wieder der Schalter — auf an.
+                        val downloadProgress = (onDeviceAiState as? OnDeviceAiDownload.State.Downloading)
+                            ?.takeIf { it.totalBytes > 0L }
+                            ?.let { (it.downloadedBytes.toFloat() / it.totalBytes).coerceIn(0f, 1f) }
+                        when {
+                            downloadProgress != null -> {
+                                val animatedProgress by animateFloatAsState(
+                                    targetValue = downloadProgress,
+                                    label = "onDeviceAiDownloadProgress",
+                                )
+                                CircularProgressIndicator(
+                                    progress = { animatedProgress },
+                                    strokeWidth = 2.dp,
+                                    modifier = Modifier.size(24.dp),
+                                )
+                            }
+                            // Solange AICore die Gesamtgröße noch nicht gemeldet hat, gibt es
+                            // nichts zu füllen.
+                            onDeviceAiState is OnDeviceAiDownload.State.Checking ||
+                                onDeviceAiState is OnDeviceAiDownload.State.Downloading ->
+                                CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(24.dp))
+                            else -> Switch(
                                 checked = onDeviceAiEnabled,
                                 enabled = smartInsightsEnabled,
                                 onCheckedChange = { checked ->
-                                    if (!checked) {
+                                    if (checked) {
+                                        OnDeviceAiDownload.start(store)
+                                    } else {
                                         onDeviceAiEnabled = false
                                         store.onDeviceAiEnabled = false
-                                        onDeviceAiError = null
-                                    } else {
-                                        onDeviceAiError = null
-                                        scope.launch {
-                                            val featureStatus =
-                                                runCatching { GenAiInsightsEngine.checkStatus() }.getOrNull()
-                                            when (featureStatus) {
-                                                FeatureStatus.AVAILABLE -> {
-                                                    onDeviceAiEnabled = true
-                                                    store.onDeviceAiEnabled = true
-                                                }
-                                                FeatureStatus.DOWNLOADABLE, FeatureStatus.DOWNLOADING -> {
-                                                    onDeviceAiDownloading = true
-                                                    val failed = runCatching {
-                                                        var hasFailed = false
-                                                        GenAiInsightsEngine.download().collect { downloadStatus ->
-                                                            if (downloadStatus is DownloadStatus.DownloadFailed) {
-                                                                hasFailed = true
-                                                            }
-                                                        }
-                                                        hasFailed
-                                                    }.getOrDefault(true)
-                                                    onDeviceAiDownloading = false
-                                                    if (failed) {
-                                                        onDeviceAiError = onDeviceAiDownloadFailedMessage
-                                                    } else {
-                                                        onDeviceAiEnabled = true
-                                                        store.onDeviceAiEnabled = true
-                                                    }
-                                                }
-                                                else -> onDeviceAiError = onDeviceAiUnavailableMessage
-                                            }
-                                        }
+                                        OnDeviceAiDownload.reset()
                                     }
                                 },
                             )
                         }
                     }
-                    onDeviceAiError?.let {
-                        Text(
-                            text = it,
+
+                    // Der gefüllte Kreis zeigt den Fortschritt; hier steht nur noch, was
+                    // er bedeutet — ohne diese Zeile bliebe der Vorgang wieder stumm.
+                    when (onDeviceAiState) {
+                        OnDeviceAiDownload.State.Checking -> Text(
+                            text = stringResource(R.string.settings_on_device_ai_checking),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        is OnDeviceAiDownload.State.Downloading -> Text(
+                            text = stringResource(R.string.settings_on_device_ai_download_background),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        OnDeviceAiDownload.State.Unavailable -> Text(
+                            text = stringResource(R.string.settings_on_device_ai_unavailable),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.error,
                         )
+                        OnDeviceAiDownload.State.Failed -> Text(
+                            text = stringResource(R.string.settings_on_device_ai_download_failed),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                        OnDeviceAiDownload.State.Idle, OnDeviceAiDownload.State.Ready -> Unit
                     }
 
                     Text(
@@ -712,4 +722,5 @@ private fun swipeActionLabel(action: SwipeAction): String = when (action) {
     SwipeAction.DELETE -> stringResource(R.string.action_delete)
     SwipeAction.RENAME -> stringResource(R.string.action_rename)
     SwipeAction.EDIT_TAGS -> stringResource(R.string.action_manage_tags)
+    SwipeAction.DETAILS -> stringResource(R.string.action_details)
 }

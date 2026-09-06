@@ -158,6 +158,74 @@ class SitecarApiClient(private val store: SettingsStore) {
         json.decodeFromString(UpdateDocumentResponse.serializer(), res.textOrThrow()).document
     }
 
+    /** Einzelnes Dokument inklusive extrahiertem Text, Notiz und Dokumentdatum — die Listen-Antwort lässt diese Felder aus. */
+    suspend fun getDocument(
+        organizationId: String,
+        documentId: String,
+    ): Result<DocumentDetailDto> = runCatching {
+        val res = http.get("$baseUrl/api/organizations/$organizationId/documents/$documentId") {
+            authHeaders()
+        }
+        json.decodeFromString(DocumentResponse.serializer(), res.textOrThrow()).document
+    }
+
+    /** Leerer [notes]-Text löscht die Notiz; Papra begrenzt sie auf 2048 Zeichen. */
+    suspend fun updateDocumentNotes(
+        organizationId: String,
+        documentId: String,
+        notes: String,
+    ): Result<DocumentDetailDto> = runCatching {
+        val res = http.patch("$baseUrl/api/organizations/$organizationId/documents/$documentId") {
+            authHeaders()
+            contentType(ContentType.Application.Json)
+            setBody(UpdateDocumentBody(notes = notes))
+        }
+        json.decodeFromString(DocumentResponse.serializer(), res.textOrThrow()).document
+    }
+
+    /** Ersetzt den extrahierten Text des Dokuments. */
+    suspend fun updateDocumentContent(
+        organizationId: String,
+        documentId: String,
+        content: String,
+    ): Result<DocumentDetailDto> = runCatching {
+        val res = http.patch("$baseUrl/api/organizations/$organizationId/documents/$documentId") {
+            authHeaders()
+            contentType(ContentType.Application.Json)
+            setBody(UpdateDocumentBody(content = content))
+        }
+        json.decodeFromString(DocumentResponse.serializer(), res.textOrThrow()).document
+    }
+
+    /** Setzt das Dokumentdatum (ISO-8601-Zeitpunkt) oder löscht es mit [documentDate] = null. */
+    suspend fun updateDocumentDate(
+        organizationId: String,
+        documentId: String,
+        documentDate: String?,
+    ): Result<DocumentDetailDto> = runCatching {
+        val res = http.patch("$baseUrl/api/organizations/$organizationId/documents/$documentId") {
+            authHeaders()
+            contentType(ContentType.Application.Json)
+            setBody(UpdateDocumentDateBody(documentDate = documentDate))
+        }
+        json.decodeFromString(DocumentResponse.serializer(), res.textOrThrow()).document
+    }
+
+    /** Änderungshistorie eines Dokuments, neueste zuerst. */
+    suspend fun listDocumentActivity(
+        organizationId: String,
+        documentId: String,
+        pageIndex: Int = 0,
+        pageSize: Int = 100,
+    ): Result<List<DocumentActivityDto>> = runCatching {
+        val res = http.get("$baseUrl/api/organizations/$organizationId/documents/$documentId/activity") {
+            authHeaders()
+            parameter("pageIndex", pageIndex)
+            parameter("pageSize", pageSize)
+        }
+        json.decodeFromString(DocumentActivitiesResponse.serializer(), res.textOrThrow()).activities
+    }
+
     suspend fun downloadDocumentFile(
         organizationId: String,
         documentId: String,

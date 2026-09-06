@@ -8,22 +8,29 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import app.sitecar.client.data.AccentColor
 import app.sitecar.client.data.PendingUpload
 import app.sitecar.client.data.ShareIntentHandler
 import app.sitecar.client.data.ThemeMode
+import app.sitecar.client.ui.documents.DocumentDetailsScreen
 import app.sitecar.client.ui.documents.DocumentsScreen
 import app.sitecar.client.ui.documents.TagsScreen
 import app.sitecar.client.ui.documents.TrashScreen
 import app.sitecar.client.ui.nav.AppBottomBar
 import app.sitecar.client.ui.nav.Route
+import app.sitecar.client.ui.onboarding.OnboardingScreen
 import app.sitecar.client.ui.scan.ScanScreen
 import app.sitecar.client.ui.settings.SettingsScreen
 import app.sitecar.client.ui.theme.SitecarTheme
@@ -62,18 +69,30 @@ class MainActivity : ComponentActivity() {
                 navController = nav
                 val configured by app.settingsStore.isConfigured.collectAsState(initial = null)
 
-                val start = when (configured) {
-                    null -> null
-                    true -> when {
-                        startFromShare -> Route.Upload
-                        startFromScanShortcut -> Route.Scan
-                        else -> Route.Documents
+                // Das Startziel wird genau einmal bestimmt: änderte es sich später —
+                // etwa sobald im Einstieg die Zugangsdaten gespeichert sind — baute
+                // NavHost den Graphen neu auf und risse den Nutzer aus dem gerade
+                // sichtbaren Screen (mitten aus der Tour heraus).
+                var start by remember { mutableStateOf<Route?>(null) }
+                LaunchedEffect(configured) {
+                    if (start != null) return@LaunchedEffect
+                    start = when (configured) {
+                        null -> null
+                        true -> when {
+                            startFromShare -> Route.Upload
+                            startFromScanShortcut -> Route.Scan
+                            else -> Route.Documents
+                        }
+                        // Beim allerersten Start begrüßt der Einstieg statt der stummen
+                        // Einstellungsseite; wer ihn schon durchlaufen hat und später die
+                        // Zugangsdaten löscht, landet wieder direkt in den Einstellungen.
+                        false -> if (app.settingsStore.onboardingCompleted) Route.Settings else Route.Onboarding
                     }
-                    false -> Route.Settings
                 }
 
-                if (start != null) {
-                    NavHost(navController = nav, startDestination = start) {
+                val startDestination = start
+                if (startDestination != null) {
+                    NavHost(navController = nav, startDestination = startDestination) {
                         composable<Route.Settings> {
                             SettingsScreen(
                                 store = app.settingsStore,
@@ -86,6 +105,19 @@ class MainActivity : ComponentActivity() {
                                     }
                                 },
                                 onBack = { if (!nav.popBackStack()) finish() },
+                            )
+                        }
+                        composable<Route.Onboarding> {
+                            OnboardingScreen(
+                                store = app.settingsStore,
+                                client = app.apiClient,
+                                onFinished = {
+                                    app.settingsStore.onboardingCompleted = true
+                                    val target = if (app.pendingUpload != null) Route.Upload else Route.Documents
+                                    nav.navigate(target) {
+                                        popUpTo<Route.Onboarding> { inclusive = true }
+                                    }
+                                },
                             )
                         }
                         composable<Route.Scan> {
@@ -103,6 +135,15 @@ class MainActivity : ComponentActivity() {
                                 client = app.apiClient,
                                 store = app.settingsStore,
                                 onOpenSettings = { nav.navigate(Route.Settings) },
+                                onOpenDetails = { orgId, doc ->
+                                    nav.navigate(
+                                        Route.DocumentDetails(
+                                            organizationId = orgId,
+                                            documentId = doc.id,
+                                            documentName = doc.name,
+                                        ),
+                                    )
+                                },
                                 bottomBar = { AppBottomBar(nav) },
                                 initialSearchQuery = app.pendingDocumentSearchQuery,
                                 onConsumeInitialSearchQuery = { app.pendingDocumentSearchQuery = null },
@@ -126,6 +167,16 @@ class MainActivity : ComponentActivity() {
                                 store = app.settingsStore,
                                 onOpenSettings = { nav.navigate(Route.Settings) },
                                 bottomBar = { AppBottomBar(nav) },
+                            )
+                        }
+                        composable<Route.DocumentDetails> { entry ->
+                            val args = entry.toRoute<Route.DocumentDetails>()
+                            DocumentDetailsScreen(
+                                client = app.apiClient,
+                                organizationId = args.organizationId,
+                                documentId = args.documentId,
+                                initialName = args.documentName,
+                                onBack = { if (!nav.popBackStack()) finish() },
                             )
                         }
                         composable<Route.Upload> {

@@ -32,6 +32,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Sell
@@ -98,6 +99,7 @@ fun DocumentsScreen(
     client: SitecarApiClient,
     store: SettingsStore,
     onOpenSettings: () -> Unit,
+    onOpenDetails: (organizationId: String, doc: DocumentDto) -> Unit,
     bottomBar: @Composable () -> Unit = {},
     initialSearchQuery: String? = null,
     onConsumeInitialSearchQuery: () -> Unit = {},
@@ -302,6 +304,7 @@ fun DocumentsScreen(
                 docPendingTags = doc
                 selectedOrg?.let { ensureOrgTagsLoaded(it) }
             }
+            SwipeAction.DETAILS -> selectedOrg?.let { onOpenDetails(it.id, doc) }
             SwipeAction.NONE -> {}
         }
     }
@@ -506,6 +509,7 @@ fun DocumentsScreen(
                                         docPendingTags = doc
                                         selectedOrg?.let { ensureOrgTagsLoaded(it) }
                                     },
+                                    onDetails = { if (orgId.isNotEmpty()) onOpenDetails(orgId, doc) },
                                     onDelete = { docPendingDelete = doc },
                                     onTagClick = { tag -> searchQuery = buildTagSearchQuery(tag.name) },
                                 )
@@ -767,6 +771,7 @@ private fun DocumentRow(
     onLongClick: () -> Unit,
     onRename: () -> Unit,
     onManageTags: () -> Unit,
+    onDetails: () -> Unit,
     onDelete: () -> Unit,
     onTagClick: (TagDto) -> Unit,
 ) {
@@ -856,6 +861,14 @@ private fun DocumentRow(
                             },
                         )
                         DropdownMenuItem(
+                            text = { Text(stringResource(R.string.action_details)) },
+                            leadingIcon = { Icon(Icons.Default.Info, contentDescription = null) },
+                            onClick = {
+                                onMenuExpandedChange(false)
+                                onDetails()
+                            },
+                        )
+                        DropdownMenuItem(
                             text = { Text(stringResource(R.string.action_delete)) },
                             leadingIcon = { Icon(Icons.Default.Delete, contentDescription = null) },
                             onClick = {
@@ -890,13 +903,14 @@ private fun RowScope.SwipeActionBackground(
     val alignment = if (direction == SwipeToDismissBoxValue.StartToEnd) Alignment.CenterStart else Alignment.CenterEnd
     val tint = when (action) {
         SwipeAction.DELETE -> MaterialTheme.colorScheme.error
-        SwipeAction.RENAME, SwipeAction.EDIT_TAGS -> MaterialTheme.colorScheme.primary
+        SwipeAction.RENAME, SwipeAction.EDIT_TAGS, SwipeAction.DETAILS -> MaterialTheme.colorScheme.primary
         SwipeAction.NONE -> MaterialTheme.colorScheme.surfaceVariant
     }
     val icon = when (action) {
         SwipeAction.DELETE -> Icons.Default.Delete
         SwipeAction.RENAME -> Icons.Default.Edit
         SwipeAction.EDIT_TAGS -> Icons.Default.Sell
+        SwipeAction.DETAILS -> Icons.Default.Info
         SwipeAction.NONE -> null
     }
     Box(
@@ -981,6 +995,16 @@ internal fun formatSize(bytes: Long): String {
         unitIndex++
     }
     return if (unitIndex == 0) "${size.toInt()} ${units[unitIndex]}" else "%.1f %s".format(size, units[unitIndex])
+}
+
+/** Datum mit Uhrzeit — für Zeitstempel, bei denen die Tagesangabe allein zu grob ist (Historie). */
+internal fun formatDateTime(iso: String?): String {
+    if (iso.isNullOrBlank()) return ""
+    return runCatching {
+        DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)
+            .withZone(ZoneId.systemDefault())
+            .format(Instant.parse(iso))
+    }.getOrDefault(iso)
 }
 
 internal fun formatDate(iso: String?): String {

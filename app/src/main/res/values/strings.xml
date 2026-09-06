@@ -2,6 +2,24 @@
 <resources>
     <string name="app_name">Sitecar</string>
 
+    <string name="onboarding_welcome_title">Welcome to Sitecar</string>
+    <string name="onboarding_welcome_body">Sitecar scans your documents with the phone camera and uploads them straight to your own Papra server — no detour through someone else\'s cloud.</string>
+    <string name="onboarding_welcome_tour">Show a short tour of the features afterwards</string>
+    <string name="onboarding_welcome_start">Get started</string>
+    <string name="onboarding_connect_title">Connect your Papra server</string>
+    <string name="onboarding_connect_body">Enter the address of your Papra instance and an API key. You create the key in Papra under \"API keys\".</string>
+    <string name="onboarding_continue">Continue</string>
+    <string name="onboarding_back">Back</string>
+    <string name="onboarding_finish">Done</string>
+    <string name="onboarding_tour_scan_title">Scan documents</string>
+    <string name="onboarding_tour_scan_body">The camera finds the page edges by itself and turns several pages into a single PDF. On-device text recognition puts a searchable layer underneath.</string>
+    <string name="onboarding_tour_upload_title">Upload and name</string>
+    <string name="onboarding_tour_upload_body">Pick the organization, set tags, and let the file name build itself from your template. Other apps can share images and PDFs straight into Sitecar.</string>
+    <string name="onboarding_tour_insights_title">Smart suggestions</string>
+    <string name="onboarding_tour_insights_body">Sitecar reads the scanned text on your device and suggests tags, the document\'s own date and its sender — optionally with Gemini Nano.</string>
+    <string name="onboarding_tour_manage_title">Keep things in order</string>
+    <string name="onboarding_tour_manage_body">Search documents, edit tags, open details, restore from the trash — and put the action you use most on a swipe gesture in the settings.</string>
+
     <string name="settings_title">Settings</string>
     <string name="settings_theme_title">Appearance</string>
     <string name="settings_theme_light">Light</string>
@@ -29,6 +47,8 @@
     <string name="settings_on_device_ai_subtitle">Improves smart suggestions using Gemini Nano via Android AICore — fully on-device, no data leaves the phone. Requires a compatible device and a one-time model download; falls back to the rule-based suggestions above if unavailable.</string>
     <string name="settings_on_device_ai_unavailable">This device does not support Gemini Nano. Smart suggestions keep using the rule-based analysis.</string>
     <string name="settings_on_device_ai_download_failed">Model download failed. Please check your connection and try again.</string>
+    <string name="settings_on_device_ai_checking">Checking availability…</string>
+    <string name="settings_on_device_ai_download_background">The download keeps running in the background — you can leave this screen, the switch turns on by itself once the model is ready.</string>
     <string name="settings_smart_insights_ocr_note">For scans without a text layer, both also require on-device text recognition (OCR, see above) to be turned on.</string>
 
     <string name="settings_filename_template_title">Filename format</string>
@@ -118,6 +138,44 @@
     <string name="documents_bulk_tags_partial_failure">Some tags could not be updated for all documents.</string>
     <string name="documents_manage_tags_empty">No tags in this organization yet. Create one in the Tags tab first.</string>
 
+    <string name="document_details_title">Details</string>
+    <string name="document_details_tab_info">Info</string>
+    <string name="document_details_tab_content">Content</string>
+    <string name="document_details_tab_activity">Activity</string>
+    <string name="document_details_info_name">Name</string>
+    <string name="document_details_info_type">Type</string>
+    <string name="document_details_info_size">Size</string>
+    <string name="document_details_info_document_date">Date</string>
+    <string name="document_details_info_created_at">Created</string>
+    <string name="document_details_info_updated_at">Updated</string>
+    <string name="document_details_info_id">ID</string>
+    <string name="document_details_info_tags">Tags</string>
+    <string name="document_details_info_never">Never</string>
+    <string name="document_details_info_no_date">No date</string>
+    <string name="document_details_date_title">Document date</string>
+    <string name="document_details_date_clear">Remove date</string>
+    <string name="document_details_notes_label">Notes</string>
+    <string name="document_details_notes_placeholder">Add notes for this document</string>
+    <string name="document_details_notes_save">Save note</string>
+    <string name="document_details_notes_saved">Note saved.</string>
+    <string name="document_details_content_placeholder">Text of this document</string>
+    <string name="document_details_content_save">Save content</string>
+    <string name="document_details_content_saved">Content saved.</string>
+    <string name="document_details_activity_empty">No activity for this document yet.</string>
+    <string name="document_details_activity_created">Document created</string>
+    <string name="document_details_activity_updated">Document updated</string>
+    <string name="document_details_activity_updated_field">Field %1$s updated</string>
+    <string name="document_details_activity_updated_fields">Fields %1$s updated</string>
+    <string name="document_details_activity_deleted">Document deleted</string>
+    <string name="document_details_activity_restored">Document restored</string>
+    <string name="document_details_activity_tagged">Tag %1$s added</string>
+    <string name="document_details_activity_untagged">Tag %1$s removed</string>
+    <string name="document_details_activity_by">by %1$s</string>
+    <string name="document_details_field_name">Name</string>
+    <string name="document_details_field_content">Content</string>
+    <string name="document_details_field_document_date">Date</string>
+    <string name="document_details_field_notes">Notes</string>
+
     <string name="trash_title">Trash</string>
     <string name="trash_empty">Trash is empty.</string>
     <string name="trash_restore">Restore</string>
@@ -158,5 +216,6 @@
     <string name="action_more">More options</string>
     <string name="action_rename">Rename</string>
     <string name="action_manage_tags">Tags</string>
+    <string name="action_details">Details</string>
     <string name="action_done">Done</string>
 </resources>

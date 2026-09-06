@@ -18,7 +18,7 @@ enum class AccentColor {
 
 /** Aktion, die eine Wischgeste in der Dokumentenliste auslöst. */
 enum class SwipeAction {
-    NONE, DELETE, RENAME, EDIT_TAGS
+    NONE, DELETE, RENAME, EDIT_TAGS, DETAILS
 }
 
 class SettingsStore(context: Context) {
@@ -98,6 +98,15 @@ class SettingsStore(context: Context) {
             ?: AccentColor.INDIGO
         set(value) = prefs.edit().putString(KEY_ACCENT_COLOR, value.name).apply()
 
+    /**
+     * Ob der Einstieg (Begrüßung, Verbindung, Tour) durchlaufen wurde. Verhindert,
+     * dass jemand nach dem Löschen seiner Zugangsdaten erneut begrüßt wird — dann
+     * führt der Weg wieder direkt in die Einstellungen.
+     */
+    var onboardingCompleted: Boolean
+        get() = prefs.getBoolean(KEY_ONBOARDING_COMPLETED, false)
+        set(value) = prefs.edit().putBoolean(KEY_ONBOARDING_COMPLETED, value).apply()
+
     /** Wischgeste von links nach rechts in der Dokumentenliste. */
     var swipeStartToEndAction: SwipeAction
         get() = SwipeAction.entries.firstOrNull { it.name == prefs.getString(KEY_SWIPE_START_TO_END, null) }
@@ -148,5 +157,6 @@ class SettingsStore(context: Context) {
         private const val KEY_ACCENT_COLOR = "accent_color"
         private const val KEY_SWIPE_START_TO_END = "swipe_start_to_end_action"
         private const val KEY_SWIPE_END_TO_START = "swipe_end_to_start_action"
+        private const val KEY_ONBOARDING_COMPLETED = "onboarding_completed"
     }
 }

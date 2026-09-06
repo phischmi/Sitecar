@@ -2,6 +2,24 @@
 <resources>
     <string name="app_name">Sitecar</string>
 
+    <string name="onboarding_welcome_title">Willkommen bei Sitecar</string>
+    <string name="onboarding_welcome_body">Sitecar scannt deine Dokumente mit der Handykamera und lädt sie direkt auf deinen eigenen Papra-Server — ohne Umweg über fremde Clouds.</string>
+    <string name="onboarding_welcome_tour">Danach eine kurze Tour durch die Funktionen zeigen</string>
+    <string name="onboarding_welcome_start">Los geht\'s</string>
+    <string name="onboarding_connect_title">Mit deinem Papra-Server verbinden</string>
+    <string name="onboarding_connect_body">Trage die Adresse deiner Papra-Instanz und einen API-Key ein. Den Key legst du in Papra unter „API-Schlüssel“ an.</string>
+    <string name="onboarding_continue">Weiter</string>
+    <string name="onboarding_back">Zurück</string>
+    <string name="onboarding_finish">Fertig</string>
+    <string name="onboarding_tour_scan_title">Dokumente scannen</string>
+    <string name="onboarding_tour_scan_body">Die Kamera erkennt die Seitenränder von selbst und macht aus mehreren Seiten ein einziges PDF. Die Texterkennung auf dem Gerät legt eine durchsuchbare Ebene darunter.</string>
+    <string name="onboarding_tour_upload_title">Hochladen und benennen</string>
+    <string name="onboarding_tour_upload_body">Wähle die Organisation, setze Tags und lass den Dateinamen aus deiner Vorlage entstehen. Andere Apps können Bilder und PDFs direkt an Sitecar teilen.</string>
+    <string name="onboarding_tour_insights_title">Intelligente Vorschläge</string>
+    <string name="onboarding_tour_insights_body">Sitecar liest den gescannten Text auf dem Gerät und schlägt Tags, das Dokumentdatum und den Absender vor — auf Wunsch mit Gemini Nano.</string>
+    <string name="onboarding_tour_manage_title">Ordnung halten</string>
+    <string name="onboarding_tour_manage_body">Dokumente durchsuchen, Tags bearbeiten, Details öffnen, aus dem Papierkorb wiederherstellen — und in den Einstellungen deine häufigste Aktion auf eine Wischgeste legen.</string>
+
     <string name="settings_title">Einstellungen</string>
     <string name="settings_theme_title">Darstellung</string>
     <string name="settings_theme_light">Hell</string>
@@ -29,6 +47,8 @@
     <string name="settings_on_device_ai_subtitle">Verbessert die intelligenten Vorschläge mit Gemini Nano über Android AICore — komplett on-device, es verlassen keine Daten das Gerät. Benötigt ein kompatibles Gerät und einen einmaligen Modell-Download; ohne Verfügbarkeit greifen weiterhin die regelbasierten Vorschläge oben.</string>
     <string name="settings_on_device_ai_unavailable">Dieses Gerät unterstützt Gemini Nano nicht. Die intelligenten Vorschläge nutzen weiterhin die regelbasierte Analyse.</string>
     <string name="settings_on_device_ai_download_failed">Modell-Download fehlgeschlagen. Bitte Verbindung prüfen und erneut versuchen.</string>
+    <string name="settings_on_device_ai_checking">Verfügbarkeit wird geprüft…</string>
+    <string name="settings_on_device_ai_download_background">Der Download läuft im Hintergrund weiter — du kannst die Einstellungen verlassen, der Schalter geht von selbst an, sobald das Modell bereit ist.</string>
     <string name="settings_smart_insights_ocr_note">Bei Scans ohne Textebene ist dafür zusätzlich die Texterkennung auf dem Gerät (OCR, siehe oben) nötig.</string>
 
     <string name="settings_filename_template_title">Dateinamen-Format</string>
@@ -118,6 +138,44 @@
     <string name="documents_bulk_tags_partial_failure">Einige Tags konnten nicht bei allen Dokumenten aktualisiert werden.</string>
     <string name="documents_manage_tags_empty">Diese Organisation hat noch keine Tags. Lege zuerst einen im Tags-Tab an.</string>
 
+    <string name="document_details_title">Details</string>
+    <string name="document_details_tab_info">Info</string>
+    <string name="document_details_tab_content">Inhalt</string>
+    <string name="document_details_tab_activity">Aktivität</string>
+    <string name="document_details_info_name">Name</string>
+    <string name="document_details_info_type">Typ</string>
+    <string name="document_details_info_size">Größe</string>
+    <string name="document_details_info_document_date">Datum</string>
+    <string name="document_details_info_created_at">Erstellt</string>
+    <string name="document_details_info_updated_at">Aktualisiert</string>
+    <string name="document_details_info_id">ID</string>
+    <string name="document_details_info_tags">Tags</string>
+    <string name="document_details_info_never">Nie</string>
+    <string name="document_details_info_no_date">Kein Datum</string>
+    <string name="document_details_date_title">Dokumentdatum</string>
+    <string name="document_details_date_clear">Datum entfernen</string>
+    <string name="document_details_notes_label">Notizen</string>
+    <string name="document_details_notes_placeholder">Notiz zu diesem Dokument hinzufügen</string>
+    <string name="document_details_notes_save">Notiz speichern</string>
+    <string name="document_details_notes_saved">Notiz gespeichert.</string>
+    <string name="document_details_content_placeholder">Text dieses Dokuments</string>
+    <string name="document_details_content_save">Inhalt speichern</string>
+    <string name="document_details_content_saved">Inhalt gespeichert.</string>
+    <string name="document_details_activity_empty">Noch keine Aktivität für dieses Dokument.</string>
+    <string name="document_details_activity_created">Dokument erstellt</string>
+    <string name="document_details_activity_updated">Dokument aktualisiert</string>
+    <string name="document_details_activity_updated_field">Feld %1$s aktualisiert</string>
+    <string name="document_details_activity_updated_fields">Felder %1$s aktualisiert</string>
+    <string name="document_details_activity_deleted">Dokument gelöscht</string>
+    <string name="document_details_activity_restored">Dokument wiederhergestellt</string>
+    <string name="document_details_activity_tagged">Tag %1$s hinzugefügt</string>
+    <string name="document_details_activity_untagged">Tag %1$s entfernt</string>
+    <string name="document_details_activity_by">von %1$s</string>
+    <string name="document_details_field_name">Name</string>
+    <string name="document_details_field_content">Inhalt</string>
+    <string name="document_details_field_document_date">Datum</string>
+    <string name="document_details_field_notes">Notizen</string>
+
     <string name="trash_title">Papierkorb</string>
     <string name="trash_empty">Papierkorb ist leer.</string>
     <string name="trash_restore">Wiederherstellen</string>
@@ -158,5 +216,6 @@
     <string name="action_more">Weitere Optionen</string>
     <string name="action_rename">Umbenennen</string>
     <string name="action_manage_tags">Tags</string>
+    <string name="action_details">Details</string>
     <string name="action_done">Fertig</string>
 </resources>
