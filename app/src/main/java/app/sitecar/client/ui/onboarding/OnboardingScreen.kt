@@ -1,6 +1,7 @@
 package app.sitecar.client.ui.onboarding
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -41,7 +42,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -55,6 +58,11 @@ import app.sitecar.client.ui.util.rememberApiErrorMessages
 import kotlinx.coroutines.launch
 
 private enum class OnboardingStep { WELCOME, CONNECTION, TOUR }
+
+private val ICON_SIZE = 96.dp
+
+/** Verhältnis von Gesamtfläche (108 dp) zur sichtbaren Fläche (72 dp) eines Adaptive Icons. */
+private const val ADAPTIVE_ICON_SCALE = 1.5f
 
 private data class TourPage(val icon: ImageVector, val titleRes: Int, val bodyRes: Int)
 
@@ -141,7 +149,7 @@ private fun WelcomeStep(
         modifier = Modifier.fillMaxSize(),
     ) {
         Spacer(Modifier.weight(1f))
-        StepIcon(Icons.Default.DocumentScanner)
+        AppIcon()
         Spacer(Modifier.height(24.dp))
         Text(
             text = stringResource(R.string.onboarding_welcome_title),
@@ -370,11 +378,39 @@ private fun TourStep(
     }
 }
 
+/**
+ * Das echte Launcher-Icon zur Begrüßung: die beiden Ebenen des Adaptive Icons
+ * übereinander, im Kreis beschnitten wie im Launcher. Die Ebenen sind auf 108 dp
+ * angelegt, sichtbar ist davon die mittlere Fläche von 72 dp — deshalb werden sie
+ * um das Anderthalbfache des sichtbaren Kreises gezeichnet.
+ */
+@Composable
+private fun AppIcon() {
+    Box(
+        modifier = Modifier
+            .size(ICON_SIZE)
+            .clip(CircleShape),
+        contentAlignment = Alignment.Center,
+    ) {
+        val layerSize = ICON_SIZE * ADAPTIVE_ICON_SCALE
+        Image(
+            painter = painterResource(R.drawable.ic_launcher_background),
+            contentDescription = null,
+            modifier = Modifier.size(layerSize),
+        )
+        Image(
+            painter = painterResource(R.drawable.ic_launcher_foreground),
+            contentDescription = null,
+            modifier = Modifier.size(layerSize),
+        )
+    }
+}
+
 @Composable
 private fun StepIcon(icon: ImageVector) {
     Box(
         modifier = Modifier
-            .size(96.dp)
+            .size(ICON_SIZE)
             .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
         contentAlignment = Alignment.Center,
     ) {
