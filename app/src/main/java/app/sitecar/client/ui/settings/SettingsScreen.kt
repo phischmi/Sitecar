@@ -90,7 +90,6 @@ fun SettingsScreen(
     store: SettingsStore,
     client: SitecarApiClient,
     billing: BillingManager,
-    onSaved: () -> Unit,
     onBack: () -> Unit,
 ) {
     var serverUrl by remember { mutableStateOf(store.serverUrl) }
@@ -115,6 +114,7 @@ fun SettingsScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val missingFieldsMessage = stringResource(R.string.settings_error_missing_fields)
+    val savedMessage = stringResource(R.string.settings_saved)
     // Der Download läuft app-weit weiter, auch wenn dieser Screen verlassen wird;
     // der Zustand kommt deshalb aus OnDeviceAiDownload statt aus lokalem State.
     val onDeviceAiState by OnDeviceAiDownload.state.collectAsState()
@@ -486,7 +486,10 @@ fun SettingsScreen(
 
             OutlinedTextField(
                 value = serverUrl,
-                onValueChange = { serverUrl = it },
+                onValueChange = {
+                    serverUrl = it
+                    status = null
+                },
                 label = { Text(stringResource(R.string.settings_server_url)) },
                 placeholder = { Text(stringResource(R.string.settings_server_url_hint)) },
                 singleLine = true,
@@ -495,7 +498,10 @@ fun SettingsScreen(
             )
             OutlinedTextField(
                 value = apiKey,
-                onValueChange = { apiKey = it },
+                onValueChange = {
+                    apiKey = it
+                    status = null
+                },
                 label = { Text(stringResource(R.string.settings_api_key)) },
                 placeholder = { Text(stringResource(R.string.settings_api_key_hint)) },
                 singleLine = true,
@@ -553,7 +559,7 @@ fun SettingsScreen(
             status?.let {
                 Text(
                     text = if (isError) stringResource(R.string.settings_test_failed, it) else it,
-                    color = MaterialTheme.colorScheme.error,
+                    color = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
                 )
             }
 
@@ -563,7 +569,10 @@ fun SettingsScreen(
                 onClick = {
                     store.serverUrl = serverUrl
                     store.apiKey = apiKey
-                    onSaved()
+                    // Bewusst kein Weiternavigieren: wer hier speichert, will meist
+                    // noch weitere Einstellungen ändern.
+                    isError = false
+                    status = savedMessage
                 },
                 enabled = serverUrl.isNotBlank() && apiKey.isNotBlank(),
                 modifier = Modifier.fillMaxWidth(),

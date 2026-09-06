@@ -21,9 +21,10 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.CloudUpload
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.DocumentScanner
-import androidx.compose.material.icons.filled.FolderOpen
+import androidx.compose.material.icons.filled.Sell
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
@@ -66,6 +67,12 @@ private const val ADAPTIVE_ICON_SCALE = 1.5f
 
 private data class TourPage(val icon: ImageVector, val titleRes: Int, val bodyRes: Int)
 
+/**
+ * Die Tour folgt den Tabs der App und benutzt bewusst dieselben Symbole wie die
+ * untere Navigationsleiste, damit die Seiten beim ersten Blick in die App
+ * wiedererkennbar sind. Die letzte Seite fällt aus dem Schema: die intelligenten
+ * Vorschläge stecken im Upload und haben keinen eigenen Tab.
+ */
 private val TOUR_PAGES = listOf(
     TourPage(
         icon = Icons.Default.DocumentScanner,
@@ -73,19 +80,24 @@ private val TOUR_PAGES = listOf(
         bodyRes = R.string.onboarding_tour_scan_body,
     ),
     TourPage(
-        icon = Icons.Default.CloudUpload,
-        titleRes = R.string.onboarding_tour_upload_title,
-        bodyRes = R.string.onboarding_tour_upload_body,
+        icon = Icons.Default.Description,
+        titleRes = R.string.onboarding_tour_documents_title,
+        bodyRes = R.string.onboarding_tour_documents_body,
+    ),
+    TourPage(
+        icon = Icons.Default.Sell,
+        titleRes = R.string.onboarding_tour_tags_title,
+        bodyRes = R.string.onboarding_tour_tags_body,
+    ),
+    TourPage(
+        icon = Icons.Default.Delete,
+        titleRes = R.string.onboarding_tour_trash_title,
+        bodyRes = R.string.onboarding_tour_trash_body,
     ),
     TourPage(
         icon = Icons.Default.AutoAwesome,
         titleRes = R.string.onboarding_tour_insights_title,
         bodyRes = R.string.onboarding_tour_insights_body,
-    ),
-    TourPage(
-        icon = Icons.Default.FolderOpen,
-        titleRes = R.string.onboarding_tour_manage_title,
-        bodyRes = R.string.onboarding_tour_manage_body,
     ),
 )
 

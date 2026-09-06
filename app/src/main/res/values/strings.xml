@@ -11,14 +11,16 @@
     <string name="onboarding_continue">Continue</string>
     <string name="onboarding_back">Back</string>
     <string name="onboarding_finish">Done</string>
-    <string name="onboarding_tour_scan_title">Scan documents</string>
-    <string name="onboarding_tour_scan_body">The camera finds the page edges by itself and turns several pages into a single PDF. On-device text recognition puts a searchable layer underneath.</string>
-    <string name="onboarding_tour_upload_title">Upload and name</string>
-    <string name="onboarding_tour_upload_body">Pick the organization, set tags, and let the file name build itself from your template. Other apps can share images and PDFs straight into Sitecar.</string>
+    <string name="onboarding_tour_scan_title">Scan tab</string>
+    <string name="onboarding_tour_scan_body">Your starting point: the camera finds the page edges by itself and turns several pages into one PDF. Afterwards you pick the organization, tags and the file name — built from your own template.</string>
+    <string name="onboarding_tour_documents_title">Documents tab</string>
+    <string name="onboarding_tour_documents_body">Everything already on your server. Search it, open a document, rename it, look at its details with notes, content and history — or put the action you use most on a swipe gesture.</string>
+    <string name="onboarding_tour_tags_title">Tags tab</string>
+    <string name="onboarding_tour_tags_body">Create tags, give them a colour, rename or delete them. Tapping a tag jumps straight to the documents carrying it.</string>
+    <string name="onboarding_tour_trash_title">Trash tab</string>
+    <string name="onboarding_tour_trash_body">Deleting moves a document to your Papra server\'s trash. From here you restore it — or clear it out for good.</string>
     <string name="onboarding_tour_insights_title">Smart suggestions</string>
-    <string name="onboarding_tour_insights_body">Sitecar reads the scanned text on your device and suggests tags, the document\'s own date and its sender — optionally with Gemini Nano.</string>
-    <string name="onboarding_tour_manage_title">Keep things in order</string>
-    <string name="onboarding_tour_manage_body">Search documents, edit tags, open details, restore from the trash — and put the action you use most on a swipe gesture in the settings.</string>
+    <string name="onboarding_tour_insights_body">While uploading, Sitecar reads the scanned text on your device and suggests tags, the document\'s own date and its sender — optionally with Gemini Nano.</string>
 
     <string name="settings_title">Settings</string>
     <string name="settings_theme_title">Appearance</string>
@@ -33,6 +35,7 @@
     <string name="settings_test_ok">Connection OK – found %1$d organization(s)</string>
     <string name="settings_test_failed">Test failed: %1$s</string>
     <string name="settings_error_missing_fields">Please enter URL and API key.</string>
+    <string name="settings_saved">Settings saved.</string>
 
     <string name="settings_ocr_title">On-device text recognition (OCR)</string>
     <string name="settings_ocr_subtitle">Embeds a searchable text layer into the PDF before upload. Turn off if your Papra server already runs OCR (e.g. Mistral OCR).</string>

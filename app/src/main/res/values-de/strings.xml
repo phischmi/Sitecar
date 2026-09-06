@@ -11,14 +11,16 @@
     <string name="onboarding_continue">Weiter</string>
     <string name="onboarding_back">Zurück</string>
     <string name="onboarding_finish">Fertig</string>
-    <string name="onboarding_tour_scan_title">Dokumente scannen</string>
-    <string name="onboarding_tour_scan_body">Die Kamera erkennt die Seitenränder von selbst und macht aus mehreren Seiten ein einziges PDF. Die Texterkennung auf dem Gerät legt eine durchsuchbare Ebene darunter.</string>
-    <string name="onboarding_tour_upload_title">Hochladen und benennen</string>
-    <string name="onboarding_tour_upload_body">Wähle die Organisation, setze Tags und lass den Dateinamen aus deiner Vorlage entstehen. Andere Apps können Bilder und PDFs direkt an Sitecar teilen.</string>
+    <string name="onboarding_tour_scan_title">Tab „Scannen“</string>
+    <string name="onboarding_tour_scan_body">Dein Startpunkt: Die Kamera erkennt die Seitenränder von selbst und macht aus mehreren Seiten ein einziges PDF. Danach wählst du Organisation, Tags und den Dateinamen — der entsteht aus deiner eigenen Vorlage.</string>
+    <string name="onboarding_tour_documents_title">Tab „Dokumente“</string>
+    <string name="onboarding_tour_documents_body">Alles, was schon auf deinem Server liegt. Durchsuchen, öffnen, umbenennen, die Details mit Notiz, Inhalt und Historie ansehen — oder deine häufigste Aktion auf eine Wischgeste legen.</string>
+    <string name="onboarding_tour_tags_title">Tab „Tags“</string>
+    <string name="onboarding_tour_tags_body">Tags anlegen, einfärben, umbenennen oder löschen. Ein Tippen auf einen Tag springt direkt zu den Dokumenten, die ihn tragen.</string>
+    <string name="onboarding_tour_trash_title">Tab „Papierkorb“</string>
+    <string name="onboarding_tour_trash_body">Gelöschtes landet zunächst im Papierkorb deines Papra-Servers. Von hier stellst du es wieder her — oder räumst es endgültig weg.</string>
     <string name="onboarding_tour_insights_title">Intelligente Vorschläge</string>
-    <string name="onboarding_tour_insights_body">Sitecar liest den gescannten Text auf dem Gerät und schlägt Tags, das Dokumentdatum und den Absender vor — auf Wunsch mit Gemini Nano.</string>
-    <string name="onboarding_tour_manage_title">Ordnung halten</string>
-    <string name="onboarding_tour_manage_body">Dokumente durchsuchen, Tags bearbeiten, Details öffnen, aus dem Papierkorb wiederherstellen — und in den Einstellungen deine häufigste Aktion auf eine Wischgeste legen.</string>
+    <string name="onboarding_tour_insights_body">Beim Hochladen liest Sitecar den gescannten Text auf dem Gerät und schlägt Tags, das Dokumentdatum und den Absender vor — auf Wunsch mit Gemini Nano.</string>
 
     <string name="settings_title">Einstellungen</string>
     <string name="settings_theme_title">Darstellung</string>
@@ -33,6 +35,7 @@
     <string name="settings_test_ok">Verbindung OK – %1$d Organisation(en) gefunden</string>
     <string name="settings_test_failed">Test fehlgeschlagen: %1$s</string>
     <string name="settings_error_missing_fields">Bitte URL und API-Key angeben.</string>
+    <string name="settings_saved">Einstellungen gespeichert.</string>
 
     <string name="settings_ocr_title">Texterkennung auf dem Gerät (OCR)</string>
     <string name="settings_ocr_subtitle">Bettet vor dem Upload einen durchsuchbaren Textlayer ins PDF ein. Deaktivieren, wenn dein Papra-Server bereits OCR durchführt (z. B. Mistral OCR).</string>

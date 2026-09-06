@@ -98,13 +98,23 @@ class MainActivity : ComponentActivity() {
                                 store = app.settingsStore,
                                 client = app.apiClient,
                                 billing = app.billingManager,
-                                onSaved = {
-                                    val target = if (app.pendingUpload != null) Route.Upload else Route.Documents
-                                    nav.navigate(target) {
+                                // Speichern bleibt auf der Seite; erst "Zurück" führt
+                                // weiter. Sind die Einstellungen das Startziel (Zugangsdaten
+                                // gelöscht), gibt es nichts zum Zurückspringen — dann geht es
+                                // mit gültiger Konfiguration in die App statt aus ihr heraus.
+                                onBack = {
+                                    if (nav.popBackStack()) return@SettingsScreen
+                                    val configuredNow = app.settingsStore.serverUrl.isNotBlank() &&
+                                        app.settingsStore.apiKey.isNotBlank()
+                                    val target = when {
+                                        !configuredNow -> null
+                                        app.pendingUpload != null -> Route.Upload
+                                        else -> Route.Documents
+                                    }
+                                    if (target == null) finish() else nav.navigate(target) {
                                         popUpTo<Route.Settings> { inclusive = true }
                                     }
                                 },
-                                onBack = { if (!nav.popBackStack()) finish() },
                             )
                         }
                         composable<Route.Onboarding> {
@@ -214,9 +224,9 @@ class MainActivity : ComponentActivity() {
         setIntent(intent)
         val app = application as SitecarApp
         if (consumeShareIntent(intent, app)) {
-            // Ist der Server noch nicht konfiguriert, bleibt der Screen auf
-            // Settings; SettingsScreen.onSaved navigiert dann selbst zu Upload,
-            // sobald app.pendingUpload gesetzt ist.
+            // Ist der Server noch nicht konfiguriert, bleibt der Screen stehen, wo
+            // er ist (Einstieg oder Einstellungen); von dort führt der Weg nach
+            // dem Einrichten selbst zu Upload, sobald app.pendingUpload gesetzt ist.
             val isConfigured = app.settingsStore.serverUrl.isNotBlank() && app.settingsStore.apiKey.isNotBlank()
             if (isConfigured) {
                 navController?.navigate(Route.Upload) { launchSingleTop = true }
