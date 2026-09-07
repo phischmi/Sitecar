@@ -57,6 +57,7 @@ import app.sitecar.client.R
 import app.sitecar.client.data.DocumentActivityDto
 import app.sitecar.client.data.DocumentDetailDto
 import app.sitecar.client.data.SitecarApiClient
+import app.sitecar.client.data.TagDto
 import app.sitecar.client.ui.util.friendlyErrorMessage
 import app.sitecar.client.ui.util.rememberApiErrorMessages
 import kotlinx.coroutines.launch
@@ -67,9 +68,9 @@ private enum class DetailsTab { INFO, CONTENT, ACTIVITY }
 /**
  * Detailansicht eines Dokuments mit denselben drei Reitern wie die Papra-Weboberfläche:
  * Info (Metadaten, Dokumentdatum und Notiz), Inhalt (der extrahierte Text) und
- * Aktivität (die Änderungshistorie). Notiz, Inhalt und Dokumentdatum lassen sich
- * hier ändern; jede Änderung geht einzeln an den Server und erscheint danach in
- * der Historie.
+ * Aktivität (die Änderungshistorie). Tags, Notiz, Inhalt und Dokumentdatum lassen
+ * sich hier ändern; jede Änderung geht einzeln an den Server und erscheint danach
+ * in der Historie.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -99,6 +100,12 @@ fun DocumentDetailsScreen(
     var dateSaving by remember { mutableStateOf(false) }
     var datePickerOpen by remember { mutableStateOf(false) }
 
+    var orgTags by remember { mutableStateOf<List<TagDto>>(emptyList()) }
+    var orgTagsLoaded by remember { mutableStateOf(false) }
+    // Während eine Zuweisung läuft, sind alle Tag-Pillen gesperrt: der Zustand des
+    // Dokuments steht erst mit der Antwort fest.
+    var togglingTag by remember { mutableStateOf(false) }
+
     var activities by remember { mutableStateOf<List<DocumentActivityDto>?>(null) }
     var activityLoading by remember { mutableStateOf(false) }
     var activityError by remember { mutableStateOf<String?>(null) }
@@ -113,6 +120,12 @@ fun DocumentDetailsScreen(
             }
             .onFailure { errorMessage = friendlyErrorMessage(it, apiErrorMessages) }
         loading = false
+        // Für das Zuweisen von Tags braucht es alle Tags der Organisation; schlägt
+        // das fehl, bleiben unten nur die bereits gesetzten Tags stehen.
+        client.listTags(organizationId).onSuccess {
+            orgTags = it
+            orgTagsLoaded = true
+        }
     }
 
     // Die Historie wird erst beim ersten Öffnen des Reiters geholt; sie ist eine
@@ -161,6 +174,26 @@ fun DocumentDetailsScreen(
                 activities = null
             }.onFailure { errorMessage = friendlyErrorMessage(it, apiErrorMessages) }
             contentSaving = false
+        }
+    }
+
+    fun toggleTag(tag: TagDto) {
+        val doc = document ?: return
+        val assigned = doc.tags.any { it.id == tag.id }
+        togglingTag = true
+        errorMessage = null
+        scope.launch {
+            val result = if (assigned) {
+                client.removeTagFromDocument(organizationId, documentId, tag.id)
+            } else {
+                client.addTagToDocument(organizationId, documentId, tag.id)
+            }
+            result.onSuccess {
+                val tags = if (assigned) doc.tags.filterNot { it.id == tag.id } else doc.tags + tag
+                document = document?.copy(tags = tags)
+                activities = null
+            }.onFailure { errorMessage = friendlyErrorMessage(it, apiErrorMessages) }
+            togglingTag = false
         }
     }
 
@@ -246,6 +279,10 @@ fun DocumentDetailsScreen(
                             onSaveNotes = { saveNotes() },
                             dateSaving = dateSaving,
                             onEditDate = { datePickerOpen = true },
+                            orgTags = orgTags,
+                            orgTagsLoaded = orgTagsLoaded,
+                            togglingTag = togglingTag,
+                            onToggleTag = { toggleTag(it) },
                         )
                         DetailsTab.CONTENT -> EditableTextSection(
                             value = content,
@@ -375,6 +412,10 @@ private fun InfoTab(
     onSaveNotes: () -> Unit,
     dateSaving: Boolean,
     onEditDate: () -> Unit,
+    orgTags: List<TagDto>,
+    orgTagsLoaded: Boolean,
+    togglingTag: Boolean,
+    onToggleTag: (TagDto) -> Unit,
 ) {
     InfoRow(stringResource(R.string.document_details_info_name), doc.name ?: doc.id)
     InfoRow(stringResource(R.string.document_details_info_type), doc.mimeType.orEmpty())
@@ -394,14 +435,34 @@ private fun InfoTab(
     )
     InfoRow(stringResource(R.string.document_details_info_id), doc.id)
 
-    if (doc.tags.isNotEmpty()) {
+    // Alle Tags der Organisation als Pillen: die gesetzten ausgefüllt, die übrigen
+    // nur umrandet — ein Tippen weist zu bzw. entfernt. Ließen sich die Tags der
+    // Organisation nicht laden, bleiben wenigstens die gesetzten sichtbar.
+    val tags = orgTags.ifEmpty { doc.tags }
+    if (tags.isNotEmpty() || orgTagsLoaded) {
         Text(
             text = stringResource(R.string.document_details_info_tags),
             style = MaterialTheme.typography.labelLarge,
         )
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            doc.tags.forEach { tag ->
-                TagPill(name = tag.name, colorHex = tag.color, onClick = {})
+        if (tags.isEmpty()) {
+            Text(
+                text = stringResource(R.string.documents_manage_tags_empty),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        } else {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                tags.forEach { tag ->
+                    TagPill(
+                        name = tag.name,
+                        colorHex = tag.color,
+                        onClick = { if (!togglingTag) onToggleTag(tag) },
+                        selected = doc.tags.any { it.id == tag.id },
+                    )
+                }
             }
         }
     }
