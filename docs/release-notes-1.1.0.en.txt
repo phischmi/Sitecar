@@ -1,0 +1,5 @@
+New in this version:
+
+• The first launch welcomes you, walks you through connecting to your Papra server, and can show a short tour.
+• New document details with info, content and activity: notes, date, text and tags can be edited there — from a row's menu or a swipe gesture.
+• The on-device AI toggle shows the model download as progress and no longer gives up when you leave the settings.

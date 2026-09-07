@@ -1,0 +1,5 @@
+Neu in dieser Version:
+
+• Der erste Start begrüßt dich, führt durch die Verbindung zu deinem Papra-Server und zeigt auf Wunsch eine kurze Tour.
+• Neue Detailansicht für Dokumente mit Info, Inhalt und Aktivität: Notiz, Datum, Text und Tags lassen sich dort bearbeiten — erreichbar über das Zeilenmenü oder eine Wischgeste.
+• Der KI-Schalter zeigt den Modell-Download als Fortschritt und bricht nicht mehr ab, wenn du die Einstellungen verlässt.
