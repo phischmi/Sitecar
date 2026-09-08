@@ -19,6 +19,7 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import app.sitecar.client.R
+import app.sitecar.client.ui.util.bottomBarInsets
 
 @Composable
 fun AppBottomBar(nav: NavHostController) {
@@ -30,7 +31,7 @@ fun AppBottomBar(nav: NavHostController) {
         Triple(Route.Trash, Icons.Default.Delete, R.string.nav_trash),
     )
 
-    NavigationBar {
+    NavigationBar(windowInsets = bottomBarInsets) {
         tabs.forEach { (route, icon, label) ->
             // Über den Serializer-Hash vergleichen, nicht über Routen-Strings:
             // destination.route ist der von kotlinx.serialization erzeugte

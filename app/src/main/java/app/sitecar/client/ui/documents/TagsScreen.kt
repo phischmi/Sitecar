@@ -59,8 +59,10 @@ import app.sitecar.client.data.Organization
 import app.sitecar.client.data.SettingsStore
 import app.sitecar.client.data.SitecarApiClient
 import app.sitecar.client.data.TagDto
+import app.sitecar.client.ui.util.appBarInsets
 import app.sitecar.client.ui.util.friendlyErrorMessage
 import app.sitecar.client.ui.util.rememberApiErrorMessages
+import app.sitecar.client.ui.util.scaffoldContentInsets
 import kotlinx.coroutines.launch
 
 private val TAG_COLORS = listOf(
@@ -192,8 +194,10 @@ fun TagsScreen(
     }
 
     Scaffold(
+        contentWindowInsets = scaffoldContentInsets,
         topBar = {
             TopAppBar(
+                windowInsets = appBarInsets,
                 title = { Text(stringResource(R.string.tags_title)) },
                 actions = {
                     IconButton(onClick = { createDialogOpen = true }) {

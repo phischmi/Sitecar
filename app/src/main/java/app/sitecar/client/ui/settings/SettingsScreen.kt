@@ -9,9 +9,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -80,8 +82,10 @@ import app.sitecar.client.icon.LauncherIcon
 import app.sitecar.client.share.ShareReceiver
 import app.sitecar.client.ui.support.SupportDialog
 import app.sitecar.client.ui.theme.accentPrimaryColor
+import app.sitecar.client.ui.util.appBarInsets
 import app.sitecar.client.ui.util.friendlyErrorMessage
 import app.sitecar.client.ui.util.rememberApiErrorMessages
+import app.sitecar.client.ui.util.scaffoldContentInsets
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -124,8 +128,10 @@ fun SettingsScreen(
     val apiErrorMessages = rememberApiErrorMessages()
 
     Scaffold(
+        contentWindowInsets = scaffoldContentInsets,
         topBar = {
             TopAppBar(
+                windowInsets = appBarInsets,
                 title = { Text(stringResource(R.string.settings_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
@@ -142,6 +148,8 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(inner)
+                .consumeWindowInsets(inner)
+                .imePadding()
                 .padding(horizontal = 20.dp, vertical = 16.dp)
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp),

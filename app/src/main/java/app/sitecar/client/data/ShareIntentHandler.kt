@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.database.Cursor
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
 import android.provider.OpenableColumns
 import androidx.core.content.IntentCompat
@@ -84,7 +83,7 @@ object ShareIntentHandler {
         val bytes = context.contentResolver.openInputStream(uri).use { input ->
             requireNotNull(input) { "Konnte URI nicht öffnen: $uri" }.readBytes()
         }
-        val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+        val bitmap = decodeSampledBitmap(bytes, SHARED_IMAGE_MAX_SIZE)
         requireNotNull(bitmap) { "Kein gültiges Bild: $uri" }
         val dir = File(context.cacheDir, "scans").apply { mkdirs() }
         val out = File(dir, "sitecar-shared-${timestamp()}-%03d.jpg".format(pageIndex + 1))
@@ -124,4 +123,13 @@ object ShareIntentHandler {
     }
 
     private fun timestamp() = SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(Date())
+
+    /**
+     * Längere Kante, auf die geteilte Bilder beim Umkodieren höchstens gebracht
+     * werden. Ein 12-MP-Foto ungesampelt zu dekodieren belegte ~48 MB Heap; 3000 px
+     * entsprechen grob einem A4-Scan mit 300 dpi, Text bleibt also unverändert
+     * lesbar. Kamera-Scans sind nicht betroffen — der PdfBuilder streamt deren
+     * JPEGs unverändert ins PDF, ohne sie zu dekodieren.
+     */
+    private const val SHARED_IMAGE_MAX_SIZE = 3000
 }

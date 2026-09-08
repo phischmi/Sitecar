@@ -1,12 +1,9 @@
 package app.sitecar.client
 
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
@@ -35,13 +32,15 @@ import app.sitecar.client.ui.scan.ScanScreen
 import app.sitecar.client.ui.settings.SettingsScreen
 import app.sitecar.client.ui.theme.SitecarTheme
 import app.sitecar.client.ui.upload.UploadScreen
+import app.sitecar.client.ui.util.applyEdgeToEdge
+import app.sitecar.client.ui.util.applySystemBarIconContrast
 
 class MainActivity : ComponentActivity() {
     private var navController: NavHostController? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        applyEdgeToEdge()
 
         val app = application as SitecarApp
         val startFromScanShortcut = intent?.getStringExtra(EXTRA_SHORTCUT_ROUTE) == SHORTCUT_ROUTE_SCAN
@@ -56,13 +55,7 @@ class MainActivity : ComponentActivity() {
             }
             val accentColor by app.settingsStore.accentColorFlow.collectAsState(initial = AccentColor.INDIGO)
 
-            // Die Icon-Farbe der System-Leisten richtet sich nach dem in der App
-            // gewählten Theme, nicht nach dem des Systems — sonst stünden z. B. bei
-            // "Dunkel" auf einem hellen System dunkle Icons auf dunklem Grund.
-            SideEffect {
-                val barStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT) { darkTheme }
-                enableEdgeToEdge(statusBarStyle = barStyle, navigationBarStyle = barStyle)
-            }
+            SideEffect { applySystemBarIconContrast(darkTheme) }
 
             SitecarTheme(darkTheme = darkTheme, accentColor = accentColor) {
                 val nav = rememberNavController()

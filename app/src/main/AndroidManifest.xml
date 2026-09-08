@@ -153,6 +153,19 @@
             </intent-filter>
         </activity-alias>
 
+        <!--
+          ML Kits unsichtbare Delegate-Activity des Dokumentenscanners bringt
+          android:screenOrientation="portrait" mit. Ab Android 16 ignorieren
+          Geräte mit großem Display solche Einschränkungen ohnehin, die Play
+          Console meldet sie. Der Lock wird daher entfernt — android:configChanges
+          erhält dabei die eigentliche Absicht der Bibliothek: die Activity wird
+          beim Drehen nicht neu aufgebaut, sonst ginge das Scan-Ergebnis verloren.
+        -->
+        <activity
+            android:name="com.google.mlkit.vision.documentscanner.internal.GmsDocumentScanningDelegateActivity"
+            android:configChanges="keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize"
+            tools:remove="android:screenOrientation" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

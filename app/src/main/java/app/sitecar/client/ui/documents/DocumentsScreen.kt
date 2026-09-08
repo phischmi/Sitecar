@@ -14,9 +14,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -83,8 +85,10 @@ import app.sitecar.client.data.SettingsStore
 import app.sitecar.client.data.SitecarApiClient
 import app.sitecar.client.data.SwipeAction
 import app.sitecar.client.data.TagDto
+import app.sitecar.client.ui.util.appBarInsets
 import app.sitecar.client.ui.util.friendlyErrorMessage
 import app.sitecar.client.ui.util.rememberApiErrorMessages
+import app.sitecar.client.ui.util.scaffoldContentInsets
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
@@ -340,9 +344,11 @@ fun DocumentsScreen(
     }
 
     Scaffold(
+        contentWindowInsets = scaffoldContentInsets,
         topBar = {
             if (selectionMode) {
                 TopAppBar(
+                    windowInsets = appBarInsets,
                     title = { Text(stringResource(R.string.documents_selected_count, selectedDocIds.size)) },
                     navigationIcon = {
                         IconButton(onClick = { clearSelection() }) {
@@ -372,6 +378,7 @@ fun DocumentsScreen(
                 )
             } else {
                 TopAppBar(
+                    windowInsets = appBarInsets,
                     title = { Text(stringResource(R.string.documents_title)) },
                     actions = {
                         Box {
@@ -433,7 +440,13 @@ fun DocumentsScreen(
         },
         bottomBar = bottomBar,
     ) { inner ->
-        Column(modifier = Modifier.fillMaxSize().padding(inner)) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(inner)
+                .consumeWindowInsets(inner)
+                .imePadding(),
+        ) {
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },

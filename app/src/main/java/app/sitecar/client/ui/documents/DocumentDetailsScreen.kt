@@ -58,8 +58,10 @@ import app.sitecar.client.data.DocumentActivityDto
 import app.sitecar.client.data.DocumentDetailDto
 import app.sitecar.client.data.SitecarApiClient
 import app.sitecar.client.data.TagDto
+import app.sitecar.client.ui.util.appBarInsets
 import app.sitecar.client.ui.util.friendlyErrorMessage
 import app.sitecar.client.ui.util.rememberApiErrorMessages
+import app.sitecar.client.ui.util.scaffoldContentInsets
 import kotlinx.coroutines.launch
 import java.time.Instant
 
@@ -215,8 +217,10 @@ fun DocumentDetailsScreen(
     }
 
     Scaffold(
+        contentWindowInsets = scaffoldContentInsets,
         topBar = {
             TopAppBar(
+                windowInsets = appBarInsets,
                 title = {
                     Text(
                         text = document?.name ?: initialName ?: stringResource(R.string.document_details_title),

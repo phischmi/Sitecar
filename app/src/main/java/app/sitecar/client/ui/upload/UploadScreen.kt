@@ -8,10 +8,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -82,9 +84,11 @@ import app.sitecar.client.data.insights.HybridInsightsEngine
 import app.sitecar.client.data.insights.RuleBasedInsightsEngine
 import app.sitecar.client.ui.documents.TagPill
 import app.sitecar.client.ui.support.SupportDialog
+import app.sitecar.client.ui.util.appBarInsets
 import app.sitecar.client.ui.util.findActivity
 import app.sitecar.client.ui.util.friendlyErrorMessage
 import app.sitecar.client.ui.util.rememberApiErrorMessages
+import app.sitecar.client.ui.util.scaffoldContentInsets
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -274,8 +278,10 @@ fun UploadScreen(
     val isReadyDocument = pendingUpload is PendingUpload.ReadyDocument
 
     Scaffold(
+        contentWindowInsets = scaffoldContentInsets,
         topBar = {
             TopAppBar(
+                windowInsets = appBarInsets,
                 title = { Text(stringResource(R.string.upload_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
@@ -300,6 +306,8 @@ fun UploadScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(inner)
+                .consumeWindowInsets(inner)
+                .imePadding()
                 .padding(horizontal = 20.dp, vertical = 12.dp)
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp),

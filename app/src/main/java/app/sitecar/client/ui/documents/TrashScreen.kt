@@ -53,8 +53,10 @@ import app.sitecar.client.data.DocumentThumbnailLoader
 import app.sitecar.client.data.Organization
 import app.sitecar.client.data.SettingsStore
 import app.sitecar.client.data.SitecarApiClient
+import app.sitecar.client.ui.util.appBarInsets
 import app.sitecar.client.ui.util.friendlyErrorMessage
 import app.sitecar.client.ui.util.rememberApiErrorMessages
+import app.sitecar.client.ui.util.scaffoldContentInsets
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -169,8 +171,10 @@ fun TrashScreen(
     }
 
     Scaffold(
+        contentWindowInsets = scaffoldContentInsets,
         topBar = {
             TopAppBar(
+                windowInsets = appBarInsets,
                 title = { Text(stringResource(R.string.trash_title)) },
                 actions = {
                     if (documents.isNotEmpty()) {

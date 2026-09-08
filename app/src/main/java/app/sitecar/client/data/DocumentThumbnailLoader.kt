@@ -1,7 +1,6 @@
 package app.sitecar.client.data
 
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -22,7 +21,7 @@ class DocumentThumbnailLoader(
 
         val cacheFile = File(cacheDir, "${doc.id}.jpg")
         if (cacheFile.exists()) {
-            BitmapFactory.decodeFile(cacheFile.absolutePath)?.let { return@withContext it }
+            decodeSampledBitmap(cacheFile, THUMBNAIL_SIZE)?.let { return@withContext it }
         }
 
         val bytes = client.downloadDocumentFile(organizationId, doc.id).getOrNull() ?: return@withContext null

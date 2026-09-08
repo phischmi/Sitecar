@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!--
-      Farbe und Icon-Kontrast der System-Leisten setzt MainActivity zur Laufzeit
-      per enableEdgeToEdge() passend zum in der App gewählten Theme; hier steht
-      daher bewusst kein windowLightStatusBar.
+      Unterhalb von API 35 machen erst diese beiden Attribute die System-Leisten
+      transparent — sie ersetzen die Window.setStatusBarColor/setNavigationBarColor-
+      Aufrufe, die androidx' enableEdgeToEdge() zur Laufzeit absetzte (seit
+      Android 15 veraltet, siehe ui/util/EdgeToEdge.kt). Ab API 35 ignoriert das
+      System sie; dort ist randlos ohnehin der Standard.
+
+      Den Icon-Kontrast der Leisten setzt MainActivity zur Laufzeit passend zum in
+      der App gewählten Theme; hier steht daher bewusst kein windowLightStatusBar.
     -->
     <style name="Theme.Sitecar" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:statusBarColor">@android:color/transparent</item>

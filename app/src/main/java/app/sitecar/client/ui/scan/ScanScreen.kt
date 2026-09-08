@@ -37,7 +37,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.sitecar.client.R
+import app.sitecar.client.ui.util.appBarInsets
 import app.sitecar.client.ui.util.findActivity
+import app.sitecar.client.ui.util.scaffoldContentInsets
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanning
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
@@ -113,8 +115,10 @@ fun ScanScreen(
     LaunchedEffect(Unit) { startScan() }
 
     Scaffold(
+        contentWindowInsets = scaffoldContentInsets,
         topBar = {
             TopAppBar(
+                windowInsets = appBarInsets,
                 title = { Text(stringResource(R.string.capture_title)) },
                 actions = {
                     IconButton(onClick = onOpenSettings) {

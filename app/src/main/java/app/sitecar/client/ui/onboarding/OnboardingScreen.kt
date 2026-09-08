@@ -8,9 +8,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
@@ -56,6 +58,7 @@ import app.sitecar.client.data.SettingsStore
 import app.sitecar.client.data.SitecarApiClient
 import app.sitecar.client.ui.util.friendlyErrorMessage
 import app.sitecar.client.ui.util.rememberApiErrorMessages
+import app.sitecar.client.ui.util.scaffoldContentInsets
 import kotlinx.coroutines.launch
 
 private enum class OnboardingStep { WELCOME, CONNECTION, TOUR }
@@ -120,11 +123,13 @@ fun OnboardingScreen(
         step = if (step == OnboardingStep.TOUR) OnboardingStep.CONNECTION else OnboardingStep.WELCOME
     }
 
-    Scaffold { inner ->
+    Scaffold(contentWindowInsets = scaffoldContentInsets) { inner ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(inner)
+                .consumeWindowInsets(inner)
+                .imePadding()
                 .padding(horizontal = 24.dp, vertical = 16.dp),
         ) {
             when (step) {
