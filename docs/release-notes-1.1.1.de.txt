@@ -1,0 +1,6 @@
+Fehlerbehebungen und Feinschliff:
+
+• Im Querformat rutschten Texte und Schaltflächen auf Geräten mit Kamera-Aussparung teilweise unter die Aussparung.
+• Die Tastatur verdeckte in den Einstellungen, im Einstieg und beim Hochladen die Eingabefelder darunter.
+• Große Bilder aus dem Teilen-Menü brauchen jetzt deutlich weniger Arbeitsspeicher.
+• Vorbereitung auf Android 16 und Geräte mit großem Display wie Tablets und Foldables.

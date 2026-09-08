@@ -1,0 +1,6 @@
+Bug fixes and polish:
+
+• In landscape, text and buttons could slide underneath the camera cutout on devices that have one.
+• The keyboard covered the input fields below it in the settings, the first-run setup and the upload screen.
+• Large images shared from other apps now use far less memory.
+• Groundwork for Android 16 and large-screen devices such as tablets and foldables.
